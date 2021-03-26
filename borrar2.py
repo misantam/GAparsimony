@@ -1,9 +1,9 @@
-from lhs.randomLHS import randomLHS, randomLHS_int
-from lhs.maximinLHS import maximinLHS
-from lhs.improvedLHS import improvedLHS
-from lhs.optimumLHS import optimumLHS
-from lhs.geneticLHS import geneticLHS
-from lhs.utilityLHS import isValidLHS, isValidLHS_int
+from lhs.base.randomLHS import randomLHS, randomLHS_int
+from lhs.base.maximinLHS import maximinLHS
+from lhs.base.improvedLHS import improvedLHS
+from lhs.base.optimumLHS import optimumLHS
+from lhs.base.geneticLHS import geneticLHS
+from lhs.util.utilityLHS import isValidLHS, isValidLHS_int
 
 import numpy as np
 
@@ -58,7 +58,7 @@ print(m)
 print(isValidLHS(m))
 
 
-m = optimumLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
+m = optimumLHS(3, 3) ## Esta dando valores enteros revisar, la de arriba es correcta
 
 # m[0, 0] = 0.6
 
