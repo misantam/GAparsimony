@@ -1,0 +1,70 @@
+# -*- coding: utf-8 -*-
+
+# https://github.com/bertcarnell/lhs/blob/master
+
+from src.ordenacion import order
+from lhs.util.bclib import findorder
+import numpy as np
+
+   
+def randomLHS(n, k, bPreserveDraw=False):
+    
+    if n < 1 or k < 1:
+        raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k)")
+
+    result = np.zeros(n*k).reshape((n, k))
+        
+    randomunif1 = np.empty(n).astype(np.double)
+
+    if bPreserveDraw:
+        
+        randomunif2 = np.empty(n).astype(np.double)
+        for jcol in range(k):
+            
+            for irow in range(n):
+                randomunif1[irow] = np.random.uniform(low=0, high=1)
+            for irow in range(n):
+                randomunif2[irow] = np.random.uniform(low=0, high=1)
+
+
+            orderVector = order(randomunif1)
+            for irow in range(n):
+                result[irow,jcol] = orderVector[irow] + randomunif2[irow]
+                result[irow,jcol] =  result[irow,jcol] / np.double(n)
+
+    else:
+        randomunif2 = np.empty(n*k).astype(np.double)
+        for jcol in range(k):
+            for irow in range(n):
+                randomunif1[irow] = np.random.uniform(low=0, high=1)
+
+            orderVector = order(randomunif1)
+            for irow in range(n):
+                result[irow,jcol] = orderVector[irow]
+
+        for i in range(n*k):
+            randomunif2[i] = np.random.uniform(low=0, high=1)
+
+        randomunif2 = randomunif2.reshape((n, k))
+        for jcol in range(k):
+
+            for irow in range(n):
+                result[irow,jcol] = result[irow,jcol] + randomunif2[irow, jcol]
+                result[irow,jcol] = result[irow,jcol] / np.double(n)
+
+    return result
+
+def randomLHS_int(n, k):
+
+    result = np.empty((n, k)).astype(np.int32)
+    randomunif1 = np.empty(n).astype(np.double)
+    for jcol in range(k):
+    
+        for irow in range(n):
+            randomunif1[irow] = np.random.uniform(low=0, high=1)
+        
+        orderVector = findorder(randomunif1)
+        for irow in range(n):
+            result[irow,jcol] = orderVector[irow]
+
+    return result
