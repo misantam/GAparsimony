@@ -7,7 +7,6 @@ from lhs.util.utilityLHS import isValidLHS, isValidLHS_int
 
 import pytest
 
-
 @pytest.mark.parametrize("shape", [
     (2, 2),
     (6, 6),
