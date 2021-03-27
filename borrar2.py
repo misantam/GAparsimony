@@ -58,7 +58,7 @@ print(m)
 print(isValidLHS(m))
 
 
-m = optimumLHS(3, 3) ## Esta dando valores enteros revisar, la de arriba es correcta
+m = optimumLHS(2, 2) ## Da errores con dimensión superior a 2x2
 
 # m[0, 0] = 0.6
 
@@ -67,7 +67,7 @@ print(m)
 print(isValidLHS(m))
 
 # m = geneticLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
-m = geneticLHS(2, 2)
+m = geneticLHS(2, 2) ## Da errores con dimensión superior a 2x2
 
 # m[0, 0] = 0.6
 

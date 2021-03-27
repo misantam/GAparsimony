@@ -117,5 +117,6 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1):
 
 
 def optimumLHS(n, k, maxsweeps=2, eps=0.1):
-    jLen = int((n if n>2.0 else 2.0) + 1.0)
+    jLen = int(np.math.factorial(n)/(np.math.factorial(2.0)*np.math.factorial(n-2.0)) + 1.0)
     return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_optimumLHS(n, k, jLen, maxsweeps, eps))
+

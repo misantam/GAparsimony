@@ -79,7 +79,7 @@ def calculateDistance(mat):
     result = np.empty((m_rows, m_rows)).astype(np.double)
     for i in range(m_rows - 1):
         for j in range(i+1, m_rows):
-            result[i,j] = np.sqrt(np.double(calculateDistanceSquared(mat[i:,0], mat[i,:])))
+            result[i,j] = np.sqrt(np.double(calculateDistanceSquared(mat[i,:], mat[j,:])))
     return result
         
     
