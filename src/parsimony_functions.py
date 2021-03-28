@@ -6,6 +6,7 @@
 
 import numpy as np
 from src.ordenacion import order
+from lhs.base import *
 
 #########################################################
 # parsimonyReRank: Function for reranking by complexity #
@@ -123,25 +124,25 @@ def parsimony_importance(object, verbose=False, *args):
 ################################################################
 # parsimony_population: Function for creating first generation #
 ################################################################
-parsimony_population <- function(object, type_ini_pop="randomLHS", *args)
-
+def parsimony_population(object, type_ini_pop="randomLHS", *args):
+  
   nvars = object.nParams+object.nFeatures
   if type_ini_pop=="randomLHS":
-    population = lhs::randomLHS(object.popSize,nvars)
+    population = randomLHS(object.popSize,nvars)
   if type_ini_pop=="geneticLHS":
-    population = lhs::geneticLHS(object.popSize,nvars)
+    population = geneticLHS(object.popSize,nvars)
   if type_ini_pop=="improvedLHS":
-    population = lhs::improvedLHS(object.popSize,nvars) # BUSCAR LIBRERÍA
+    population = improvedLHS(object.popSize,nvars) # BUSCAR LIBRERÍA
   if type_ini_pop=="maximinLHS":
-    population = lhs::maximinLHS(object.popSize,nvars)
+    population = maximinLHS(object.popSize,nvars)
   if type_ini_pop=="optimumLHS":
-    population = lhs::optimumLHS(object.popSize,nvars)
+    population = optimumLHS(object.popSize,nvars)
   if type_ini_pop=="random":
     population = (np.random.rand(object.popSize*nvars) * (nvars - object.popSize) + object.popSize).reshape(object.popSize*nvars, 1)
   
   # Scale matrix with the parameters range
   population = population*(object.max_param-object.min_param)
-  population = population+object.min_param)
+  population = population+object.min_param
   # Convert features to binary 
   population[:, object.nParams:nvars] = population[:, object.nParams:nvars]<=object.feat_thres # No se si esto esta bien
   return population
@@ -254,17 +255,18 @@ parsimony_crossover <- function(object, parents, alpha=0.1, perc_to_swap=0.5, ..
 ##########################
 # Functions for mutation #
 ##########################
-parsimony_mutation <- function(object, ...)
-{
+def parsimony_mutationfunction(object, *args):
+
   # Uniform random mutation (except first individual)
-  nparam_to_mute <- round(object@pmutation*(object@nParams+object@nFeatures)*object@popSize)
-  if (nparam_to_mute<1) nparam_to_mute=1
+  nparam_to_mute = round(object.pmutation*(object.nParams+object.nFeatures)*object.popSize)
+  if nparam_to_mute<1:
+    nparam_to_mute = 1
   
-  for (item in seq(nparam_to_mute))
-  {
-    i <- sample((1+object@not_muted):object@popSize, size=1)
-    j <- sample(1:(object@nParams+object@nFeatures), size = 1)
-    object@population[i,j] <- runif(1, object@min_param[j], object@max_param[j])
+  for item in range(nparam_to_mute):
+  
+    i = np.random.randint((1+object.not_muted), object.popSize, size=1)
+    j = np.random.randint(1, (object.nParams+object.nFeatures), size=1)
+    object.population[i,j] <- runif(1, object.min_param[j], object.max_param[j])
     # If is a binary feature selection convert to binary
     if (j>=(1+object@nParams))  object@population[i,j] <- (object@population[i,j]<=object@feat_mut_thres)
     

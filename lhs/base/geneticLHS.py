@@ -31,7 +31,7 @@ def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S"):
         # // fill A with random hypercubes
         A[i] = randomLHS_int(m_n, m_k)
     
-    for v in range(m_gen):
+    for _ in range(m_gen):
         B = np.empty(m_pop).astype(np.double)
         for i in range(m_pop):
             if criterium == "S":

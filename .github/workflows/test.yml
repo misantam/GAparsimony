@@ -10,7 +10,7 @@ on:
     branches: [ "*" ]
 
 jobs:
-  build:
+  test:
 
     runs-on: ubuntu-latest
 
@@ -29,3 +29,13 @@ jobs:
     - name: Test with pytest
       run: |
         pytest
+
+  # docker-example:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: run_sonarqube  
+  #     uses: docker://sonarqube:latest
+  #     with:
+  #       # entrypoint: /opt/box/box
+  #       args: version
