@@ -4,6 +4,7 @@ from lhs.base.improvedLHS import improvedLHS
 from lhs.base.optimumLHS import optimumLHS
 from lhs.base.geneticLHS import geneticLHS
 from lhs.util.utilityLHS import isValidLHS, isValidLHS_int
+# from lhs.base import *
 
 import numpy as np
 
