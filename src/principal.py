@@ -75,7 +75,7 @@ class GAparsimony:
             raise ValueError("Probability of crossover must be between 0 and 1!!!")
         if pmutation < 0 or pmutation > 1:
             raise ValueError("Probability of mutation must be between 0 and 1!!!")
-        if not min_param and  not max_param:
+        if min_param is None and max_param is None:
             raise ValueError("A min and max range of values must be provided!!!")
         if len(min_param)!=len(max_param):
             raise Exception("min_param and max_param must have the same length!!!")
