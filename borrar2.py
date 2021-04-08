@@ -1,15 +1,15 @@
-from lhs.base.randomLHS import randomLHS, randomLHS_int
-from lhs.base.maximinLHS import maximinLHS
-from lhs.base.improvedLHS import improvedLHS
-from lhs.base.optimumLHS import optimumLHS
-from lhs.base.geneticLHS import geneticLHS
+# from lhs.base.randomLHS import randomLHS, randomLHS_int
+# from lhs.base.maximinLHS import maximinLHS
+# from lhs.base.improvedLHS import improvedLHS
+# from lhs.base.optimumLHS import optimumLHS
+# from lhs.base.geneticLHS import geneticLHS
 from lhs.util.utilityLHS import isValidLHS, isValidLHS_int
-# from lhs.base import *
+from lhs.base import *
 
 import numpy as np
 
 
-aux = randomLHS_int(2,2)
+aux = randomLHS.randomLHS_int(2,2)
 print(aux)
 print(isValidLHS_int(aux))
 
@@ -29,7 +29,7 @@ print(isValidLHS_int(aux))
 
 m = np.array([[0.6062350, 0.4130588], [0.3730882, 0.7029388]])
 
-m = maximinLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
+m = maximinLHS.maximinLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
 
 # m[0, 0] = 0.6
 
@@ -50,7 +50,7 @@ print(isValidLHS(m))
 # print(aux)
 # print(np.min(aux))
 
-m = improvedLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
+m = improvedLHS.improvedLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
 
 # m[0, 0] = 0.6
 
@@ -59,7 +59,7 @@ print(m)
 print(isValidLHS(m))
 
 
-m = optimumLHS(2, 2) ## Da errores con dimensión superior a 2x2
+m = optimumLHS.optimumLHS(2, 2) ## Da errores con dimensión superior a 2x2
 
 # m[0, 0] = 0.6
 
@@ -68,7 +68,7 @@ print(m)
 print(isValidLHS(m))
 
 # m = geneticLHS(2, 2) ## Esta dando valores enteros revisar, la de arriba es correcta
-m = geneticLHS(2, 2) ## Da errores con dimensión superior a 2x2
+m = geneticLHS.geneticLHS(2, 2) ## Da errores con dimensión superior a 2x2
 
 # m[0, 0] = 0.6
 

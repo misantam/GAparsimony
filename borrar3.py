@@ -1,38 +1,17 @@
 import numpy as np
 
-m1 = np.array([0, 1, 2, 3, 4])
-m2 = np.array([5, 4, 2, 3, 1])
+population = np.array(list(range(50,100)))
 
-init = 0
-op1 = lambda a, b: a + b
-op2 = lambda a, b: a==b
+popSize = 50
+r = 2/(popSize*(popSize-1))
+q = 2/popSize
+rank = list(range(popSize))
+prob = list(map(lambda x: q - (x)*r, rank))
 
-for x, y in zip(m1, m2):
-    init = op1(init, op2(x, y))
+sel = np.random.choice(list(rank), size=popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
 
-print(init) #2
+print(sel)
 
-aux = np.array([72, 69, 76, 76, 79])
+print(population[sel])
 
-# def transform(a, b= None, dev = 0, op=lambda x: x):
-#     if not type(b) is type(None):
-#         for x, y in zip(a, b):
-#             dev = dev + 1
-#             dev = op(x, y)
-#     else:
-#         for x in a:
-#             dev = dev + 1
-#             dev = op(x)
-#     return dev
-
-# print(transform(aux, aux, lambda a, b: a+b))
-
-print(list(map(lambda a, b: a+b, aux, aux)))
-
-# Transform es map
-
-
-aux = np.array([[2,1],[2,1]])
-
-print(aux[0, 0])
-
+print(population[:5])

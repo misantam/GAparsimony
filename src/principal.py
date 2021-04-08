@@ -1,20 +1,14 @@
-def parsimony_population():
-    pass
-def parsimony_nlrSelection():
-    pass
-def parsimony_crossover():
-    pass
-def parsimony_monitor():
-    pass
-def parsimony_mutation():
-    pass
+from .parsimony_monitor import parsimony_monitor
+from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation
+from .ga_parsimony import GaParsimony
+
+
 
 import sys
 import warnings
 import numpy as np
 import time
 
-from population import Population
 from src.ordenacion import order
 
 
@@ -157,21 +151,16 @@ class GAparsimony:
     if not object:
         # Initialize 'object'
         # -------------------
-        object <- new("ga_parsimony", call = call,  # Implementar el __str__ y __str__, __gt__, __eq__, ...
-                    min_param = min_param, max_param = max_param,
-                    nParams = nParams, feat_thres=feat_thres, 
-                    feat_mut_thres=feat_mut_thres, not_muted=not_muted, 
-                    rerank_error=rerank_error, iter_start_rerank=iter_start_rerank,
-                    nFeatures=nFeatures, 
-                    names_param = if (is.null(names_param)) character() else names_param,
-                    names_features = if (is.null(names_features)) character() else names_features, 
-                    popSize = popSize, iter = 0, early_stop = early_stop, maxiter = maxiter, 
-                    suggestions = suggestions, population = matrix(), elitism = elitism, 
-                    pcrossover = pcrossover, minutes_total=0, best_score = -Inf,
-                    history = vector(mode = "list",length = maxiter),
-                    pmutation = if (is.numeric(pmutation)) pmutation else NA, 
-                    fitnessval = FitnessVal_vect, fitnesstst=FitnessTst_vect, complexity=Complexity_vect,
-                    summary = fitnessSummary, bestSolList = bestSolList)
+        object = GaParsimony(call, min_param, max_param, 
+                            nParams, nFeatures, iter = 0, 
+                            population, early_stop, minutes_total, 
+                            best_score, fitnessSummary, bestSolList, 
+                            feat_thres, feat_mut_thres, not_muted, 
+                            rerank_error, iter_start_rerank,
+                            names_param, names_features, popSize, 
+                            maxiter, suggestions, elitism, 
+                            pcrossover, history, pmutation, 
+                            FitnessVal_vect, FitnessTst_vect, Complexity_vect)
         
         # First population
         # ----------------
@@ -199,22 +188,17 @@ class GAparsimony:
             iter_ini = 1
         print(f"Starting GA optimization with a provided GAparsimony 'object'. Using object's GA settings and its population from iter={iter_ini}."))
         
-        object <- new("ga_parsimony", call = object_old@call, 
-                    min_param = object_old@min_param, max_param = object_old@max_param,
-                    nParams = object_old@nParams, feat_thres=object_old@feat_thres, 
-                    feat_mut_thres=object_old@feat_mut_thres, not_muted=object_old@not_muted, 
-                    rerank_error=object_old@rerank_error, iter_start_rerank=object_old@iter_start_rerank,
-                    nFeatures=object_old@nFeatures, 
-                    names_param = if (is.null(object_old@names_param)) character() else object_old@names_param,
-                    names_features = if (is.null(object_old@names_features)) character() else object_old@names_features, 
-                    popSize = object_old@popSize, iter = 0, early_stop = object_old@early_stop, maxiter = object_old@maxiter, 
-                    suggestions = object_old@suggestions, population = object_old@history[[iter_ini]]$population, 
-                    elitism = object_old@elitism, 
-                    pcrossover = object_old@pcrossover, minutes_total=0, best_score = object_old@best_score,
-                    history = vector(mode = "list",length = object_old@maxiter),
-                    pmutation = if (is.numeric(object_old@pmutation)) object_old@pmutation else NA, 
-                    fitnessval = FitnessVal_vect, fitnesstst=FitnessTst_vect, complexity=Complexity_vect,
-                    summary = fitnessSummary, bestSolList = bestSolList)
+        object = GaParsimony(object_old.call, object_old.min_param, object_old.max_param, 
+                            object_old.nParams, object_old.nFeatures, iter = 0, 
+                            object_old.history[[iter_ini]]["population"], object_old.early_stop, minutes_total, 
+                            best_score, fitnessSummary, bestSolList, 
+                            object_old.feat_thres, object_old.feat_mut_thres, object_old.not_muted, 
+                            object_old.rerank_error, object_old.iter_start_rerank,
+                            object_old.names_param, object_old.names_features, object_old.popSize, 
+                            object_old.maxiter, object_old.suggestions, object_old.elitism, 
+                            object_old.pcrossover, np.empty(object_old.maxiter), object_old.pmutation, 
+                            FitnessVal_vect, FitnessTst_vect, Complexity_vect)
+        
         pop = object.population
 
     # Main Loop
@@ -242,7 +226,7 @@ class GAparsimony:
             FitnessVal_vect = Results_parallel[:, 1]
             FitnessTst_vect = Results_parallel[:, 2]
             Complexity_vect = Results_parallel[:, 3]
-            }
+            
         
         np.random.seed(seed_ini*iter) if not seed_ini else np.random.seed(1234*iter)
         
@@ -278,12 +262,11 @@ class GAparsimony:
         
 
         
-        if (verbose)
-        {
-        print("Step 1. Fitness sorted")
-        print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
-        input("Press [enter] to continue")
-        }
+        if verbose:
+            print("Step 1. Fitness sorted")
+            print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
+            input("Press [enter] to continue")
+
         
         
         # Reorder models with ReRank function
@@ -339,8 +322,8 @@ class GAparsimony:
         
         # Call to 'monitor' function
         # --------------------------
-        if path_name_to_save_iter:
-            save(object,file=path_name_to_save_iter)
+        # if path_name_to_save_iter:
+        #     save(object,file=path_name_to_save_iter)
         if callable(monitor) and not verbose:
             monitor(object)  
         
@@ -352,118 +335,96 @@ class GAparsimony:
         
         # Exit?
         # -----
-        best_val_cost <- as.vector(na.omit(object@summary[,1]))
-        if (object@bestfitnessVal >= maxFitness) break
-        if (object@iter == maxiter) break
-        if ((1+length(best_val_cost)-which.max(best_val_cost))>=early_stop) break
+        best_val_cost = object.summary[:,1][~numpy.isnan(object.summary[:,1])]
+        if (object.bestfitnessVal >= maxFitness) break
+        if (object.iter == maxiter) break
+        if ((1+len(best_val_cost)-np.argmax(best_val_cost))>=early_stop) break
         
         
         # Selection Function
         # ------------------
-        if (is.function(selection))
-        {
-        sel <- selection(object)
-        pop <- sel$population
-        FitnessVal_vect <- sel$fitnessval
-        FitnessTst_vect <- sel$fitnesstst
-        Complexity_vect <- sel$complexity
-        } else 
-            {
-            sel <- sample(1:popSize, size = popSize, replace = TRUE)
-            pop <- object@population[sel, ]
-            FitnessVal_vect <- object@fitnessval[sel]
-            FitnessTst_vect <- object@fitnesstst[sel]
-            Complexity_vect <- object@complexity[sel]
-            }
-        object@population <- pop
-        object@fitnessval <- FitnessVal_vect
-        object@fitnesstst <- FitnessTst_vect
-        object@complexity <- Complexity_vect
+        if (callable(selection)):
+            sel = selection(object)
+            pop = sel["population"]
+            FitnessVal_vect = sel["fitnessval"]
+            FitnessTst_vect = sel["fitnesstst"]
+            Complexity_vect = sel["complexity"]
+        else:
+            sel = np.random.choice(list(range(popSize)), size=popSize, replace=True)
+            pop = object.population[sel]
+            FitnessVal_vect = object.fitnessval[sel]
+            FitnessTst_vect = object.fitnesstst[sel]
+            Complexity_vect = object.complexity[sel]
+
+        object.population = pop
+        object.fitnessval = FitnessVal_vect
+        object.fitnesstst = FitnessTst_vect
+        object.complexity = Complexity_vect
         
         
-        if (verbose)
-        {
-        print("Step 4. Selection")
-        print(head(cbind(FitnessVal_vect, FitnessTst_vect, Complexity_vect, object@population),10))
-        readline(prompt="Press [enter] to continue")
-        }
+        if verbose:
+            print("Step 4. Selection")
+            print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
+            input("Press [enter] to continue")
+
         
         
         # CrossOver Function
         # ------------------
-        if (is.function(crossover) & pcrossover > 0)
-        {
-        nmating <- floor(object@popSize/2)
-        mating <- matrix(sample(1:(2 * nmating), size = (2 * nmating)), ncol = 2)
-        for (i in seq_len(nmating))
-            {
-            if (pcrossover > runif(1))
-            {
-            parents <- mating[i, ]
-            Crossover <- crossover(object, parents)
-            Pop[parents, ] <- Crossover$children
-            FitnessVal_vect[parents] <- Crossover$fitnessval
-            FitnessTst_vect[parents] <- Crossover$fitnesstst
-            Complexity_vect[parents] <- Crossover$complexity
-            }
-            }
-        object@population <- pop
-        object@fitnessval <- FitnessVal_vect
-        object@fitnesstst <- FitnessTst_vect
-        object@complexity <- Complexity_vect
-        
-        if (verbose)
-            {
-            print("Step 5. CrossOver")
-            print(head(cbind(FitnessVal_vect, FitnessTst_vect, Complexity_vect, object@population),10))
-            readline(prompt="Press [enter] to continue")
-            }
-        
-        }
+        if callable(crossover) and pcrossover > 0:
+            nmating = np.floor(object.popSize/2)
+            np.random.sample(list(range(2 * nmating)), size=(2 * nmating))).reshape((nmating, 2))
+            for i in range(nmating):
+                if pcrossover > np.random.uniform(low=0, high=1):
+                    parents = mating[i, ]
+                    Crossover = crossover(object, parents)
+                    Pop[parents] = Crossover["children"]
+                    FitnessVal_vect[parents] = Crossover["fitnessval"]
+                    FitnessTst_vect[parents] = Crossover["fitnesstst"]
+                    Complexity_vect[parents] = Crossover["complexity"]
+                    
+            object.population = pop
+            object.fitnessval = FitnessVal_vect
+            object.fitnesstst = FitnessTst_vect
+            object.complexity = Complexity_vect
+            
+            if verbose:
+                print("Step 5. CrossOver")
+                print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
+                input("Press [enter] to continue")
+
         
         # New generation with elitists
         # ----------------------------
-        if (elitism > 0)
-        {
-        pop[1:elitism, ] <- PopSorted[1:elitism,]
-        FitnessVal_vect[1:elitism] <- FitnessValSorted[1:elitism]
-        FitnessTst_vect[1:elitism] <- FitnessTstSorted[1:elitism]
-        Complexity_vect[1:elitism] <- ComplexitySorted[1:elitism]
+        if (elitism > 0):
+            pop[:elitism] = PopSorted[:elitism]
+            FitnessVal_vect[:elitism] = FitnessValSorted[:elitism]
+            FitnessTst_vect[:elitism] = FitnessTstSorted[:elitism]
+            Complexity_vect[:elitism] = ComplexitySorted[:elitism]
+
+            object.population = pop
+            object.fitnessval = FitnessVal_vect
+            object.fitnesstst = FitnessTst_vect
+            object.complexity = Complexity_vect
+
+            if verbose:
+                print("Step 6. With Elitists")
+                print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
+                input("Press [enter] to continue")
         
-        object@population <- pop
-        object@fitnessval <- FitnessVal_vect
-        object@fitnesstst <- FitnessTst_vect
-        object@complexity <- Complexity_vect
-        
-        if (verbose)
-            {
-            print("Step 6. With Elitists")
-            print(head(cbind(FitnessVal_vect, FitnessTst_vect, Complexity_vect, object@population),10))
-            readline(prompt="Press [enter] to continue")
-            }
-        }
         
         
         # Mutation function
         # -----------------
-        if (is.function(mutation) & pmutation > 0)
-        {
-        object <- mutation(object)
-        pop <- object@population
-        FitnessVal_vect <- object@fitnessval 
-        FitnessTst_vect <- object@fitnesstst 
-        Complexity_vect <- object@complexity
+        if callable(mutation) & pmutation > 0:
+            object = mutation(object)
+            pop = object.population
+            FitnessVal_vect = object.fitnessval 
+            FitnessTst_vect = object.fitnesstst 
+            Complexity_vect = object.complexity
         
-        if (verbose)
-        {
-            print("Step 7. Mutation")
-            print(head(cbind(FitnessVal_vect, FitnessTst_vect, Complexity_vect, object@population),10))
-            readline(prompt="Press [enter] to continue")
-        }
-        }
-    } # End of loop
+            if verbose:
 
-        
-
-
-GAparsimony(parsimony_population,[2],[3],4)
+                print("Step 7. Mutation")
+                print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
+                input("Press [enter] to continue")

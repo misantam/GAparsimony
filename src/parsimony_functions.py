@@ -11,7 +11,7 @@ from lhs.base import *
 #########################################################
 # parsimonyReRank: Function for reranking by complexity #
 #########################################################
-def parsimony_rerank(object, verbose=FALSE, *aux):
+def parsimony_rerank(object, verbose=False, *aux):
 
   cost1 = object.fitnessval
   cost1 = cost1.astype(float)
@@ -27,8 +27,8 @@ def parsimony_rerank(object, verbose=FALSE, *aux):
   
   # start
   pos1 = 1
-  pos2 <- 2
-  cambio <- FALSE
+  pos2 = 2
+  cambio = False
   error_posic = object.best_score
   
   while not pos1 == object.popSize:
@@ -102,7 +102,7 @@ def parsimony_importance(object, verbose=False, *args):
   nelitistm = object.elitism
   features_hist = None
   for iter in range(min_iter, max_iter+1):
-    features_hist = np.c_(features_hist, object.history[[iter]].population[1:nelitistm, nParams:]) ## ANALIZAR CON CUIDADO
+    features_hist = np.c_(features_hist, object.history[[iter]].population[1:nelitistm, object.nParams:]) ## ANALIZAR CON CUIDADO
 
   importance = np.mean(features_hist, axis=0)
   # names(importance) <- object@names_features
@@ -128,15 +128,15 @@ def parsimony_population(object, type_ini_pop="randomLHS", *args):
   
   nvars = object.nParams+object.nFeatures
   if type_ini_pop=="randomLHS":
-    population = randomLHS(object.popSize,nvars)
+    population = randomLHS.randomLHS(object.popSize,nvars)
   if type_ini_pop=="geneticLHS":
-    population = geneticLHS(object.popSize,nvars)
+    population = geneticLHS.geneticLHS(object.popSize,nvars)
   if type_ini_pop=="improvedLHS":
-    population = improvedLHS(object.popSize,nvars) # BUSCAR LIBRERÍA
+    population = improvedLHS.improvedLHS(object.popSize,nvars) # BUSCAR LIBRERÍA
   if type_ini_pop=="maximinLHS":
-    population = maximinLHS(object.popSize,nvars)
+    population = maximinLHS.maximinLHS(object.popSize,nvars)
   if type_ini_pop=="optimumLHS":
-    population = optimumLHS(object.popSize,nvars)
+    population = optimumLHS.optimumLHS(object.popSize,nvars)
   if type_ini_pop=="random":
     population = (np.random.rand(object.popSize*nvars) * (nvars - object.popSize) + object.popSize).reshape(object.popSize*nvars, 1)
   
@@ -160,39 +160,39 @@ def parsimony_population(object, type_ini_pop="randomLHS", *args):
 #       with ReRank algorithm           #
 #########################################
 
-parsimony_lrSelection <- function(object, 
-                            r = 2/(object@popSize*(object@popSize-1)), 
-                            q = 2/object@popSize, ...)
-{
-# Linear-rank selection
-# Michalewicz (1996) Genetic Algorithms + Data Structures = Evolution Programs. p. 60
-  rank <- 1:object@popSize # population are sorted in GAparsimony
-  prob <- q - (rank-1)*r
-  sel <- sample(1:object@popSize, size = object@popSize, 
-                prob = pmin(pmax(0, prob), 1, na.rm = TRUE),
-                replace = TRUE)
-  out <- list(population = object@population[sel,,drop=FALSE],
-              fitnessval = object@fitnessval[sel],
-              fitnesstst = object@fitnesstst[sel],
-              complexity = object@complexity[sel])
-  return(out)
-}
+def parsimony_lrSelection(object, *args, r = None, q = None):
+  
+  if not r:
+    r = 2/(object.popSize*(object.popSize-1))
+  if not q:
+    q = 2/object.popSize
 
-parsimony_nlrSelection <- function(object, q = 0.25, ...)
-{
+  rank = range(object.popSize)
+  prob = map(lambda x: q - (x)*r, rank)
+
+  sel = np.random.choice(list(rank), size=object.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
+  
+  out = {"population" : object.population[sel],
+          "fitnessval" : object.fitnessval[sel],
+          "fitnesstst" : object.fitnesstst[sel],
+          "complexity" : object.complexity[sel]}
+  return out
+
+
+def parsimony_nlrSelection(object, q = 0.25, *args):
 # Nonlinear-rank selection
 # Michalewicz (1996) Genetic Algorithms + Data Structures = Evolution Programs. p. 60
-  rank <- 1:object@popSize # population are sorted
-  prob <- q*(1-q)^(rank-1)
-  sel <- sample(1:object@popSize, size = object@popSize, 
-                prob = pmin(pmax(0, prob), 1, na.rm = TRUE),
-                replace = TRUE)
-  out <- list(population = object@population[sel,,drop=FALSE],
-              fitnessval = object@fitnessval[sel],
-              fitnesstst = object@fitnesstst[sel],
-              complexity = object@complexity[sel])
-  return(out)
-}
+  rank = list(range(object.popSize)) # population are sorted
+  prob = map(lambda x: q*(1-q)**(x), rank)
+  
+  sel = np.random.choice(list(rank), size=object.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
+
+  out = {"population" : object.population[sel],
+              "fitnessval" : object.fitnessval[sel],
+              "fitnesstst" : object.fitnesstst[sel],
+              "complexity" : object.complexity[sel]}
+  return out
+
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 
@@ -204,47 +204,49 @@ parsimony_nlrSelection <- function(object, q = 0.25, ...)
 # Functions for crossover #
 ###########################
 
-parsimony_crossover <- function(object, parents, alpha=0.1, perc_to_swap=0.5, ...)
-{
-  parents <- object@population[parents,,drop = FALSE]
-  n <- ncol(parents)
-  children <- parents
-  pos_param <- 1:object@nParams
-  pos_features <- (1+object@nParams):(object@nParams+object@nFeatures)
+#En esta tengo dudas de si lo hace bien
+def parsimony_crossover(object, parents, alpha=0.1, perc_to_swap=0.5, *args):
+
+  parents = object.population[parents]
+  children = parents
+  pos_param = list(range(object.nParams))
+  pos_features = list(range(object.nParams, object.nParams+object.nFeatures))
   
   # Heuristic Blending for parameters
-  alpha <- 0.1
-  Betas <- runif(object@nParams)*(1+2*alpha)-alpha
-  children[1,pos_param] <- parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[2,pos_param]
-  children[2,pos_param] <- parents[2,pos_param]-Betas*parents[2,pos_param]+Betas*parents[1,pos_param]
+  alpha = 0.1
+  Betas = np.random.uniform(size=object.nParams, low=0, high=1)*(1+2*alpha)-alpha
+  children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[2,pos_param]  ## MAP??
+  children[2,pos_param] = parents[2,pos_param]-Betas*parents[2,pos_param]+Betas*parents[1,pos_param]
   
   # Random swapping for features
-  swap_param <- runif(object@nFeatures)>=perc_to_swap
-  if (sum(swap_param)>0)
-  {
-    features_parent1 <- as.vector(parents[1,pos_features])
-    features_parent2 <- as.vector(parents[2,pos_features])
-    pos_features <- pos_features[swap_param]
-    children[1,pos_features] <- features_parent2[swap_param]
-    children[2,pos_features] <- features_parent1[swap_param]
-  }
+  swap_param = np.random.uniform(size=object.nFeatures, low=0, high=1)>=perc_to_swap
+  if np.sum(swap_param)>0:
+    
+    features_parent1 = parents[1,pos_features]
+    features_parent2 = parents[2,pos_features]
+    pos_features = pos_features[swap_param]
+    children[1,pos_features] = features_parent2[swap_param]
+    children[2,pos_features] = features_parent1[swap_param]
+  
   
   # correct params that are outside (min and max)
-  thereis_min <- (children[1,] < object@min_param)
-  children[1,thereis_min] <- object@min_param[thereis_min]
-  thereis_min <- (children[2,] < object@min_param)
-  children[2,thereis_min] <- object@min_param[thereis_min]
+  thereis_min = children[1] < object.min_param
+  children[1,thereis_min] = object.min_param[thereis_min]
+  thereis_min = children[2] < object.min_param
+  children[2,thereis_min] = object.min_param[thereis_min]
   
-  thereis_max <- (children[1,] > object@max_param)
-  children[1,thereis_max] <- object@max_param[thereis_max]
-  thereis_max <- (children[2,] > object@max_param)
-  children[2,thereis_max] <- object@max_param[thereis_max]
+  thereis_max = children[1] > object.max_param
+  children[1,thereis_max] = object.max_param[thereis_max]
+  thereis_max = (children[2] > object.max_param)
+  children[2,thereis_max] = object.max_param[thereis_max]
   
-  
-  out <- list(children = children, fitnessval = rep(NA,2), 
-              fitnesstst = rep(NA,2), complexity = rep(NA,2))
-  return(out)
-}
+
+  aux = np.empty(2)
+  aux[:] = np.nan
+  out = {"children" : children, "fitnessval" : aux.copy(), 
+              "fitnesstst" : aux.copy(), "complexity" : aux.copy()}
+  return out
+
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
 
@@ -255,24 +257,25 @@ parsimony_crossover <- function(object, parents, alpha=0.1, perc_to_swap=0.5, ..
 ##########################
 # Functions for mutation #
 ##########################
-def parsimony_mutationfunction(object, *args):
+def parsimony_mutation(object, *args):
 
   # Uniform random mutation (except first individual)
   nparam_to_mute = round(object.pmutation*(object.nParams+object.nFeatures)*object.popSize)
   if nparam_to_mute<1:
     nparam_to_mute = 1
   
-  for item in range(nparam_to_mute):
+  for _ in range(nparam_to_mute):
   
     i = np.random.randint((1+object.not_muted), object.popSize, size=1)
     j = np.random.randint(1, (object.nParams+object.nFeatures), size=1)
-    object.population[i,j] <- runif(1, object.min_param[j], object.max_param[j])
+    object.population[i,j] = np.random.uniform(low=object.min_param[j], high=object.max_param[j])
     # If is a binary feature selection convert to binary
-    if (j>=(1+object@nParams))  object@population[i,j] <- (object@population[i,j]<=object@feat_mut_thres)
+    if j>=(1+object.nParams):
+      object.population[i,j] = object.population[i,j] <= object.feat_mut_thres
     
-    object@fitnessval[i] <- NA
-    object@fitnesstst[i] <- NA
-    object@complexity[i] <- NA
-  }
-  return(object)
-}
+    object.fitnessval[i] = np.na
+    object.fitnesstst[i] = np.na
+    object.complexity[i] = np.na
+
+  return object 
+
