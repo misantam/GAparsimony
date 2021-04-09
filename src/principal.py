@@ -1,5 +1,5 @@
 from .parsimony_monitor import parsimony_monitor
-from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation
+from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation, parsimony_rerank
 from .ga_parsimony import GaParsimony
 
 
@@ -40,6 +40,7 @@ class GAparsimony:
             early_stop = maxiter
         monitor = bool(getattr(sys, 'ps1', sys.flags.interactive)) # Si se esta ejecutando en una sesión interactiva
         # print("Hola")
+        print(locals())
         # print(locals().keys())
         # print(locals().values())
         print(locals()["monitor"])
@@ -151,20 +152,20 @@ class GAparsimony:
         if not object:
             # Initialize 'object'
             # -------------------
-            object = GaParsimony(call, min_param, max_param, 
+            object = GaParsimony(locals(), min_param, max_param, 
                                 nParams, nFeatures, 0, 
-                                population, early_stop, minutes_total, 
-                                best_score, fitnessSummary, bestSolList, 
+                                population, early_stop, 0, 
+                                np.NINF, fitnessSummary, bestSolList, 
                                 feat_thres, feat_mut_thres, not_muted, 
                                 rerank_error, iter_start_rerank,
                                 names_param, names_features, popSize, 
                                 maxiter, suggestions, elitism, 
-                                pcrossover, history, pmutation, 
+                                pcrossover, None, pmutation, 
                                 FitnessVal_vect, FitnessTst_vect, Complexity_vect)
             
             # First population
             # ----------------
-            pop = Population(type_ini_pop=type_ini_pop)
+            pop = population(object, type_ini_pop=type_ini_pop)
             
             if object.suggestions: # Si no es null
                 ng = min(object.suggestions.shape[0], popSize)
@@ -220,12 +221,20 @@ class GAparsimony:
                 # %dopar% Nos dice que se hace en paralelo
                 # Results_parallel <- foreach(i = seq_len(popSize)) %dopar% 
                 #     {if (is.na(FitnessVal_vect[i]) && sum(Pop[i,(1+object@nParams):nvars])>0) fitness(Pop[i, ]) else c(FitnessVal_vect[i],FitnessTst_vect[i], Complexity_vect[i])}
-                Results_parallel = np.array([fitness(pop[i, :]) if not FitnessVal_vect[i] and np.sum(pop[i,(1+object.nParams):nvars])>0 else np._r(FitnessVal_vect[i],FitnessTst_vect[i], Complexity_vect[i]) for i in range(popSize)])
+                Results_parallel = list()
+                for i in range(popSize):
+                    if np.isnan(FitnessVal_vect[i]) and np.sum(pop[i, object.nParams:nvars])>0:
+                        Results_parallel.append(fitness(pop[i]))
+                    else:
+                        Results_parallel.append(np.concatenate((FitnessVal_vect[i],FitnessTst_vect[i], Complexity_vect[i]), axis=None))
+
+                # Results_parallel = np.array([fitness(pop[i]) if not FitnessVal_vect[i] and np.sum(pop[i,(1+object.nParams):nvars])>0 else np.r_[FitnessVal_vect[i],FitnessTst_vect[i], Complexity_vect[i]] for i in range(popSize)])
+                Results_parallel = np.array(Results_parallel)
                 # Extract results
-                Results_parallel = Results_parallel.reshape(((aux.shape[0]*aux.shape[1])/3, 3))
-                FitnessVal_vect = Results_parallel[:, 1]
-                FitnessTst_vect = Results_parallel[:, 2]
-                Complexity_vect = Results_parallel[:, 3]
+                # Results_parallel = Results_parallel.reshape(((Results_parallel.shape[0]*Results_parallel.shape[1])/3, 3))
+                FitnessVal_vect = Results_parallel[:, 0]
+                FitnessTst_vect = Results_parallel[:, 1]
+                Complexity_vect = Results_parallel[:, 2]
                 
             
             np.random.seed(seed_ini*iter) if not seed_ini else np.random.seed(1234*iter)
@@ -233,7 +242,7 @@ class GAparsimony:
             # Sort by the Fitness Value
             # ----------------------------
             # ord <- order(FitnessVal_vect, decreasing = TRUE, na.last = TRUE) 
-            ord = order(aux, kind='heapsort', decreasing = True, na_last = True)
+            ord = order(FitnessVal_vect, kind='heapsort', decreasing = True, na_last = True)
             PopSorted = pop[ord, :]
             FitnessValSorted = FitnessVal_vect[ord]
             FitnessTstSorted = FitnessTst_vect[ord]
@@ -249,11 +258,11 @@ class GAparsimony:
             FitnessTst_vect = FitnessTstSorted
             Complexity_vect = ComplexitySorted
             if max(FitnessVal_vect)>object.best_score:
-                object.best_score = np.namax(FitnessVal_vect)
+                object.best_score = np.nanmax(FitnessVal_vect)
                 object.solution_best_score = (object.best_score, 
                                                 FitnessTst_vect[np.argmax(FitnessVal_vect)], 
                                                 Complexity_vect[np.argmax(FitnessVal_vect)], 
-                                                Pop[np.argmax(FitnessVal_vect)])
+                                                pop[np.argmax(FitnessVal_vect)])
                 # names(object.solution_best_score) <- c("fitnessVal","fitnessTst","complexity",object@names_param,object@names_features)
 
             

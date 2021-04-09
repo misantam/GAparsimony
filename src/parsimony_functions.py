@@ -23,11 +23,12 @@ def parsimony_rerank(object, verbose=False, *aux):
   complexity[np.isnan(cost1)] = np.float32("inf")
   complexity = complexity[ord]
   position = range(len(cost1))
-  position = position[ord]
+  # position = position[ord]
+  position = ord
   
   # start
-  pos1 = 1
-  pos2 = 2
+  pos1 = 0
+  pos2 = 1
   cambio = False
   error_posic = object.best_score
   
@@ -129,15 +130,15 @@ def parsimony_population(object, type_ini_pop="randomLHS", *args):
   nvars = object.nParams+object.nFeatures
   if type_ini_pop=="randomLHS":
     population = randomLHS.randomLHS(object.popSize,nvars)
-  if type_ini_pop=="geneticLHS":
+  elif type_ini_pop=="geneticLHS":
     population = geneticLHS.geneticLHS(object.popSize,nvars)
-  if type_ini_pop=="improvedLHS":
+  elif type_ini_pop=="improvedLHS":
     population = improvedLHS.improvedLHS(object.popSize,nvars) # BUSCAR LIBRERÍA
-  if type_ini_pop=="maximinLHS":
+  elif type_ini_pop=="maximinLHS":
     population = maximinLHS.maximinLHS(object.popSize,nvars)
-  if type_ini_pop=="optimumLHS":
+  elif type_ini_pop=="optimumLHS":
     population = optimumLHS.optimumLHS(object.popSize,nvars)
-  if type_ini_pop=="random":
+  elif type_ini_pop=="random":
     population = (np.random.rand(object.popSize*nvars) * (nvars - object.popSize) + object.popSize).reshape(object.popSize*nvars, 1)
   
   # Scale matrix with the parameters range

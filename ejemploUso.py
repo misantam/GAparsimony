@@ -4,8 +4,11 @@ from src.principal import GAparsimony
 
 from sklearn import datasets
 from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import cross_val_score
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import cohen_kappa_score
+from sklearn.metrics import accuracy_score
+
+import pandas as pd
 
 
 # Function to evaluate each SVM individual
@@ -25,8 +28,8 @@ def fitness_SVM(chromosome, *args):
     iris = datasets.load_iris()
     data = pd.DataFrame(data= iris['data'], columns= ['sepal_length', 'sepal_widt', 'petal_length', 'petal_width'])
 
-    data_train_model = data.loc[:100 ,data_train.columns[selec_feat]]
-    data_test_model = data.loc[100: ,data_test.columns[selec_feat]]
+    data_train_model = data.iloc[:100].loc[:, data.columns[selec_feat]]
+    data_test_model = data.iloc[100:].loc[:, data.columns[selec_feat]]
     
     # How to validate each individual
     # 'repeats' could be increased to obtain a more robust validation metric. Also,
@@ -34,20 +37,22 @@ def fitness_SVM(chromosome, *args):
     train_control = RepeatedKFold(n_splits=10, n_repeats=10, random_state=1234)
 
     # train the model
+    knn = KNeighborsClassifier(n_neighbors=3)
+    knn.fit(data_train_model, iris['target'][:100])
     
-    model = cross_val_score(KNeighborsClassifier(n_neighbors=3), data.loc[:,data_train.columns[selec_feat]], iris['target'], scoring=cohen_kappa_score, cv=train_control, n_jobs=-1)
+    # model = cross_val_score(knn, data.loc[:,data.columns[selec_feat]], iris['target'], scoring="accuracy", cv=train_control, n_jobs=-1)
+
+    model = accuracy_score(knn.predict(data_train_model), iris['target'][:100])
 
     # Extract kappa statistics (the repeated k-fold CV and the kappa with the test DB)
-    # kappa_val <- model
-    # kappa_test <- postResample(pred=predict(model, data_test_model),
-    #                               obs=data_test_model)[2]
-    # # Obtain Complexity = Num_Features*1E6+Number of support vectors
-    # complexity <- sum(selec_feat)*1E6+model$finalModel@nSV 
+    kappa_val = model
+    kappa_test = accuracy_score(knn.predict(data_test_model),iris['target'][100:])
+    # Obtain Complexity = Num_Features*1E6+Number of support vectors
+    complexity = sum(selec_feat)*knn.n_neighbors
     
-    # # Return(validation score, testing score, model_complexity)
-    # vect_errors <- c(kappa_val=kappa_val,kappa_test=kappa_test,complexity=complexity)
-    # return(vect_errors)
-    return 0
+    # Return(validation score, testing score, model_complexity)
+    vect_errors = np.concatenate(([kappa_val], [kappa_test], [complexity]), axis=0)
+    return(vect_errors)
 
 
 # Ranges of size and decay
