@@ -22,7 +22,8 @@ def fitness_SVM(chromosome, *args):
     
     # Return -Inf if there is not selected features
     if np.sum(selec_feat)<1:
-        return {"kappa_val": np.NINF,"kappa_test": np.NINF,"complexity": np.Inf}
+        # return {"kappa_val": np.NINF,"kappa_test": np.NINF,"complexity": np.Inf}
+        return np.array([np.NINF, np.NINF, np.Inf])
     
     # Extract features from the original DB plus response (last column)
     iris = datasets.load_iris()

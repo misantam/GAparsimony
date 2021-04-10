@@ -35,7 +35,7 @@ def parsimony_rerank(object, verbose=False, *aux):
   while not pos1 == object.popSize:
     
     # Obtaining errors
-    if pos2 > object.popSize:
+    if pos2 >= object.popSize:
       if cambio:
         pos2 = pos1+1
         cambio = False
@@ -95,7 +95,7 @@ def parsimony_rerank(object, verbose=False, *aux):
 ##########################################################################
 def parsimony_importance(object, verbose=False, *args):
   
-  if len(object.history[[1]]) < 1:
+  if len(object.history[0]) < 1:
     print("'object.history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
   min_iter = 1
   max_iter = object.iter
@@ -103,7 +103,7 @@ def parsimony_importance(object, verbose=False, *args):
   nelitistm = object.elitism
   features_hist = None
   for iter in range(min_iter, max_iter+1):
-    features_hist = np.c_(features_hist, object.history[[iter]].population[1:nelitistm, object.nParams:]) ## ANALIZAR CON CUIDADO
+    features_hist = np.c_[features_hist, object.history[iter][0][:nelitistm, object.nParams:]] ## ANALIZAR CON CUIDADO
 
   importance = np.mean(features_hist, axis=0)
   # names(importance) <- object@names_features
@@ -184,7 +184,8 @@ def parsimony_nlrSelection(object, q = 0.25, *args):
 # Nonlinear-rank selection
 # Michalewicz (1996) Genetic Algorithms + Data Structures = Evolution Programs. p. 60
   rank = list(range(object.popSize)) # population are sorted
-  prob = map(lambda x: q*(1-q)**(x), rank)
+  prob = np.array(list(map(lambda x: q*(1-q)**(x), rank)))
+  prob = prob / prob.sum()
   
   sel = np.random.choice(list(rank), size=object.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
 
@@ -209,37 +210,37 @@ def parsimony_nlrSelection(object, q = 0.25, *args):
 def parsimony_crossover(object, parents, alpha=0.1, perc_to_swap=0.5, *args):
 
   parents = object.population[parents]
-  children = parents
+  children = parents # Vector
   pos_param = list(range(object.nParams))
-  pos_features = list(range(object.nParams, object.nParams+object.nFeatures))
+  pos_features = np.array(list(range(object.nParams, object.nParams+object.nFeatures)))
   
   # Heuristic Blending for parameters
   alpha = 0.1
   Betas = np.random.uniform(size=object.nParams, low=0, high=1)*(1+2*alpha)-alpha
-  children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[2,pos_param]  ## MAP??
-  children[2,pos_param] = parents[2,pos_param]-Betas*parents[2,pos_param]+Betas*parents[1,pos_param]
+  children[0,pos_param] = parents[0,pos_param]-Betas*parents[0,pos_param]+Betas*parents[1,pos_param]  ## MAP??
+  children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[0,pos_param]
   
   # Random swapping for features
   swap_param = np.random.uniform(size=object.nFeatures, low=0, high=1)>=perc_to_swap
   if np.sum(swap_param)>0:
     
-    features_parent1 = parents[1,pos_features]
-    features_parent2 = parents[2,pos_features]
+    features_parent1 = parents[0,pos_features]
+    features_parent2 = parents[1,pos_features]
     pos_features = pos_features[swap_param]
-    children[1,pos_features] = features_parent2[swap_param]
-    children[2,pos_features] = features_parent1[swap_param]
+    children[0,pos_features] = features_parent2[swap_param]
+    children[1,pos_features] = features_parent1[swap_param]
   
   
   # correct params that are outside (min and max)
+  thereis_min = children[0] < object.min_param
+  children[0,thereis_min] = object.min_param[thereis_min]
   thereis_min = children[1] < object.min_param
   children[1,thereis_min] = object.min_param[thereis_min]
-  thereis_min = children[2] < object.min_param
-  children[2,thereis_min] = object.min_param[thereis_min]
   
-  thereis_max = children[1] > object.max_param
+  thereis_max = children[0] > object.max_param
+  children[0,thereis_max] = object.max_param[thereis_max]
+  thereis_max = (children[1] > object.max_param)
   children[1,thereis_max] = object.max_param[thereis_max]
-  thereis_max = (children[2] > object.max_param)
-  children[2,thereis_max] = object.max_param[thereis_max]
   
 
   aux = np.empty(2)
@@ -274,9 +275,9 @@ def parsimony_mutation(object, *args):
     if j>=(1+object.nParams):
       object.population[i,j] = object.population[i,j] <= object.feat_mut_thres
     
-    object.fitnessval[i] = np.na
-    object.fitnesstst[i] = np.na
-    object.complexity[i] = np.na
+    object.fitnessval[i] = np.nan
+    object.fitnesstst[i] = np.nan
+    object.complexity[i] = np.nan
 
   return object 
 

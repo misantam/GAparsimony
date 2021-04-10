@@ -1,4 +1,4 @@
-from .parsimony_monitor import parsimony_monitor
+from .parsimony_monitor import parsimony_monitor, parsimony_summary
 from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation, parsimony_rerank
 from .ga_parsimony import GaParsimony
 
@@ -38,7 +38,7 @@ class GAparsimony:
             elitism = max(1, round(popSize * 0.20))
         if not early_stop:
             early_stop = maxiter
-        monitor = bool(getattr(sys, 'ps1', sys.flags.interactive)) # Si se esta ejecutando en una sesión interactiva
+        monitor = parsimony_monitor if bool(getattr(sys, 'ps1', sys.flags.interactive)) else False # Si se esta ejecutando en una sesión interactiva
         # print("Hola")
         print(locals())
         # print(locals().keys())
@@ -140,8 +140,9 @@ class GAparsimony:
         fitnessSummary = np.empty((maxiter,6*3,))
         fitnessSummary[:] = np.nan
         # colnames(fitnessSummary) <- paste0(rep(c("max","mean","q3","median","q1","min"),3),rep(c("val","tst","complex"),each=6)) # Necesario?
-        bestSolList = np.empty(maxiter)
-        bestSolList[:] = np.nan
+        bestSolList = np.empty(maxiter, dtype=np.object)
+        # bestSolList[:] = np.nan
+        # bestSolList = list() # REVISAR!!!!!!!!!!!!!!!!!
         FitnessVal_vect = np.empty(popSize)
         FitnessVal_vect[:] = np.nan
         FitnessTst_vect = np.empty(popSize)
@@ -191,7 +192,7 @@ class GAparsimony:
             
             object = GaParsimony(object_old.call, object_old.min_param, object_old.max_param, 
                                 object_old.nParams, object_old.nFeatures, 0, 
-                                object_old.history[[iter_ini]]["population"], object_old.early_stop, minutes_total, 
+                                object_old.history[iter_ini][0], object_old.early_stop, minutes_total, 
                                 best_score, fitnessSummary, bestSolList, 
                                 object_old.feat_thres, object_old.feat_mut_thres, object_old.not_muted, 
                                 object_old.rerank_error, object_old.iter_start_rerank,
@@ -300,7 +301,7 @@ class GAparsimony:
                 if (verbose):
                     print("Step 2. Fitness reranked")
                     print(np.c_[FitnessVal_vect, FitnessTst_vect, Complexity_vect, object.population][:10, :])
-                    readline(prompt="Press [enter] to continue")
+                    input("Press [enter] to continue")
 
 
             # Keep results
@@ -313,21 +314,21 @@ class GAparsimony:
             object.bestfitnessVal = object.fitnessval[1]
             object.bestfitnessTst = object.fitnesstst[1]
             object.bestcomplexity = object.complexity[1]
-            object.bestsolution = np.concatenate(object.bestfitnessVal, object.bestfitnessTst, object.bestcomplexity,object.population[0, :])
+            object.bestsolution = np.concatenate([[object.bestfitnessVal, object.bestfitnessTst, object.bestcomplexity],object.population[0]])
             # names(object@bestsolution) = c("fitnessVal","fitnessTst","complexity",object@names_param,object@names_features) # No se que hacer con esto
-            object.bestSolList[[iter]] = object.bestsolution 
+            object.bestSolList[iter] = object.bestsolution  
+            # object.bestSolList.append(object.bestsolution ) # REVISAR!!!!!!!!!!
             
             # Keep elapsed time in minutes
             # ----------------------------
             tac = time.time()
-            object.minutes_gen = (tac - tic).total_seconds() / 60.0
+            object.minutes_gen = (tac - tic) / 60.0
             object.minutes_total = object.minutes_total+object.minutes_gen
             
             # Keep this generation into the History list
             # ------------------------------------------
             if keep_history:
-                object.history[[iter]] = {"population": bject.population, "fitnessval": object.fitnessval, 
-                                                            "fitnesstst": object.fitnesstst, "complexity": object.complexity}
+                object.history.append([object.population, object.fitnessval, object.fitnesstst, object.complexity])
             
             # Call to 'monitor' function
             # --------------------------
@@ -344,7 +345,7 @@ class GAparsimony:
             
             # Exit?
             # -----
-            best_val_cost = object.summary[:,1][~numpy.isnan(object.summary[:,1])]
+            best_val_cost = object.summary[:,1][~np.isnan(object.summary[:,1])]
             if object.bestfitnessVal >= maxFitness:
                 break
             if object.iter == maxiter:
@@ -384,13 +385,13 @@ class GAparsimony:
             # CrossOver Function
             # ------------------
             if callable(crossover) and pcrossover > 0:
-                nmating = np.floor(object.popSize/2)
-                np.random.sample(list(range(2 * nmating)), size=(2 * nmating)).reshape((nmating, 2))
+                nmating = int(np.floor(object.popSize/2))
+                mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
                 for i in range(nmating):
                     if pcrossover > np.random.uniform(low=0, high=1):
                         parents = mating[i, ]
                         Crossover = crossover(object, parents)
-                        Pop[parents] = Crossover["children"]
+                        pop[parents] = Crossover["children"]
                         FitnessVal_vect[parents] = Crossover["fitnessval"]
                         FitnessTst_vect[parents] = Crossover["fitnesstst"]
                         Complexity_vect[parents] = Crossover["complexity"]
@@ -428,7 +429,7 @@ class GAparsimony:
             
             # Mutation function
             # -----------------
-            if callable(mutation) & pmutation > 0:
+            if callable(mutation) and pmutation > 0:
                 object = mutation(object)
                 pop = object.population
                 FitnessVal_vect = object.fitnessval 

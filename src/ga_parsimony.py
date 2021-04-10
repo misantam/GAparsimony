@@ -36,7 +36,7 @@ class GaParsimony:
         self.pcrossover = pcrossover
         self.minutes_total=0
         self.best_score = -np.float32("inf")
-        self.history = np.zeros(maxiter) if not history else history
+        self.history = list() if not history else history
         self.pmutation = pmutation
         self.fitnessval = fitnessval
         self.fitnesstst=fitnesstst
