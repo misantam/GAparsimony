@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.principal import GAparsimony
+from src.principal import GAparsimony, print_summary
 
 from sklearn import datasets
 from sklearn.model_selection import RepeatedKFold
@@ -35,10 +35,12 @@ def fitness_SVM(chromosome, *args):
     # How to validate each individual
     # 'repeats' could be increased to obtain a more robust validation metric. Also,
     # 'number' of folds could be adjusted to improve the measure.
-    train_control = RepeatedKFold(n_splits=10, n_repeats=10, random_state=1234)
+    # train_control = RepeatedKFold(n_splits=10, n_repeats=10, random_state=1234)
 
     # train the model
     knn = KNeighborsClassifier(n_neighbors=3)
+    for p in tuneGrid:
+        setattr(knn, p, tuneGrid[p])
     knn.fit(data_train_model, iris['target'][:100])
     
     # model = cross_val_score(knn, data.loc[:,data.columns[selec_feat]], iris['target'], scoring="accuracy", cv=train_control, n_jobs=-1)
@@ -75,7 +77,12 @@ GAparsimony_model = GAparsimony(fitness=fitness_SVM,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 100, early_stop=10,
+                                  maxiter = 2, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234)
+
+
+print(GAparsimony_model)
+
+print_summary(GAparsimony_model)

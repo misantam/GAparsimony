@@ -18,7 +18,7 @@ def is_RStudio():
 
 def printShortMatrix(x, head=2, tail = 1, chead = 5, ctail = 1, **kwargs):
   # x es una matriz
-  nr, nc = x.shape()
+  nr, nc = x.shape
 
   
   if nr > (head + tail + 1):
