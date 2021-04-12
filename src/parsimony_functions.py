@@ -7,6 +7,12 @@
 import numpy as np
 from src.ordenacion import order
 from lhs.base import *
+# from lhs.base.randomLHS import randomLHS
+# from lhs.base.maximinLHS import maximinLHS
+# from lhs.base.improvedLHS import improvedLHS
+# from lhs.base.optimumLHS import optimumLHS
+# from lhs.base.geneticLHS import geneticLHS
+
 
 #########################################################
 # parsimonyReRank: Function for reranking by complexity #

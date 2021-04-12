@@ -40,12 +40,12 @@ def GAparsimony(fitness, min_param, max_param, nFeatures, *args,
             early_stop = maxiter
         monitor = parsimony_monitor if bool(getattr(sys, 'ps1', sys.flags.interactive)) else False # Si se esta ejecutando en una sesión interactiva
         # print("Hola")
-        print(locals())
-        # print(locals().keys())
-        # print(locals().values())
-        print(locals()["monitor"])
-        print(callable(population))
-        print(callable(elitism))
+        # print(locals())
+        # # print(locals().keys())
+        # # print(locals().values())
+        # print(locals()["monitor"])
+        # print(callable(population))
+        # print(callable(elitism))
 
         # Check parameters
         # ----------------
@@ -258,7 +258,7 @@ def GAparsimony(fitness, min_param, max_param, nFeatures, *args,
             FitnessVal_vect = FitnessValSorted
             FitnessTst_vect = FitnessTstSorted
             Complexity_vect = ComplexitySorted
-            if max(FitnessVal_vect)>object.best_score:
+            if np.max(FitnessVal_vect)>object.best_score:
                 object.best_score = np.nanmax(FitnessVal_vect)
                 object.solution_best_score = (object.best_score, 
                                                 FitnessTst_vect[np.argmax(FitnessVal_vect)], 
@@ -560,7 +560,7 @@ def print_summary(object, **kwargs):
         # print(x$suggestions, digits = digits, ...)
 
     print("\n\nGA-PARSIMONY results:")
-    print(f" Iterations                = {x['iter']}")
+    print(f" Iterations                = {x['iter']+1}")
     print(f" Best validation score = {x['best_score']}")
     print(f"\n\nSolution with the best validation score in the whole GA process = \n")
     # do.call(".printShortMatrix",c(list(x$solution_best_score, digits = digits),head=length(x$solution_best_score)))

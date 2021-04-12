@@ -25,7 +25,7 @@ class GaParsimony:
         self.iter_start_rerank=iter_start_rerank
         self.nFeatures=nFeatures
         self.names_param = None if names_param else names_param
-        self.names_features = None if names_features else names_features
+        self.names_features = names_features
         self.popSize = popSize
         self.iter = 0
         self.early_stop = maxiter if not early_stop else early_stop

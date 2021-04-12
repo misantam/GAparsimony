@@ -7,15 +7,15 @@ def parsimony_monitor(object, digits = 7, *args):
   fitnessval = object.fitnessval[~np.isnan(object.fitnessval)]
   fitnesstst = object.fitnesstst[~np.isnan(object.fitnesstst)]
   complexity = object.complexity[~np.isnan(object.complexity)]
-  time_min = object.minutes_gen[~np.isnan(object.minutes_gen)]
+  time_min = object.minutes_gen
 
-  sumryStat = np.concatenate([np.mean(fitnessval), np.max(fitnessval), np.mean(fitnesstst), fitnesstst[np.argmax(fitnessval)], 
-                            np.mean(complexity), complexity[np.argmax(fitnessval)], time_min]) 
-  sumryStat = round(sumryStat, digits)
+  sumryStat = [np.mean(fitnessval), np.max(fitnessval), np.mean(fitnesstst), fitnesstst[np.argmax(fitnessval)], 
+                            np.mean(complexity), complexity[np.argmax(fitnessval)], time_min]
+  # sumryStat = round(sumryStat, digits)
   
-  print(f"\rGA-PARSIMONY | iter ={object.iter}\n")
-  print(f"MeanVal ={sumryStat[0]}| ValBest ={object.bestfitnessVal}| TstBest ={object.bestfitnessTst}| ComplexBest ={object.bestcomplexity}| Time(min)={object.minutes_gen}\n")
-  clearConsoleLine()
+  print(f"GA-PARSIMONY | iter ={object.iter}")
+  print(f"MeanVal ={round(sumryStat[0], digits)}| ValBest ={object.bestfitnessVal}| TstBest ={object.bestfitnessTst}| ComplexBest ={object.bestcomplexity}| Time(min)={object.minutes_gen}\n")
+  # clearConsoleLine()
 
 
 
