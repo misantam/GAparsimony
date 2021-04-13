@@ -587,103 +587,101 @@ def print_summary(object, **kwargs):
 
 # # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
 # # ------------------------------------------------------------------------------
-# plot.ga_parsimony <- function(x, general_cex = 0.7, min_ylim=NULL, max_ylim=NULL, 
-#                               min_iter=NULL, max_iter=NULL, main_label="Boxplot cost evolution", 
+# def plot(object, general_cex = 0.7, min_ylim=None, max_ylim=None, 
+#                               min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
 #                               iter_auto_ylim=3, steps=5, pos_cost_num=-3.1,  pos_feat_num=-1.7,
-#                               digits_plot=4, width_plot=12, height_plot=6, window=TRUE, ...)
-# {
-#   object <- x
-#   if (window) dev.new(1,width = width_plot, height = height_plot)
-#   if (length(object@history[[1]])<1) message("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
-#   if (is.null(min_iter)) min_iter <- 1
-#   if (is.null(max_iter)) max_iter <- object@iter
-  
-#   nelitistm <- object@elitism
-#   mat_val <- NULL
-#   mat_tst <- NULL
-#   mat_complex <- NULL
-#   for (iter in min_iter:max_iter)
-#   {
-#     mat_val <- cbind(mat_val, object@history[[iter]]$fitnessval[1:nelitistm])
-#     mat_tst <- cbind(mat_tst, object@history[[iter]]$fitnesstst[1:nelitistm])
-#     mat_complex <- cbind(mat_complex, apply(object@history[[iter]]$population[1:nelitistm,(1+object@nParams):(object@nParams+object@nFeatures)],1,sum))
-                                         
-#   }
+#                               digits_plot=4, width_plot=12, height_plot=6, window=True, *args)
+
+# #   if (window) dev.new(1,width = width_plot, height = height_plot)
+#     if (len(object.history[0])<1):
+#         print("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
+#     if not min_iter:
+#         min_iter = 0
+#     if not max_iter:
+#         max_iter = object.iter + 1
+    
+#     nelitistm = object.elitism
+#     mat_val = None
+#     mat_tst = None
+#     mat_complex = None
+#     for iter in range(min_iter, max_iter):
+#         mat_val = cbind(mat_val, object@history[[iter]]$fitnessval[0:nelitistm])
+#         mat_tst = cbind(mat_tst, object@history[[iter]]$fitnesstst[0:nelitistm])
+#         mat_complex <- cbind(mat_complex, apply(object@history[[iter]]$population[1:nelitistm,(1+object@nParams):(object@nParams+object@nFeatures)],1,sum))
 
 
-#   # Plot the range of num features and the nfeatures of the best individual
-#   # -----------------------------------------------------------------------
-#   plot((min_iter-1):max_iter, c(NA,mat_complex[1,]), lty="dashed", type="l", lwd=1.2,xaxt="n",yaxt="n",xlab="",ylab="", bty="n", axes=FALSE, 
-#        xlim=c(min_iter-1,max_iter),ylim=c(1,object@nFeatures))
-#   x_pol <- c(min_iter:max_iter,max_iter:min_iter, min_iter)
-#   max_pol <- apply(mat_complex,2,max)
-#   min_pol <- apply(mat_complex,2,min)
-#   y_pol <- c(max_pol, min_pol[length(min_pol):1],max_pol[1])
-#   polygon(x_pol,y_pol,col="gray90",border="gray80")
-#   lines(min_iter:max_iter, mat_complex[1,], lty="dashed")
-#   mtext("Number of features of best indiv.",side=4, line=-0.5, cex=general_cex*1.65)
-  
-#   # Axis of side 4 (vertical right)
-#   # -----------------------------------------------------------------------
-#   axis_side4 <- seq(from=1,to=object@nFeatures,by=round(object@nFeatures/8));
-#   if (axis_side4[length(axis_side4)]!=object@nFeatures) axis_side4 <- c(axis_side4,object@nFeatures);
-#   if ((axis_side4[length(axis_side4)]-axis_side4[length(axis_side4)-1]) <= 2 && object@nFeatures>=20) axis_side4 <- axis_side4[-(length(axis_side4)-1)];
-#   axis(side=4, at=axis_side4, labels=F, tick=T,lwd.ticks=0.7,tcl=-0.25, xpd=TRUE, pos=max_iter,bty="n", cex=general_cex*2)
-#   mtext(axis_side4,side=4,line=pos_feat_num,at=axis_side4, cex=general_cex*1.5)
-  
-  
-  
-  
-#   # Boxplot evolution
-#   # ------------------
-#   par(new=TRUE)
-  
-#   if (is.null(min_ylim)) if (!is.null(iter_auto_ylim) && iter_auto_ylim>=min_iter) min_ylim <- min(c(mat_val[,iter_auto_ylim],mat_tst[,iter_auto_ylim]),na.rm=TRUE) else min_ylim <- min(c(mat_val,mat_tst),na.rm=TRUE)
-#   if (is.null(max_ylim)) max_ylim <- max(c(mat_val,mat_tst),na.rm=TRUE)
-  
-  
-#   boxplot(mat_val,
-#           col="white", xlim=c(min_iter-1,max_iter), ylim=c(min_ylim,max_ylim), 
-#           xaxt = "n", xlab = "", ylab = "", border=T, axes=F,outline=F,
-#           medlwd=0.75, pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "", 
-#                                  boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
-#   boxplot(mat_tst, col="lightgray", 
-#           xlim=c(min_iter,(max_iter+1)),ylim=c(min_ylim,max_ylim), add=TRUE, border=T,outline=F,medlwd=0.75,
-#           pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "",bty="n", axes=F,
-#                     boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
-  
-#   lines(mat_val[1,],col="black",lty=1,lwd=1.8)
-#   lines(mat_tst[1,],col="black",lty="dotdash",lwd=1.8)
-  
-#   if (window) title(main=main_label)
-  
-#   # Axis 
-#   # -----
-  
-#   # Axis X
-#   pos_txt_gen <- seq(from=min_iter-1,to=max_iter,by=5)
-#   pos_txt_gen[1] <- 1
-#   axis(side=1,at=c(min_iter:max_iter), labels=F, tick=T, lwd.ticks=0.7,  tcl= -0.25, pos=min_ylim)
-#   axis(side=1,at=pos_txt_gen, labels=F, tick=T, lwd.ticks=0.7,   tcl= -0.5, pos=min_ylim)
-#   mtext("Number of generation", side=1, line=1, adj=0.5, cex=general_cex*1.65)
-#   mtext(paste("G.",pos_txt_gen,sep=""),side=1,line=-0.35,at=pos_txt_gen, cex=general_cex*1.5)
-  
-#   # Axis Y
-#   as<-axis(side=2, at=round(seq(from=min_ylim,to=max_ylim,length.out=steps),3), labels=F, tick=T, 
-#            lwd.ticks=0.7, tcl= -0.20, xpd=TRUE, pos=1, bty="n", cex=general_cex*2)
-#   mtext("Cost", side=2, line=-2.0, adj=0.5,cex=general_cex*1.65)  
-#   mtext(round(as,3), side=2, line=pos_cost_num, at=as, cex=general_cex*1.5)
 
-#   # legend(x=pos_legend,max_ylim,c(paste0("Validation cost for best individual ('white' box plot of elitists)"),
-#   #                            paste0("Testing cost of best individual ('gray' box plot of elitists)"),
-#   #                            paste0("Number of features of best individual")),
-#   #        lty=c("solid","dotdash","dashed"), cex=general_cex*1.4,lwd=c(1.4,1.7,1.2),
-#   #        bty="n")
-#   mtext(paste0("Results for the best individual:  val.cost (white)=",round(mat_val[1,max_iter],digits_plot),
-#                ", tst.cost (gray)=",round(mat_tst[1,max_iter],digits_plot),
-#                ", complexity=",round(mat_complex[1,max_iter],digits_plot),side=3,line=0,cex=general_cex*1.2))
-#   return(list(mat_val=mat_val, mat_tst=mat_tst,  mat_complex=mat_complex))
+#     # Plot the range of num features and the nfeatures of the best individual
+#     # -----------------------------------------------------------------------
+#     plot((min_iter-1):max_iter, c(NA,mat_complex[1,]), lty="dashed", type="l", lwd=1.2,xaxt="n",yaxt="n",xlab="",ylab="", bty="n", axes=FALSE, 
+#         xlim=c(min_iter-1,max_iter),ylim=c(1,object@nFeatures))
+#     x_pol <- c(min_iter:max_iter,max_iter:min_iter, min_iter)
+#     max_pol <- apply(mat_complex,2,max)
+#     min_pol <- apply(mat_complex,2,min)
+#     y_pol <- c(max_pol, min_pol[length(min_pol):1],max_pol[1])
+#     polygon(x_pol,y_pol,col="gray90",border="gray80")
+#     lines(min_iter:max_iter, mat_complex[1,], lty="dashed")
+#     mtext("Number of features of best indiv.",side=4, line=-0.5, cex=general_cex*1.65)
+    
+#     # Axis of side 4 (vertical right)
+#     # -----------------------------------------------------------------------
+#     axis_side4 <- seq(from=1,to=object@nFeatures,by=round(object@nFeatures/8));
+#     if (axis_side4[length(axis_side4)]!=object@nFeatures) axis_side4 <- c(axis_side4,object@nFeatures);
+#     if ((axis_side4[length(axis_side4)]-axis_side4[length(axis_side4)-1]) <= 2 && object@nFeatures>=20) axis_side4 <- axis_side4[-(length(axis_side4)-1)];
+#     axis(side=4, at=axis_side4, labels=F, tick=T,lwd.ticks=0.7,tcl=-0.25, xpd=TRUE, pos=max_iter,bty="n", cex=general_cex*2)
+#     mtext(axis_side4,side=4,line=pos_feat_num,at=axis_side4, cex=general_cex*1.5)
+    
+    
+    
+    
+#     # Boxplot evolution
+#     # ------------------
+#     par(new=TRUE)
+    
+#     if (is.null(min_ylim)) if (!is.null(iter_auto_ylim) && iter_auto_ylim>=min_iter) min_ylim <- min(c(mat_val[,iter_auto_ylim],mat_tst[,iter_auto_ylim]),na.rm=TRUE) else min_ylim <- min(c(mat_val,mat_tst),na.rm=TRUE)
+#     if (is.null(max_ylim)) max_ylim <- max(c(mat_val,mat_tst),na.rm=TRUE)
+    
+    
+#     boxplot(mat_val,
+#             col="white", xlim=c(min_iter-1,max_iter), ylim=c(min_ylim,max_ylim), 
+#             xaxt = "n", xlab = "", ylab = "", border=T, axes=F,outline=F,
+#             medlwd=0.75, pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "", 
+#                                     boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
+#     boxplot(mat_tst, col="lightgray", 
+#             xlim=c(min_iter,(max_iter+1)),ylim=c(min_ylim,max_ylim), add=TRUE, border=T,outline=F,medlwd=0.75,
+#             pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "",bty="n", axes=F,
+#                         boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
+    
+#     lines(mat_val[1,],col="black",lty=1,lwd=1.8)
+#     lines(mat_tst[1,],col="black",lty="dotdash",lwd=1.8)
+    
+#     if (window) title(main=main_label)
+    
+#     # Axis 
+#     # -----
+    
+#     # Axis X
+#     pos_txt_gen <- seq(from=min_iter-1,to=max_iter,by=5)
+#     pos_txt_gen[1] <- 1
+#     axis(side=1,at=c(min_iter:max_iter), labels=F, tick=T, lwd.ticks=0.7,  tcl= -0.25, pos=min_ylim)
+#     axis(side=1,at=pos_txt_gen, labels=F, tick=T, lwd.ticks=0.7,   tcl= -0.5, pos=min_ylim)
+#     mtext("Number of generation", side=1, line=1, adj=0.5, cex=general_cex*1.65)
+#     mtext(paste("G.",pos_txt_gen,sep=""),side=1,line=-0.35,at=pos_txt_gen, cex=general_cex*1.5)
+    
+#     # Axis Y
+#     as<-axis(side=2, at=round(seq(from=min_ylim,to=max_ylim,length.out=steps),3), labels=F, tick=T, 
+#             lwd.ticks=0.7, tcl= -0.20, xpd=TRUE, pos=1, bty="n", cex=general_cex*2)
+#     mtext("Cost", side=2, line=-2.0, adj=0.5,cex=general_cex*1.65)  
+#     mtext(round(as,3), side=2, line=pos_cost_num, at=as, cex=general_cex*1.5)
+
+#     # legend(x=pos_legend,max_ylim,c(paste0("Validation cost for best individual ('white' box plot of elitists)"),
+#     #                            paste0("Testing cost of best individual ('gray' box plot of elitists)"),
+#     #                            paste0("Number of features of best individual")),
+#     #        lty=c("solid","dotdash","dashed"), cex=general_cex*1.4,lwd=c(1.4,1.7,1.2),
+#     #        bty="n")
+#     mtext(paste0("Results for the best individual:  val.cost (white)=",round(mat_val[1,max_iter],digits_plot),
+#                 ", tst.cost (gray)=",round(mat_tst[1,max_iter],digits_plot),
+#                 ", complexity=",round(mat_complex[1,max_iter],digits_plot),side=3,line=0,cex=general_cex*1.2))
+#     return(list(mat_val=mat_val, mat_tst=mat_tst,  mat_complex=mat_complex))
 # }
-
-# setMethod("plot", "ga_parsimony", plot.ga_parsimony)
 

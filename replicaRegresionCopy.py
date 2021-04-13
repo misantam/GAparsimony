@@ -99,4 +99,5 @@ GAparsimony_model = GAparsimony(fitness=fitness_NNET,
 
 print_summary(GAparsimony_model)
 
-# print(GAparsimony_model.history)
+print(len(GAparsimony_model.history))
+print(GAparsimony_model.history[0])
