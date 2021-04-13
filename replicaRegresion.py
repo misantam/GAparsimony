@@ -44,7 +44,7 @@ def fitness_NNET(chromosome):
     # How to validate each individual
     # 'repeats' could be increased to obtain a more robust validation metric. Also,
     # 'number' of folds could be adjusted to improve the measure.
-    train_control = RepeatedKFold(n_splits=10, n_repeats=10, random_state=123)
+    train_control = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
 
     # train the model
     np.random.seed(1234)

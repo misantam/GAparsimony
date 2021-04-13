@@ -44,7 +44,7 @@ def fitness_NNET(chromosome):
     # How to validate each individual
     # 'repeats' could be increased to obtain a more robust validation metric. Also,
     # 'number' of folds could be adjusted to improve the measure.
-    train_control = RepeatedKFold(n_splits=10, n_repeats=10, random_state=123)
+    train_control = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
 
     # train the model
     np.random.seed(1234)
@@ -63,7 +63,7 @@ def fitness_NNET(chromosome):
     rmse_test = mean_squared_error(model.predict(data_test_model), y_test)
     # Obtain Complexity = Num_Features*1E6+Number of support vectors
     coef = 0
-    for c in model.coefs_:
+    for c in model.coef_:
         coef += np.sum(np.power(c, 2))
     complexity = np.sum(selec_feat)*1E6 + coef
     
@@ -89,7 +89,7 @@ GAparsimony_model = GAparsimony(fitness=fitness_NNET,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 2, early_stop=10,
+                                  maxiter = 50, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234)
@@ -98,3 +98,5 @@ GAparsimony_model = GAparsimony(fitness=fitness_NNET,
 # print(GAparsimony_model)
 
 print_summary(GAparsimony_model)
+
+# print(GAparsimony_model.history)

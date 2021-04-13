@@ -186,8 +186,8 @@ def GAparsimony(fitness, min_param, max_param, nFeatures, *args,
 
             object_old = object
             iter_ini = object_old.iter if not iter_ini else min(iter_ini,object_old.iter)
-            if iter_ini <= 0:
-                iter_ini = 1
+            if iter_ini < 0:
+                iter_ini = 0
             print(f"Starting GA optimization with a provided GAparsimony 'object'. Using object's GA settings and its population from iter={iter_ini}.")
             
             object = GaParsimony(object_old.call, object_old.min_param, object_old.max_param, 
@@ -328,7 +328,7 @@ def GAparsimony(fitness, min_param, max_param, nFeatures, *args,
             # Keep this generation into the History list
             # ------------------------------------------
             if keep_history:
-                object.history.append([object.population, object.fitnessval, object.fitnesstst, object.complexity])
+                object.history.append([object.population, object.fitnessval, object.fitnesstst, object.complexity]) # Crear data frame
             
             # Call to 'monitor' function
             # --------------------------
