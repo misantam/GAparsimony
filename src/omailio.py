@@ -6,6 +6,8 @@ import sys
 import warnings
 import numpy as np
 import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
 import time
 import inspect, opcode
 
@@ -324,7 +326,7 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (1+len(best_val_cost)-np.argmax(best_val_cost)) >= self.early_stop:
+            if (len(best_val_cost)-np.argmax(best_val_cost)) >= self.early_stop:
                 break
             
             
@@ -429,47 +431,47 @@ class GAparsimony(object):
         for h in self.history:
             print(h)
 
-    def __repr__(self):
-        print("An object of class \"ga_parsimony\"")
-        print(f"Call: {self.call}")
-        print("Available slots:")
-        print(f"bestfitnessVal: {self.bestfitnessVal}")
-        print(f"bestfitnessTst: {self.bestfitnessTst}")
-        print(f"bestcomplexity: {self.bestcomplexity}")
-        print(f"bestsolution: {self.bestsolution}")
-        print(f"min_param: {self.min_param}")
-        print(f"max_param: {self.max_param}")
-        print(f"nParams: {self.nParams}")
-        print(f"feat_thres: {self.feat_thres}")
-        print(f"feat_mut_thres: {self.feat_mut_thres}")
-        print(f"not_muted: {self.not_muted}")
-        print(f"rerank_error: {self.rerank_error}")
-        print(f"iter_start_rerank: {self.iter_start_rerank}")
-        print(f"nFeatures: {self.nFeatures}")
-        print(f"names_param: {self.names_param}")
-        print(f"names_features: {self.names_features}")
-        print(f"popSize: {self.popSize}")
-        print(f"iter: {self.iter}") 
-        print(f"early_stop: {self.early_stop}")
-        print(f"maxiter: {self.maxiter}")
-        print(f"minutes_gen: {self.minutes_gen}")
-        print(f"minutes_total: {self.minutes_total}")
-        print(f"suggestions: {self.suggestions}")
-        print(f"population: {self.population}")
-        print(f"elitism: {self.elitism}")
-        print(f"pcrossover: {self.pcrossover}")
-        print(f"pmutation: {self.pmutation}")
-        print(f"best_score: {self.best_score}")
-        print(f"solution_best_score: {self.solution_best_score}")
-        print(f"fitnessval: {self.fitnessval}")
-        print(f"fitnesstst: {self.fitnesstst}")
-        print(f"complexity: {self.complexity}")
-        print(f"summary: {self._summary}")
-        print(f"bestSolList: {self.bestSolList}")
+    # def __repr__(self):
+    #     print("An object of class \"ga_parsimony\"")
+    #     print(f"Call: {self.call}")
+    #     print("Available slots:")
+    #     print(f"bestfitnessVal: {self.bestfitnessVal}")
+    #     print(f"bestfitnessTst: {self.bestfitnessTst}")
+    #     print(f"bestcomplexity: {self.bestcomplexity}")
+    #     print(f"bestsolution: {self.bestsolution}")
+    #     print(f"min_param: {self.min_param}")
+    #     print(f"max_param: {self.max_param}")
+    #     print(f"nParams: {self.nParams}")
+    #     print(f"feat_thres: {self.feat_thres}")
+    #     print(f"feat_mut_thres: {self.feat_mut_thres}")
+    #     print(f"not_muted: {self.not_muted}")
+    #     print(f"rerank_error: {self.rerank_error}")
+    #     print(f"iter_start_rerank: {self.iter_start_rerank}")
+    #     print(f"nFeatures: {self.nFeatures}")
+    #     print(f"names_param: {self.names_param}")
+    #     print(f"names_features: {self.names_features}")
+    #     print(f"popSize: {self.popSize}")
+    #     print(f"iter: {self.iter}") 
+    #     print(f"early_stop: {self.early_stop}")
+    #     print(f"maxiter: {self.maxiter}")
+    #     print(f"minutes_gen: {self.minutes_gen}")
+    #     print(f"minutes_total: {self.minutes_total}")
+    #     print(f"suggestions: {self.suggestions}")
+    #     print(f"population: {self.population}")
+    #     print(f"elitism: {self.elitism}")
+    #     print(f"pcrossover: {self.pcrossover}")
+    #     print(f"pmutation: {self.pmutation}")
+    #     print(f"best_score: {self.best_score}")
+    #     print(f"solution_best_score: {self.solution_best_score}")
+    #     print(f"fitnessval: {self.fitnessval}")
+    #     print(f"fitnesstst: {self.fitnesstst}")
+    #     print(f"complexity: {self.complexity}")
+    #     print(f"summary: {self._summary}")
+    #     print(f"bestSolList: {self.bestSolList}")
 
-        print(f"history: ")
-        for h in self.history:
-            print(h)
+    #     print(f"history: ")
+    #     for h in self.history:
+    #         print(h)
 
 
 
@@ -552,5 +554,121 @@ class GAparsimony(object):
         print(f"\n\nBEST SOLUTION = \n")
         print(x["bestsolution"])
     
+
+    # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
+    # ------------------------------------------------------------------------------
+    def plot(self, general_cex = 0.7, min_ylim=None, max_ylim=None, 
+                                min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
+                                iter_auto_ylim=3, steps=5, pos_cost_num=-3.1,  pos_feat_num=-1.7,
+                                digits_plot=4, width_plot=12, height_plot=6, window=True, *args):
+
+    #   if (window) dev.new(1,width = width_plot, height = height_plot)
+        if (len(self.history[0])<1):
+            print("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
+        if not min_iter:
+            min_iter = 0
+        if not max_iter:
+            max_iter = self.iter + 1
+        
+        nelitistm = self.elitism
+        mat_val = None
+        mat_tst = None
+        mat_complex = None
+        for iter in range(min_iter, max_iter):
+            mat_val = np.c_[mat_val, self.history[iter].fitnessval[:nelitistm]] if mat_val is not None else self.history[iter].fitnessval[:nelitistm]
+            mat_tst = np.c_[mat_tst, self.history[iter].fitnesstst[:nelitistm]] if mat_tst is not None else self.history[iter].fitnesstst[:nelitistm]
+
+            aux = np.sum(self.history[iter].values[:nelitistm,(self.nParams):(self.nParams+self.nFeatures)], axis=1)
+            mat_complex = np.c_[mat_complex, aux] if mat_complex is not None else aux
+
+
+        # # Plot the range of num features and the nfeatures of the best individual
+        # # -----------------------------------------------------------------------
+        # plot((min_iter-1):max_iter, c(NA,mat_complex[1,]), lty="dashed", type="l", lwd=1.2,xaxt="n",yaxt="n",xlab="",ylab="", bty="n", axes=FALSE, 
+        #     xlim=c(min_iter-1,max_iter),ylim=c(1,object@nFeatures))
+            
+        # x_pol <- c(min_iter:max_iter,max_iter:min_iter, min_iter)
+        # max_pol <- apply(mat_complex,2,max)
+        # min_pol <- apply(mat_complex,2,min)
+        # y_pol <- c(max_pol, min_pol[length(min_pol):1],max_pol[1])
+        # polygon(x_pol,y_pol,col="gray90",border="gray80")
+        # lines(min_iter:max_iter, mat_complex[1,], lty="dashed")
+        # mtext("Number of features of best indiv.",side=4, line=-0.5, cex=general_cex*1.65)
+
+        fig, ax = plt.subplots(figsize=(15,5))
+
+        ax = sns.lineplot(x=list(range(min_iter, max_iter)), y=[mat_complex[i, np.argmin(mat_val[i])] for i in range(mat_complex.shape[1])], data=mat_complex, color="salmon")
+        
+        ax = plt.fill_between(x = list(range(min_iter, max_iter)),
+                 y1 = [np.min(mat_complex[i]) for i in range(mat_complex.shape[1])],
+                 y2 = [np.max(mat_complex[i]) for i in range(mat_complex.shape[1])],
+                 alpha = 0.3,
+                 facecolor = 'green')
+        plt.show()
+        # ax = sns.lineplot(data=df, x="Ingresos Anuales", y="Edad", color="blue")
+
+        
+        # # Axis of side 4 (vertical right)
+        # # -----------------------------------------------------------------------
+        # axis_side4 <- seq(from=1,to=object@nFeatures,by=round(object@nFeatures/8));
+        # if (axis_side4[length(axis_side4)]!=object@nFeatures) axis_side4 <- c(axis_side4,object@nFeatures);
+        # if ((axis_side4[length(axis_side4)]-axis_side4[length(axis_side4)-1]) <= 2 && object@nFeatures>=20) axis_side4 <- axis_side4[-(length(axis_side4)-1)];
+        # axis(side=4, at=axis_side4, labels=F, tick=T,lwd.ticks=0.7,tcl=-0.25, xpd=TRUE, pos=max_iter,bty="n", cex=general_cex*2)
+        # mtext(axis_side4,side=4,line=pos_feat_num,at=axis_side4, cex=general_cex*1.5)
+        
+        
+        
+        
+        # # Boxplot evolution
+        # # ------------------
+        # par(new=TRUE)
+        
+        # if (is.null(min_ylim)) if (!is.null(iter_auto_ylim) && iter_auto_ylim>=min_iter) min_ylim <- min(c(mat_val[,iter_auto_ylim],mat_tst[,iter_auto_ylim]),na.rm=TRUE) else min_ylim <- min(c(mat_val,mat_tst),na.rm=TRUE)
+        # if (is.null(max_ylim)) max_ylim <- max(c(mat_val,mat_tst),na.rm=TRUE)
+        
+        
+        # boxplot(mat_val,
+        #         col="white", xlim=c(min_iter-1,max_iter), ylim=c(min_ylim,max_ylim), 
+        #         xaxt = "n", xlab = "", ylab = "", border=T, axes=F,outline=F,
+        #         medlwd=0.75, pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "", 
+        #                                 boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
+        # boxplot(mat_tst, col="lightgray", 
+        #         xlim=c(min_iter,(max_iter+1)),ylim=c(min_ylim,max_ylim), add=TRUE, border=T,outline=F,medlwd=0.75,
+        #         pars=list(yaxt="n",xaxt="n", xlab = "", ylab = "",bty="n", axes=F,
+        #                     boxwex = 0.7, staplewex = 0.6, outwex = 0.5,lwd=0.75))
+        
+        # lines(mat_val[1,],col="black",lty=1,lwd=1.8)
+        # lines(mat_tst[1,],col="black",lty="dotdash",lwd=1.8)
+        
+        # if (window) title(main=main_label)
+        
+        # # Axis 
+        # # -----
+        
+        # # Axis X
+        # pos_txt_gen <- seq(from=min_iter-1,to=max_iter,by=5)
+        # pos_txt_gen[1] <- 1
+        # axis(side=1,at=c(min_iter:max_iter), labels=F, tick=T, lwd.ticks=0.7,  tcl= -0.25, pos=min_ylim)
+        # axis(side=1,at=pos_txt_gen, labels=F, tick=T, lwd.ticks=0.7,   tcl= -0.5, pos=min_ylim)
+        # mtext("Number of generation", side=1, line=1, adj=0.5, cex=general_cex*1.65)
+        # mtext(paste("G.",pos_txt_gen,sep=""),side=1,line=-0.35,at=pos_txt_gen, cex=general_cex*1.5)
+        
+        # # Axis Y
+        # as<-axis(side=2, at=round(seq(from=min_ylim,to=max_ylim,length.out=steps),3), labels=F, tick=T, 
+        #         lwd.ticks=0.7, tcl= -0.20, xpd=TRUE, pos=1, bty="n", cex=general_cex*2)
+        # mtext("Cost", side=2, line=-2.0, adj=0.5,cex=general_cex*1.65)  
+        # mtext(round(as,3), side=2, line=pos_cost_num, at=as, cex=general_cex*1.5)
+
+        # # legend(x=pos_legend,max_ylim,c(paste0("Validation cost for best individual ('white' box plot of elitists)"),
+        # #                            paste0("Testing cost of best individual ('gray' box plot of elitists)"),
+        # #                            paste0("Number of features of best individual")),
+        # #        lty=c("solid","dotdash","dashed"), cex=general_cex*1.4,lwd=c(1.4,1.7,1.2),
+        # #        bty="n")
+        # mtext(paste0("Results for the best individual:  val.cost (white)=",round(mat_val[1,max_iter],digits_plot),
+        #             ", tst.cost (gray)=",round(mat_tst[1,max_iter],digits_plot),
+        #             ", complexity=",round(mat_complex[1,max_iter],digits_plot),side=3,line=0,cex=general_cex*1.2))
+
+        # return(list(mat_val=mat_val, mat_tst=mat_tst,  mat_complex=mat_complex))
+    # }
 
 
