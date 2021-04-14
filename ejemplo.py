@@ -88,4 +88,8 @@ GAparsimony_model = GAparsimony(fitness=fitness_SVM,
 
 GAparsimony_model.fit()
 
-print_summary(GAparsimony_model)
+GAparsimony_model.summary()
+
+aux = GAparsimony_model.summary()
+
+print(aux)

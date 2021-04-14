@@ -7,6 +7,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import time
+import inspect, opcode
 
 from src.ordenacion import order
 
@@ -169,8 +170,8 @@ class GAparsimony(object):
         # ----------------
         np.random.seed(self.seed_ini) if self.seed_ini else np.random.seed(1234)
 
-        self.summary = np.empty((self.maxiter,6*3,))
-        self.summary[:] = np.nan
+        self._summary = np.empty((self.maxiter,6*3,))
+        self._summary[:] = np.nan
         self.bestSolList = list()
         self.fitnessval = np.empty(self.popSize)
         self.fitnessval[:] = np.nan
@@ -276,7 +277,7 @@ class GAparsimony(object):
 
             # Keep results
             # ---------------
-            self.summary[iter, :] = parsimony_summary(self) # CAMBIAR AL CAMBIAR FUNCION PARSIMONY_SUMARY
+            self._summary[iter, :] = parsimony_summary(self) # CAMBIAR AL CAMBIAR FUNCION PARSIMONY_SUMARY
             
 
             # Keep Best Solution
@@ -318,7 +319,7 @@ class GAparsimony(object):
             
             # Exit?
             # -----
-            best_val_cost = self.summary[:,1][~np.isnan(self.summary[:,1])]
+            best_val_cost = self._summary[:,1][~np.isnan(self._summary[:,1])]
             if self.bestfitnessVal >= self.maxFitness:
                 break
             if self.iter == self.maxiter:
@@ -386,8 +387,170 @@ class GAparsimony(object):
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
                     # input("Press [enter] to continue")
     
+    def __str__(self):
+        print("An object of class \"ga_parsimony\"")
+        print(f"Call: {self.call}")
+        print("Available slots:")
+        print(f"bestfitnessVal: {self.bestfitnessVal}")
+        print(f"bestfitnessTst: {self.bestfitnessTst}")
+        print(f"bestcomplexity: {self.bestcomplexity}")
+        print(f"bestsolution: {self.bestsolution}")
+        print(f"min_param: {self.min_param}")
+        print(f"max_param: {self.max_param}")
+        print(f"nParams: {self.nParams}")
+        print(f"feat_thres: {self.feat_thres}")
+        print(f"feat_mut_thres: {self.feat_mut_thres}")
+        print(f"not_muted: {self.not_muted}")
+        print(f"rerank_error: {self.rerank_error}")
+        print(f"iter_start_rerank: {self.iter_start_rerank}")
+        print(f"nFeatures: {self.nFeatures}")
+        print(f"names_param: {self.names_param}")
+        print(f"names_features: {self.names_features}")
+        print(f"popSize: {self.popSize}")
+        print(f"iter: {self.iter}") 
+        print(f"early_stop: {self.early_stop}")
+        print(f"maxiter: {self.maxiter}")
+        print(f"minutes_gen: {self.minutes_gen}")
+        print(f"minutes_total: {self.minutes_total}")
+        print(f"suggestions: {self.suggestions}")
+        print(f"population: {self.population}")
+        print(f"elitism: {self.elitism}")
+        print(f"pcrossover: {self.pcrossover}")
+        print(f"pmutation: {self.pmutation}")
+        print(f"best_score: {self.best_score}")
+        print(f"solution_best_score: {self.solution_best_score}")
+        print(f"fitnessval: {self.fitnessval}")
+        print(f"fitnesstst: {self.fitnesstst}")
+        print(f"complexity: {self.complexity}")
+        print(f"summary: {self._summary}")
+        print(f"bestSolList: {self.bestSolList}")
+
+        print(f"history: ")
+        for h in self.history:
+            print(h)
+
+    def __repr__(self):
+        print("An object of class \"ga_parsimony\"")
+        print(f"Call: {self.call}")
+        print("Available slots:")
+        print(f"bestfitnessVal: {self.bestfitnessVal}")
+        print(f"bestfitnessTst: {self.bestfitnessTst}")
+        print(f"bestcomplexity: {self.bestcomplexity}")
+        print(f"bestsolution: {self.bestsolution}")
+        print(f"min_param: {self.min_param}")
+        print(f"max_param: {self.max_param}")
+        print(f"nParams: {self.nParams}")
+        print(f"feat_thres: {self.feat_thres}")
+        print(f"feat_mut_thres: {self.feat_mut_thres}")
+        print(f"not_muted: {self.not_muted}")
+        print(f"rerank_error: {self.rerank_error}")
+        print(f"iter_start_rerank: {self.iter_start_rerank}")
+        print(f"nFeatures: {self.nFeatures}")
+        print(f"names_param: {self.names_param}")
+        print(f"names_features: {self.names_features}")
+        print(f"popSize: {self.popSize}")
+        print(f"iter: {self.iter}") 
+        print(f"early_stop: {self.early_stop}")
+        print(f"maxiter: {self.maxiter}")
+        print(f"minutes_gen: {self.minutes_gen}")
+        print(f"minutes_total: {self.minutes_total}")
+        print(f"suggestions: {self.suggestions}")
+        print(f"population: {self.population}")
+        print(f"elitism: {self.elitism}")
+        print(f"pcrossover: {self.pcrossover}")
+        print(f"pmutation: {self.pmutation}")
+        print(f"best_score: {self.best_score}")
+        print(f"solution_best_score: {self.solution_best_score}")
+        print(f"fitnessval: {self.fitnessval}")
+        print(f"fitnesstst: {self.fitnesstst}")
+        print(f"complexity: {self.complexity}")
+        print(f"summary: {self._summary}")
+        print(f"bestSolList: {self.bestSolList}")
+
+        print(f"history: ")
+        for h in self.history:
+            print(h)
 
 
+
+    def summary(self, **kwargs):
+
+        x = {"popSize" : self.popSize,
+                "maxiter" : self.maxiter,
+                "early_stop" : self.early_stop,
+                "rerank_error" : self.rerank_error,
+                "elitism" : self.elitism,
+                "nParams" : self.nParams,
+                "nFeatures" : self.nFeatures,
+                "pcrossover" : self.pcrossover,
+                "pmutation" : self.pmutation,
+                "feat_thres" : self.feat_thres,
+                "feat_mut_thres" : self.feat_mut_thres,
+                "not_muted" : self.not_muted,
+                "domain" : np.stack([self.min_param, self.max_param], axis=0),
+                "suggestions" : self.suggestions,
+                "iter" : self.iter,
+                "best_score" : self.best_score,
+                "bestfitnessVal" : self.bestfitnessVal,
+                "bestfitnessTst" : self.bestfitnessTst,
+                "bestcomplexity" : self.bestcomplexity,
+                "minutes_total" : self.minutes_total,
+                "bestsolution" : self.bestsolution,
+                "solution_best_score":self.solution_best_score}
+
+        # Para contolar si lo está asignando
+        try:
+            frame = inspect.currentframe().f_back
+            next_opcode = opcode.opname[frame.f_code.co_code[frame.f_lasti+2]]
+            if next_opcode != "POP_TOP": # Si no lo asigna
+                return x 
+        finally:
+            del frame 
+    
+        head = kwargs["head"] if "head" in kwargs.keys() else 10
+        tail = kwargs["tail"] if "tail" in kwargs.keys() else 1
+        chead = kwargs["chead"] if "chead" in kwargs.keys() else 20
+        ctail = kwargs["ctail"] if "ctail" in kwargs.keys() else 1
+
+
+        print("+------------------------------------+")
+        print("|             GA-PARSIMONY           |")
+        print("+------------------------------------+\n")
+        print("GA-PARSIMONY settings:")
+        print(f" Number of Parameters      = {x['nParams']}")
+        print(f" Number of Features        = {x['nFeatures']}")
+        print(f" Population size           = {x['popSize']}")
+        print(f" Maximum of generations    = {x['maxiter']}")
+        print(f" Number of early-stop gen. = {x['early_stop']}")
+        print(f" Elitism                   = {x['elitism']}")
+        print(f" Crossover probability     = {x['pcrossover']}")
+        print(f" Mutation probability      = {x['pmutation']}")
+        print(f" Max diff(error) to ReRank = {x['rerank_error']}")
+        print(f" Perc. of 1s in first popu.= {x['feat_thres']}")
+        print(f" Prob. to be 1 in mutation = {x['feat_mut_thres']}")
+        
+        print("\n Search domain = ")
+        print(x["domain"])
+
+        if x["suggestions"] is not None and x["suggestions"].shape[0]>0:
+            print("Suggestions =")
+            for m in x["suggestions"]:
+                printShortMatrix(m, head, tail, chead, ctail)
+
+
+        print("\n\nGA-PARSIMONY results:")
+        print(f" Iterations                = {x['iter']+1}")
+        print(f" Best validation score = {x['best_score']}")
+        print(f"\n\nSolution with the best validation score in the whole GA process = \n")
+        print(x["solution_best_score"])
+        
+        print(f"\n\nResults of the best individual at the last generation = \n")
+        print(f" Best indiv's validat.cost = {x['bestfitnessVal']}")
+        print(f" Best indiv's testing cost = {x['bestfitnessTst']}")
+        print(f" Best indiv's complexity   = {x['bestcomplexity']}")
+        print(f" Elapsed time in minutes   = {x['minutes_total']}")
+        print(f"\n\nBEST SOLUTION = \n")
+        print(x["bestsolution"])
     
 
 
