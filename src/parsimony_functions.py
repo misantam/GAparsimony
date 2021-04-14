@@ -135,15 +135,15 @@ def parsimony_population(model, type_ini_pop="randomLHS", *args):
   
   nvars = model.nParams+model.nFeatures
   if type_ini_pop=="randomLHS":
-    population = randomLHS.randomLHS(model.popSize,nvars)
+    population = randomLHS(model.popSize,nvars)
   elif type_ini_pop=="geneticLHS":
-    population = geneticLHS.geneticLHS(model.popSize,nvars)
+    population = geneticLHS(model.popSize,nvars)
   elif type_ini_pop=="improvedLHS":
-    population = improvedLHS.improvedLHS(model.popSize,nvars) # BUSCAR LIBRERÍA
+    population = improvedLHS(model.popSize,nvars) # BUSCAR LIBRERÍA
   elif type_ini_pop=="maximinLHS":
-    population = maximinLHS.maximinLHS(model.popSize,nvars)
+    population = maximinLHS(model.popSize,nvars)
   elif type_ini_pop=="optimumLHS":
-    population = optimumLHS.optimumLHS(model.popSize,nvars)
+    population = optimumLHS(model.popSize,nvars)
   elif type_ini_pop=="random":
     population = (np.random.rand(model.popSize*nvars) * (nvars - model.popSize) + model.popSize).reshape(model.popSize*nvars, 1)
   

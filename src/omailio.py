@@ -1,11 +1,11 @@
 from .parsimony_monitor import parsimony_monitor, parsimony_summary
 from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation, parsimony_rerank
-from .ga_parsimony import GaParsimony
 from .parsimony_miscfun import printShortMatrix
 
 import sys
 import warnings
 import numpy as np
+import pandas as pd
 import time
 
 from src.ordenacion import order
@@ -45,7 +45,7 @@ class GAparsimony(object):
                 suggestions = None, 
                 parallel = False,
                 seed_ini = None, 
-                verbose=False,
+                verbose=MONITOR,
                 logger = None):
 
         
@@ -91,7 +91,7 @@ class GAparsimony(object):
         self.min_param = min_param
         self.max_param = max_param
         self.nFeatures=nFeatures
-        self.names_param = None if names_param else names_param
+        self.names_param = None if not names_param else names_param
         self.names_features = names_features
         self.popSize = popSize
         self.pcrossover = pcrossover
@@ -123,6 +123,10 @@ class GAparsimony(object):
         self.best_score = np.NINF
         self.history = list()
 
+        if type(self.names_param) is not list:
+            self.names_param = list(self.names_param)
+        if type(self.names_features) is not list:
+            self.names_features = list(self.names_features)
         
         
         if not type(self.min_param) is np.array:
@@ -176,7 +180,6 @@ class GAparsimony(object):
         self.complexity[:] = np.nan
 
 
-        
         if len(self.history) > 0:
             if self.verbose == GAparsimony.DEBUG:
                 print("There is a GAparsimony 'object'!!!")
@@ -186,7 +189,7 @@ class GAparsimony(object):
             if iter_ini < 0:
                 iter_ini = 0
 
-            self.history = self.history[iter_ini][0]
+            self.history = self.history[iter_ini].values[0]
             if self.verbose == GAparsimony.DEBUG:
                 print(f"Starting GA optimization with a provided GAparsimony 'object'. Using object's GA settings and its population from iter={iter_ini}.")
         
@@ -195,9 +198,9 @@ class GAparsimony(object):
             print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
             # input("Press [enter] to continue")
 
+
         # Main Loop
-        # ---------
-        # lO QUE SERÍA EL PREDICT   
+        # --------- 
         for iter in range(self.maxiter):
             tic = time.time()
             
@@ -230,20 +233,18 @@ class GAparsimony(object):
                 self.complexity = Results_parallel[:, 2]
                 
             
-            np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
+            # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
+            np.random.seed(self.seed_ini) if not self.seed_ini else np.random.seed(1234)
             
+
             # Sort by the Fitness Value
             # ----------------------------
             ord = order(self.fitnessval, kind='heapsort', decreasing = True, na_last = True)
-            PopSorted = self.population[ord, :]
-            FitnessValSorted = self.fitnessval[ord]
-            FitnessTstSorted = self.fitnesstst[ord]
-            ComplexitySorted = self.complexity[ord]
+            self.population = self.population[ord]
+            self.fitnessval = self.fitnessval[ord]
+            self.fitnesstst = self.fitnesstst[ord]
+            self.complexity = self.complexity[ord]
             
-            self.population = PopSorted
-            self.fitnessval = FitnessValSorted
-            self.fitnesstst = FitnessTstSorted
-            self.complexity = ComplexitySorted
             if np.max(self.fitnessval)>self.best_score:
                 self.best_score = np.nanmax(self.fitnessval)
                 self.solution_best_score = (self.best_score, 
@@ -258,20 +259,14 @@ class GAparsimony(object):
                 # input("Press [enter] to continue")
 
             
-            
             # Reorder models with ReRank function
             # -----------------------------------
             if self.rerank_error != 0.0 and self.iter >= self.iter_start_rerank:
                 ord_rerank = parsimony_rerank(self, verbose= self.verbose)
-                PopSorted = self.population[ord_rerank]
-                FitnessValSorted = self.fitnessval[ord_rerank]
-                FitnessTstSorted = self.fitnesstst[ord_rerank]
-                ComplexitySorted = self.complexity[ord_rerank]
-                
-                self.population = PopSorted
-                self.fitnessval = FitnessValSorted
-                self.fitnesstst = FitnessTstSorted
-                self.complexity = ComplexitySorted
+                self.population = self.population[ord_rerank]
+                self.fitnessval = self.fitnessval[ord_rerank]
+                self.fitnesstst = self.fitnesstst[ord_rerank]
+                self.complexity = self.complexity[ord_rerank]
                 
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 2. Fitness reranked")
@@ -283,6 +278,7 @@ class GAparsimony(object):
             # ---------------
             self.summary[iter, :] = parsimony_summary(self) # CAMBIAR AL CAMBIAR FUNCION PARSIMONY_SUMARY
             
+
             # Keep Best Solution
             # ------------------
             self.bestfitnessVal = self.fitnessval[1]
@@ -291,17 +287,24 @@ class GAparsimony(object):
             self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population[0]])
             self.bestSolList.append(self.bestsolution)
             
+
             # Keep elapsed time in minutes
             # ----------------------------
             tac = time.time()
             self.minutes_gen = (tac - tic) / 60.0
             self.minutes_total = self.minutes_total+self.minutes_gen
             
+
             # Keep this generation into the History list
             # ------------------------------------------
             if self.keep_history:
-                self.history.append([self.population, self.fitnessval, self.fitnesstst, self.complexity]) # Crear data frame
+                if not self.names_param:
+                    self.names_param = [f"param_{i}" for i in range(self.nParams)]
+                if not self.names_features:
+                    self.names_features = [f"col_{i}" for i in range(self.nFeatures)]
+                self.history.append(pd.DataFrame(np.c_[self.population, self.fitnessval, self.fitnesstst, self.complexity], columns=self.names_param+self.names_features+["fitnessval", "fitnesstst", "complexity"]))
             
+
             # Call to 'monitor' function
             # --------------------------
             if self.verbose > 0:
@@ -339,15 +342,12 @@ class GAparsimony(object):
                 self.fitnesstst = self.fitnesstst[sel]
                 self.complexity = self.complexity[sel]
 
-            
-            
             if self.verbose == GAparsimony.DEBUG:
                 print("\nStep 4. Selection")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
                 # input("Press [enter] to continue")
 
-            
-            
+
             # CrossOver Function
             # ------------------
             if callable(self.crossover) and self.pcrossover > 0:
@@ -355,36 +355,27 @@ class GAparsimony(object):
                 mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
                 for i in range(nmating):
                     if self.pcrossover > np.random.uniform(low=0, high=1):
-                        parents = mating[i, ]
+                        parents = mating[i]
                         Crossover = self.crossover(self, parents)
                         self.population[parents] = Crossover["children"]
                         self.fitnessval[parents] = Crossover["fitnessval"]
                         self.fitnesstst[parents] = Crossover["fitnesstst"]
                         self.complexity[parents] = Crossover["complexity"]
                         
-                
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 5. CrossOver")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
                     # input("Press [enter] to continue")
 
-            
+
             # New generation with elitists
             # ----------------------------
-            if (self.elitism > 0):
-                self.population[:self.elitism] = PopSorted[:self.elitism]
-                self.fitnessval[:self.elitism] = FitnessValSorted[:self.elitism]
-                self.fitnesstst[:self.elitism] = FitnessTstSorted[:self.elitism]
-                self.complexity[:self.elitism] = ComplexitySorted[:self.elitism]
+            if (self.elitism > 0) and (self.verbose == GAparsimony.DEBUG):
+                print("\nStep 6. With Elitists")
+                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                # input("Press [enter] to continue")
+            
 
-
-                if self.verbose == GAparsimony.DEBUG:
-                    print("\nStep 6. With Elitists")
-                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
-                    # input("Press [enter] to continue")
-            
-            
-            
             # Mutation function
             # -----------------
             if callable(self.mutation) and self.pmutation > 0:

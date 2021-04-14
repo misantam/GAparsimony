@@ -1,6 +1,5 @@
 from .parsimony_monitor import parsimony_monitor, parsimony_summary
 from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation, parsimony_rerank
-from .ga_parsimony import GaParsimony
 from .parsimony_miscfun import printShortMatrix
 
 
