@@ -14,7 +14,7 @@ def parsimony_monitor(object, digits = 7, *args):
   # sumryStat = round(sumryStat, digits)
   
   print(f"GA-PARSIMONY | iter ={object.iter}")
-  print(f"MeanVal ={round(sumryStat[0], digits)}| ValBest ={object.bestfitnessVal}| TstBest ={object.bestfitnessTst}| ComplexBest ={object.bestcomplexity}| Time(min)={object.minutes_gen}\n")
+  print(f"MeanVal = {round(sumryStat[0], digits)}| ValBest = {object.bestfitnessVal}| TstBest = {object.bestfitnessTst}| ComplexBest = {object.bestcomplexity}| Time(min)= {object.minutes_gen}\n")
   # clearConsoleLine()
 
 
