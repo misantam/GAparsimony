@@ -506,7 +506,7 @@ class GAparsimony(object):
         try:
             frame = inspect.currentframe().f_back
             next_opcode = opcode.opname[frame.f_code.co_code[frame.f_lasti+2]]
-            if next_opcode != "POP_TOP": # Si no lo asigna
+            if next_opcode not in ["POP_TOP", "PRINT_EXPR"]: # Si no lo asigna
                 return x 
         finally:
             del frame 
@@ -559,10 +559,9 @@ class GAparsimony(object):
 
     # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
     # ------------------------------------------------------------------------------
-    def plot(self, general_cex = 0.7, min_ylim=None, max_ylim=None, 
-                                min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
-                                iter_auto_ylim=3, steps=5, pos_cost_num=-3.1,  pos_feat_num=-1.7,
-                                digits_plot=4, width_plot=12, height_plot=6, window=True, *args):
+    def plot(self, min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
+                                steps=5, pos_cost_num=-3.1,  pos_feat_num=-1.7,
+                                size_plot=(12,6), *args):
 
         if (len(self.history[0])<1):
             print("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
@@ -570,6 +569,7 @@ class GAparsimony(object):
             min_iter = 0
         if not max_iter:
             max_iter = self.iter + 1
+        
         
         nelitistm = self.elitism
         mat_val = None
@@ -584,10 +584,9 @@ class GAparsimony(object):
 
         x = list(range(min_iter, max_iter))
 
-        fig, ax = plt.subplots(figsize=(15,5))
+        fig, ax = plt.subplots(figsize=size_plot)
 
-        plt.title(main_label, y=1.11)
-        ax.set_xlabel("Number of Generation")        
+        plt.title(main_label, y=1.11)        
 
         # Eje de la derecha
         ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="green", style=True, dashes=[(10, 2)])
@@ -623,6 +622,9 @@ class GAparsimony(object):
                             bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
                             ncol=2, mode="expand", borderaxespad=0.)
         
+        plt.xticks(np.arange(0,max_iter, steps))
+        ax.set_xlabel("Number of Generation")
+
         plt.show()        
 
 
