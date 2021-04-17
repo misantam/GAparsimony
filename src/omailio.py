@@ -592,11 +592,13 @@ class GAparsimony(object):
 
         ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color="b", style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
+        
+
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_val.T.flatten())), color="pink", width=0.4)
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_tst.T.flatten())), color="purple", width=0.4)
+        
         ax.set_ylabel("Metric")
-
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_val.T.flatten())), color="pink")
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_tst.T.flatten())), color="purple")
-
+        
         # Eje de la izquierda
         ax2 = plt.twinx()
         ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="salmon", style=True, dashes=[(10, 2)])
@@ -605,10 +607,12 @@ class GAparsimony(object):
         ax2 = plt.fill_between(x = x,
                  y1 = np.min(mat_complex.T, axis=1),
                  y2 = np.max(mat_complex.T, axis=1),
-                 alpha = 0.3,
+                 alpha = 0.1,
                  facecolor = 'green')
 
         plt.ylabel("Number of Features of Best Indiv.")
+
+        ax.legend(handles=["--", ".-.", "no se"], labels=["A","B","C"])
         
         plt.show()        
 

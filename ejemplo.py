@@ -77,7 +77,7 @@ GAparsimony_model = GAparsimony(fitness=fitness_SVM,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 3, early_stop=10,
+                                  maxiter = 20, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234,
