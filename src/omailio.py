@@ -8,6 +8,8 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import matplotlib.lines as mlines
+import matplotlib.patches as mpatches
 import time
 import inspect, opcode
 
@@ -584,11 +586,12 @@ class GAparsimony(object):
 
         fig, ax = plt.subplots(figsize=(15,5))
 
-        plt.title(main_label)
+        plt.title(main_label, y=1.11)
         ax.set_xlabel("Number of Generation")        
 
         # Eje de la derecha
-        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="green")
+        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="green", style=True, dashes=[(10, 2)])
+        ax.legend([],[], frameon=False)
 
         ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color="b", style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
@@ -601,18 +604,24 @@ class GAparsimony(object):
         
         # Eje de la izquierda
         ax2 = plt.twinx()
-        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="salmon", style=True, dashes=[(10, 2)])
-        ax2.legend([],[], frameon=False)
+        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="salmon")
+        
 
         ax2 = plt.fill_between(x = x,
                  y1 = np.min(mat_complex.T, axis=1),
                  y2 = np.max(mat_complex.T, axis=1),
                  alpha = 0.1,
-                 facecolor = 'green')
+                 facecolor = 'salmon')
 
         plt.ylabel("Number of Features of Best Indiv.")
 
-        ax.legend(handles=["--", ".-.", "no se"], labels=["A","B","C"])
+        ax.legend(handles=[mlines.Line2D([], [], linestyle="-", color='green', label='Validation METRIC of best individual'),
+                            mlines.Line2D([], [], linestyle="-.", color='b', label='Testing METRIC of best individual'),
+                            mlines.Line2D([], [], linestyle="--", color='salmon', label='Number of features of best individual'),
+                            mpatches.Patch(color='pink', label='Validation error'),
+                            mpatches.Patch(color='purple', label='Testing error')],
+                            bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
+                            ncol=2, mode="expand", borderaxespad=0.)
         
         plt.show()        
 
