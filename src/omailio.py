@@ -214,7 +214,7 @@ class GAparsimony(object):
 
                 for t in range(self.popSize):
                     if not self.fitnessval[t] and np.sum(self.population[t,range(1+self.nParams, self.nvars)])>0:
-                        fit = self.fitness(self.population[t, ])
+                        fit = self.fitness(self.population[t])
                         self.fitnessval[t] = fit[1]
                         self.fitnesstst[t] = fit[2]
                         self.complexity[t] = fit[3]
@@ -253,10 +253,10 @@ class GAparsimony(object):
             
             if np.max(self.fitnessval)>self.best_score:
                 self.best_score = np.nanmax(self.fitnessval)
-                self.solution_best_score = (self.best_score, 
+                self.solution_best_score = np.r_[self.best_score, 
                                                 self.fitnesstst[np.argmax(self.fitnessval)], 
                                                 self.complexity[np.argmax(self.fitnessval)], 
-                                                self.population[np.argmax(self.fitnessval)])
+                                                self.population[np.argmax(self.fitnessval)]]
 
 
             if self.verbose == GAparsimony.DEBUG:
@@ -329,7 +329,7 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (len(best_val_cost)-np.argmax(best_val_cost)) >= self.early_stop:
+            if (len(best_val_cost)-(np.argmax(best_val_cost)+1)) >= self.early_stop:
                 break
             
             
@@ -535,7 +535,7 @@ class GAparsimony(object):
         print(f" Prob. to be 1 in mutation = {x['feat_mut_thres']}")
         
         print("\n Search domain = ")
-        print(x["domain"])
+        print(pd.DataFrame(data=x["domain"], columns=self.names_param+self.names_features, index=["Min_param", "Max_param"]))
 
         if x["suggestions"] is not None and x["suggestions"].shape[0]>0:
             print("Suggestions =")
@@ -547,7 +547,7 @@ class GAparsimony(object):
         print(f" Iterations                = {x['iter']+1}")
         print(f" Best validation score = {x['best_score']}")
         print(f"\n\nSolution with the best validation score in the whole GA process = \n")
-        print(x["solution_best_score"])
+        print(pd.DataFrame(data=x["solution_best_score"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.names_param+self.names_features))
         
         print(f"\n\nResults of the best individual at the last generation = \n")
         print(f" Best indiv's validat.cost = {x['bestfitnessVal']}")
@@ -555,7 +555,7 @@ class GAparsimony(object):
         print(f" Best indiv's complexity   = {x['bestcomplexity']}")
         print(f" Elapsed time in minutes   = {x['minutes_total']}")
         print(f"\n\nBEST SOLUTION = \n")
-        print(x["bestsolution"])
+        print(pd.DataFrame(data=x["bestsolution"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.names_param+self.names_features))
     
 
     # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
@@ -588,8 +588,11 @@ class GAparsimony(object):
         # ======================
         fig, ax = plt.subplots() if not size_plot else plt.subplots(figsize=size_plot)
 
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_val.T.flatten())), color=(0.275191, 0.194905, 0.496005), width=0.4)
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
+
         plt.suptitle(main_label, fontsize=16)
-        plt.title(f"Results for the last best individual: Val={round(np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten()[-1], 4)}, Test={round(np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten()[-1], 4)}, Num.Features={int(np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten()[-1])}")
+        plt.title(f"Results for the last best individual: Val={round(self.bestfitnessVal, 5)}, Test={round(self.bestfitnessTst, 5)}, Num.Features={int(np.take_along_axis(mat_complex, np.expand_dims(np.argmax(mat_val, axis=0), axis=0), axis=0).flatten()[-1])}")
 
         # Eje de la derecha
         ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
@@ -598,15 +601,12 @@ class GAparsimony(object):
         ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
         
-
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_val.T.flatten())), color=(0.275191, 0.194905, 0.496005), width=0.4)
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
         
         ax.set_ylabel("Metric")
         
         # Eje de la izquierda
         ax2 = plt.twinx()
-        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.212395, 0.359683, 0.55171))
+        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmax(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.212395, 0.359683, 0.55171))
         
 
         ax2 = plt.fill_between(x = x,
@@ -617,11 +617,11 @@ class GAparsimony(object):
 
         plt.ylabel("Number of Features of Best Indiv.")
 
-        ax.legend(handles=[mlines.Line2D([], [], linestyle="-", color=(0.153364, 0.497, 0.557724), label='Validation METRIC of best individual'),
+        ax.legend(handles=[mlines.Line2D([], [], linestyle="--", color=(0.153364, 0.497, 0.557724), label='Validation METRIC of best individual'),
                             mlines.Line2D([], [], linestyle="-.", color=(0.122312, 0.633153, 0.530398), label='Testing METRIC of best individual'),
-                            mlines.Line2D([], [], linestyle="--", color=(0.212395, 0.359683, 0.55171), label='Number of features of best individual'),
-                            mpatches.Patch(color=(0.275191, 0.194905, 0.496005), label='Validation error'),
-                            mpatches.Patch(color=(0.626579, 0.854645, 0.223353), label='Testing error')],
+                            mlines.Line2D([], [], linestyle="-", color=(0.212395, 0.359683, 0.55171), label='Number of features of best individual'),
+                            mpatches.Patch(color=(0.275191, 0.194905, 0.496005), label='Validation metric'),
+                            mpatches.Patch(color=(0.626579, 0.854645, 0.223353), label='Testing metric')],
                             loc=3, # 3 o 1
                             ncol=2, borderaxespad=0.)
         

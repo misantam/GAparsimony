@@ -282,11 +282,11 @@ def parsimony_mutation(model):
   
   for _ in range(nparam_to_mute):
   
-    i = np.random.randint((1+model.not_muted), model.popSize, size=1)
-    j = np.random.randint(1, (model.nParams+model.nFeatures), size=1)
+    i = np.random.randint((model.not_muted), model.popSize, size=1)[0]
+    j = np.random.randint(0, (model.nParams+model.nFeatures), size=1)[0]
     model.population[i,j] = np.random.uniform(low=model.min_param[j], high=model.max_param[j])
     # If is a binary feature selection convert to binary
-    if j>=(1+model.nParams):
+    if j>=(model.nParams):
       model.population[i,j] = model.population[i,j] <= model.feat_mut_thres
     
     model.fitnessval[i] = np.nan
