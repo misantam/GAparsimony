@@ -5,7 +5,11 @@ from lhs.util.bclib import findorder
 from lhs.util.utilityLHS import sumInvDistance, convertIntegerToNumericLhs
 
 
-def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1):
+def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
+
+    if seed:
+        np.random.seed(seed)
+
     nOptimalityRecordLength = optimalityRecordLength
     nsamples = n
     nparameters = k
@@ -116,7 +120,9 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1):
 
 
 
-def optimumLHS(n, k, maxsweeps=2, eps=0.1):
+def optimumLHS(n, k, maxsweeps=2, eps=0.1, seed=None):
+    if seed:
+        np.random.seed(seed)
     jLen = int(np.math.factorial(n)/(np.math.factorial(2.0)*np.math.factorial(n-2.0)) + 1.0)
-    return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_optimumLHS(n, k, jLen, maxsweeps, eps))
+    return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_optimumLHS(n, k, jLen, maxsweeps, eps, seed))
 

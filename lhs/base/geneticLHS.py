@@ -5,7 +5,7 @@ from lhs.base.randomLHS import randomLHS_int
 from lhs.util.utilityLHS import calculateSOptimal, calculateDistance, runifint, runif_std
 from lhs.util.bclib import findorder_zero
 
-def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S"):
+def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S", seed=None):
 
     if n < 1 or k < 1:
         raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k)")
@@ -24,6 +24,9 @@ def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S"):
         raise Exception("pMut should be between 0 and 1")
     if m_pop % 2 != 0:
         raise Exception("pop should be an even number")
+
+    if seed:
+        np.random.seed(seed)
 
     A = np.empty(m_pop).astype(np.object_)
     

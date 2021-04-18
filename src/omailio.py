@@ -239,7 +239,8 @@ class GAparsimony(object):
                 
             
             # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
-            np.random.seed(self.seed_ini) if not self.seed_ini else np.random.seed(1234)
+            if self.seed_ini:
+                np.random.seed(self.seed_ini) 
             
 
             # Sort by the Fitness Value
@@ -560,8 +561,7 @@ class GAparsimony(object):
     # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
     # ------------------------------------------------------------------------------
     def plot(self, min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
-                                steps=5, pos_cost_num=-3.1,  pos_feat_num=-1.7,
-                                size_plot=(12,6), *args):
+                                steps=5, size_plot=None, *args):
 
         if (len(self.history[0])<1):
             print("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
@@ -570,57 +570,60 @@ class GAparsimony(object):
         if not max_iter:
             max_iter = self.iter + 1
         
-        
-        nelitistm = self.elitism
+        # Preparacipon de los datos
+        # ==========================
         mat_val = None
         mat_tst = None
         mat_complex = None
         for iter in range(min_iter, max_iter):
-            mat_val = np.c_[mat_val, self.history[iter].fitnessval[:nelitistm]] if mat_val is not None else self.history[iter].fitnessval[:nelitistm]
-            mat_tst = np.c_[mat_tst, self.history[iter].fitnesstst[:nelitistm]] if mat_tst is not None else self.history[iter].fitnesstst[:nelitistm]
+            mat_val = np.c_[mat_val, self.history[iter].fitnessval[:self.elitism]] if mat_val is not None else self.history[iter].fitnessval[:self.elitism]
+            mat_tst = np.c_[mat_tst, self.history[iter].fitnesstst[:self.elitism]] if mat_tst is not None else self.history[iter].fitnesstst[:self.elitism]
 
-            aux = np.sum(self.history[iter].values[:nelitistm,(self.nParams):(self.nParams+self.nFeatures)], axis=1)
+            aux = np.sum(self.history[iter].values[:self.elitism,(self.nParams):(self.nParams+self.nFeatures)], axis=1)
             mat_complex = np.c_[mat_complex, aux] if mat_complex is not None else aux
 
         x = list(range(min_iter, max_iter))
 
-        fig, ax = plt.subplots(figsize=size_plot)
+        # Grafica
+        # ======================
+        fig, ax = plt.subplots() if not size_plot else plt.subplots(figsize=size_plot)
 
-        plt.title(main_label, y=1.11)        
+        plt.suptitle(main_label, fontsize=16)
+        plt.title(f"Results for the last best individual: Val={round(np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten()[-1], 4)}, Test={round(np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten()[-1], 4)}, Num.Features={int(np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten()[-1])}")
 
         # Eje de la derecha
-        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="green", style=True, dashes=[(10, 2)])
+        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
         ax.legend([],[], frameon=False)
 
-        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color="b", style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
+        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
         
 
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_val.T.flatten())), color="pink", width=0.4)
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), nelitistm), y=mat_tst.T.flatten())), color="purple", width=0.4)
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_val.T.flatten())), color=(0.275191, 0.194905, 0.496005), width=0.4)
+        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
         
         ax.set_ylabel("Metric")
         
         # Eje de la izquierda
         ax2 = plt.twinx()
-        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color="salmon")
+        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.212395, 0.359683, 0.55171))
         
 
         ax2 = plt.fill_between(x = x,
                  y1 = np.min(mat_complex.T, axis=1),
                  y2 = np.max(mat_complex.T, axis=1),
                  alpha = 0.1,
-                 facecolor = 'salmon')
+                 facecolor = (0.212395, 0.359683, 0.55171))
 
         plt.ylabel("Number of Features of Best Indiv.")
 
-        ax.legend(handles=[mlines.Line2D([], [], linestyle="-", color='green', label='Validation METRIC of best individual'),
-                            mlines.Line2D([], [], linestyle="-.", color='b', label='Testing METRIC of best individual'),
-                            mlines.Line2D([], [], linestyle="--", color='salmon', label='Number of features of best individual'),
-                            mpatches.Patch(color='pink', label='Validation error'),
-                            mpatches.Patch(color='purple', label='Testing error')],
-                            bbox_to_anchor=(0., 1.02, 1., .102), loc=3,
-                            ncol=2, mode="expand", borderaxespad=0.)
+        ax.legend(handles=[mlines.Line2D([], [], linestyle="-", color=(0.153364, 0.497, 0.557724), label='Validation METRIC of best individual'),
+                            mlines.Line2D([], [], linestyle="-.", color=(0.122312, 0.633153, 0.530398), label='Testing METRIC of best individual'),
+                            mlines.Line2D([], [], linestyle="--", color=(0.212395, 0.359683, 0.55171), label='Number of features of best individual'),
+                            mpatches.Patch(color=(0.275191, 0.194905, 0.496005), label='Validation error'),
+                            mpatches.Patch(color=(0.626579, 0.854645, 0.223353), label='Testing error')],
+                            loc=3, # 3 o 1
+                            ncol=2, borderaxespad=0.)
         
         plt.xticks(np.arange(0,max_iter, steps))
         ax.set_xlabel("Number of Generation")

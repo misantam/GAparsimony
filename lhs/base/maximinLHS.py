@@ -6,11 +6,13 @@ from src.ordenacion import order
 
 # result es lo que devolvemos
 
-def _maximinLHS(n, k, dup=1):
+def _maximinLHS(n, k, dup=1, seed=None):
     
     if n < 1 or k < 1 or dup < 1:
         raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k) or duplication is less than 1")
 
+    if seed:
+        np.random.seed(seed)
 
     nsamples = n
     nparameters = k
@@ -102,5 +104,5 @@ def _maximinLHS(n, k, dup=1):
 #   return np.random.rand(k)[np.newaxis, :]
 
 
-def maximinLHS(n, k, dup=1):
-  return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_maximinLHS(n, k, dup))
+def maximinLHS(n, k, dup=1, seed=None):
+  return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_maximinLHS(n, k, dup, seed))

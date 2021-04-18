@@ -7,10 +7,13 @@ from lhs.util.bclib import findorder
 import numpy as np
 
    
-def randomLHS(n, k, bPreserveDraw=False):
+def randomLHS(n, k, bPreserveDraw=False, seed=None):
     
     if n < 1 or k < 1:
         raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k)")
+
+    if seed:
+        np.random.seed(seed)
 
     result = np.zeros(n*k).reshape((n, k))
         
@@ -54,7 +57,10 @@ def randomLHS(n, k, bPreserveDraw=False):
 
     return result
 
-def randomLHS_int(n, k):
+def randomLHS_int(n, k, seed=None):
+
+    if seed:
+        np.random.seed(seed)
 
     result = np.empty((n, k)).astype(np.int32)
     randomunif1 = np.empty(n).astype(np.double)

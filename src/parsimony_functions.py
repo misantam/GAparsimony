@@ -17,7 +17,7 @@ from lhs.base import *
 #########################################################
 # parsimonyReRank: Function for reranking by complexity #
 #########################################################
-def parsimony_rerank(model, verbose=False, *aux):
+def parsimony_rerank(model, verbose=False):
 
   cost1 = model.fitnessval
   cost1 = cost1.astype(float)
@@ -99,7 +99,7 @@ def parsimony_rerank(model, verbose=False, *aux):
 ##########################################################################
 # parsimony_importance: Feature Importance of elitists in the GA process #
 ##########################################################################
-def parsimony_importance(model, verbose=False, *args):
+def parsimony_importance(model, verbose=False):
   
   if len(model.history[0]) < 1:
     print("'object.history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
@@ -131,20 +131,22 @@ def parsimony_importance(model, verbose=False, *args):
 ################################################################
 # parsimony_population: Function for creating first generation #
 ################################################################
-def parsimony_population(model, type_ini_pop="randomLHS", *args):
+def parsimony_population(model, type_ini_pop="randomLHS"):
   
   nvars = model.nParams+model.nFeatures
   if type_ini_pop=="randomLHS":
-    population = randomLHS(model.popSize,nvars)
+    population = randomLHS(model.popSize,nvars, seed=model.seed_ini)
   elif type_ini_pop=="geneticLHS":
-    population = geneticLHS(model.popSize,nvars)
+    population = geneticLHS(model.popSize,nvars, seed=model.seed_ini)
   elif type_ini_pop=="improvedLHS":
-    population = improvedLHS(model.popSize,nvars) # BUSCAR LIBRERÍA
+    population = improvedLHS(model.popSize,nvars, seed=model.seed_ini) # BUSCAR LIBRERÍA
   elif type_ini_pop=="maximinLHS":
-    population = maximinLHS(model.popSize,nvars)
+    population = maximinLHS(model.popSize,nvars, seed=model.seed_ini)
   elif type_ini_pop=="optimumLHS":
-    population = optimumLHS(model.popSize,nvars)
+    population = optimumLHS(model.popSize,nvars, seed=model.seed_ini)
   elif type_ini_pop=="random":
+    if model.seed_ini:
+        np.random.seed(model.seed_ini)
     population = (np.random.rand(model.popSize*nvars) * (nvars - model.popSize) + model.popSize).reshape(model.popSize*nvars, 1)
   
   # Scale matrix with the parameters range
@@ -167,8 +169,11 @@ def parsimony_population(model, type_ini_pop="randomLHS", *args):
 #       with ReRank algorithm           #
 #########################################
 
-def parsimony_lrSelection(model, *args, r = None, q = None):
+def parsimony_lrSelection(model, r = None, q = None):
   
+  if model.seed_ini:
+    np.random.seed(model.seed_ini)
+
   if not r:
     r = 2/(model.popSize*(model.popSize-1))
   if not q:
@@ -186,7 +191,7 @@ def parsimony_lrSelection(model, *args, r = None, q = None):
   return out
 
 
-def parsimony_nlrSelection(model, q = 0.25, *args):
+def parsimony_nlrSelection(model, q = 0.25):
 # Nonlinear-rank selection
 # Michalewicz (1996) Genetic Algorithms + Data Structures = Evolution Programs. p. 60
   rank = list(range(model.popSize)) # population are sorted
@@ -213,7 +218,7 @@ def parsimony_nlrSelection(model, q = 0.25, *args):
 ###########################
 
 #En esta tengo dudas de si lo hace bien
-def parsimony_crossover(model, parents, alpha=0.1, perc_to_swap=0.5, *args):
+def parsimony_crossover(model, parents, alpha=0.1, perc_to_swap=0.5):
 
   parents = model.population[parents]
   children = parents # Vector
@@ -265,7 +270,10 @@ def parsimony_crossover(model, parents, alpha=0.1, perc_to_swap=0.5, *args):
 ##########################
 # Functions for mutation #
 ##########################
-def parsimony_mutation(model, *args):
+def parsimony_mutation(model):
+
+  if model.seed_ini:
+    np.random.seed(model.seed_ini)
 
   # Uniform random mutation (except first individual)
   nparam_to_mute = round(model.pmutation*(model.nParams+model.nFeatures)*model.popSize)

@@ -4,8 +4,10 @@ import numpy as np
 from lhs.util.utilityLHS import initializeAvailableMatrix, convertIntegerToNumericLhs
 
 
-def _improvedLHS( n,  k, dup=1):
+def _improvedLHS( n,  k, dup=1, seed=None):
 
+    if seed:
+        np.random.seed(seed)
     nsamples = n
     nparameters = k
     duplication = dup
@@ -99,5 +101,5 @@ def _improvedLHS( n,  k, dup=1):
 
 
 
-def improvedLHS(n, k, dup=1):
-    return np.random.rand(k)[np.newaxis, :] if n == 1 else convertIntegerToNumericLhs(_improvedLHS(n, k, dup))
+def improvedLHS(n, k, dup=1, seed=None):
+    return np.random.rand(k)[np.newaxis, :] if n == 1 else convertIntegerToNumericLhs(_improvedLHS(n, k, dup, seed))
