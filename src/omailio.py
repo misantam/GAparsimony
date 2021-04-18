@@ -6,6 +6,7 @@ import sys
 import warnings
 import numpy as np
 import pandas as pd
+pd.set_option('display.max_columns', None)
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
