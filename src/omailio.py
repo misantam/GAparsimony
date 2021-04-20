@@ -288,9 +288,9 @@ class GAparsimony(object):
 
             # Keep Best Solution
             # ------------------
-            self.bestfitnessVal = self.fitnessval[1]
-            self.bestfitnessTst = self.fitnesstst[1]
-            self.bestcomplexity = self.complexity[1]
+            self.bestfitnessVal = self.fitnessval[0]
+            self.bestfitnessTst = self.fitnesstst[0]
+            self.bestcomplexity = self.complexity[0]
             self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population[0]])
             self.bestSolList.append(self.bestsolution)
             
@@ -325,7 +325,7 @@ class GAparsimony(object):
             
             # Exit?
             # -----
-            best_val_cost = self._summary[:,1][~np.isnan(self._summary[:,1])]
+            best_val_cost = self._summary[:,0][~np.isnan(self._summary[:,0])]
             if self.bestfitnessVal >= self.maxFitness:
                 break
             if self.iter == self.maxiter:

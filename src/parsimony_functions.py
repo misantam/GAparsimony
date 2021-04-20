@@ -72,9 +72,9 @@ def parsimony_rerank(model, verbose=False):
 
         position[pos1], position[pos2] = position[pos2], position[pos1]
         
-        # if verbose:
-        #   print(f"SWAP!!: pos1={pos1}({size_indiv1}), pos2={pos2}({size_indiv2}), error_dif={error_dif}")
-        #   print("-----------------------------------------------------")
+        if verbose==2:
+          print(f"SWAP!!: pos1={pos1}({size_indiv1}), pos2={pos2}({size_indiv2}), error_dif={error_dif}")
+          print("-----------------------------------------------------")
       pos2 = pos2+1
 
     elif cambio:
