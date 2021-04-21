@@ -6,8 +6,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score, make_scorer
 
-from src.principal import print_summary
-from src.omailio import GAparsimony
+from src.gaparsimony import GAparsimony
 
 df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
 

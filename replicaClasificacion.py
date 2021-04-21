@@ -6,7 +6,7 @@ from sklearn.model_selection import cross_val_score
 from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score, make_scorer
 
-from src.principal import GAparsimony, print_summary
+from src.gaparsimony import GAparsimony
 
 df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
 
@@ -76,12 +76,18 @@ GAparsimony_model = GAparsimony(fitness=fitness_SVM,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 100, early_stop=10,
+                                  maxiter = 5, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234)
 
 
-# print(GAparsimony_model)
+GAparsimony_model.fit()
 
-print_summary(GAparsimony_model)
+GAparsimony_model.summary()
+
+aux = GAparsimony_model.summary()
+
+# print(aux)
+
+GAparsimony_model.plot()

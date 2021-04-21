@@ -3,14 +3,14 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
-from sklearn.neural_network import MLPRegressor
+from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_squared_error, make_scorer
 from sklearn.preprocessing import StandardScaler
 from functools import reduce
 
 from sklearn.datasets import load_boston
 
-from src.principal import GAparsimony, print_summary
+from src.gaparsimony import GAparsimony
 
 
 
@@ -28,7 +28,7 @@ data_test = pd.DataFrame(X_test, columns=boston.feature_names)
 
 def fitness_NNET(chromosome):
     # First two values in chromosome are 'C' & 'sigma' of 'svmRadial' method
-    tuneGrid = {"hidden_layer_sizes": int(chromosome[0]),"beta_1": chromosome[1]}
+    tuneGrid = {"alpha": chromosome[0],"tol": chromosome[1]}
     
     # Next values of chromosome are the selected features (TRUE if > 0.50)
     selec_feat = chromosome[2:]>0.50
@@ -49,7 +49,7 @@ def fitness_NNET(chromosome):
     # train the model
     np.random.seed(1234)
 
-    aux = MLPRegressor(**tuneGrid)
+    aux = Lasso(**tuneGrid)
 
     model = cross_val_score(aux, data_train_model, y_train, scoring="neg_mean_squared_error", cv=train_control, n_jobs=-1)
 
@@ -58,12 +58,12 @@ def fitness_NNET(chromosome):
     # Extract kappa statistics (the repeated k-fold CV and the kappa with the test DB)
     rmse_val = model.mean()
 
-    model = MLPRegressor(**tuneGrid).fit(data_train_model, y_train)
+    model = Lasso(**tuneGrid).fit(data_train_model, y_train)
 
     rmse_test = mean_squared_error(model.predict(data_test_model), y_test)
     # Obtain Complexity = Num_Features*1E6+Number of support vectors
     coef = 0
-    for c in model.coefs_:
+    for c in model.coef_:
         coef += np.sum(np.power(c, 2))
     complexity = np.sum(selec_feat)*1E6 + coef
     
@@ -74,7 +74,7 @@ def fitness_NNET(chromosome):
 # Ranges of size and decay
 min_param = np.array([1., 0.0001])
 max_param = np.array([25, 0.9999])
-names_param = ["hidden_layer_sizes","beta_1"]
+names_param = ["alpha","tol"]
 
 # ga_parsimony can be executed with a different set of 'rerank_error' values
 rerank_error = 0.01
@@ -89,12 +89,19 @@ GAparsimony_model = GAparsimony(fitness=fitness_NNET,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 2, early_stop=10,
+                                  maxiter = 5, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                  parallel = True, seed_ini = 1234)
+                                  parallel = True, seed_ini = 1234,
+                                  verbose=GAparsimony.MONITOR)
 
 
-# print(GAparsimony_model)
+GAparsimony_model.fit()
 
-print_summary(GAparsimony_model)
+GAparsimony_model.summary()
+
+aux = GAparsimony_model.summary()
+
+# print(aux)
+
+GAparsimony_model.plot()
