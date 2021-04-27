@@ -593,13 +593,13 @@ class GAparsimony(object):
         ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
 
         plt.suptitle(main_label, fontsize=16)
-        plt.title(f"Results for the last best individual: Val={round(self.bestfitnessVal, 5)}, Test={round(self.bestfitnessTst, 5)}, Num.Features={int(np.take_along_axis(mat_complex, np.expand_dims(np.argmax(mat_val, axis=0), axis=0), axis=0).flatten()[-1])}")
+        plt.title(f"Results for the last best individual: Val={round(self.bestfitnessVal, 5)}, Test={round(self.bestfitnessTst, 5)}, Num.Features={int(mat_complex[0, -1])}")
 
         # Eje de la derecha
-        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_val, np.expand_dims(np.argmin(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
+        ax = sns.lineplot(x=x, y=mat_val[0], color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
         ax.legend([],[], frameon=False)
 
-        ax = sns.lineplot(x=x, y=np.take_along_axis(mat_tst, np.expand_dims(np.argmin(mat_tst, axis=0), axis=0), axis=0).flatten(), color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
+        ax = sns.lineplot(x=x, y=mat_tst[0], color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
         
         
@@ -607,7 +607,7 @@ class GAparsimony(object):
         
         # Eje de la izquierda
         ax2 = plt.twinx()
-        ax2 = sns.lineplot(x=x, y=np.take_along_axis(mat_complex, np.expand_dims(np.argmax(mat_val, axis=0), axis=0), axis=0).flatten(), color=(0.212395, 0.359683, 0.55171))
+        ax2 = sns.lineplot(x=x, y=mat_complex[0], color=(0.212395, 0.359683, 0.55171))
         
 
         ax2 = plt.fill_between(x = x,
