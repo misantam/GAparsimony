@@ -330,7 +330,7 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (len(best_val_cost)-(np.argmax(best_val_cost)+1)) >= self.early_stop:
+            if (len(best_val_cost)-(np.argmax(best_val_cost))) >= self.early_stop:
                 break
             
             

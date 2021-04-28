@@ -21,12 +21,12 @@ def parsimony_rerank(model, verbose=False):
 
   cost1 = model.fitnessval
   cost1 = cost1.astype(float)
-  cost1[np.isnan(cost1)]= - np.float32("inf")
+  cost1[np.isnan(cost1)]= np.NINF
 
   ord = order(cost1, decreasing = True)
   cost1 = cost1[ord]
   complexity = model.complexity
-  complexity[np.isnan(cost1)] = np.float32("inf")
+  complexity[np.isnan(cost1)] = np.Inf
   complexity = complexity[ord]
   position = range(len(cost1))
   # position = position[ord]
@@ -54,7 +54,7 @@ def parsimony_rerank(model, verbose=False):
     
     error_dif = abs(error_indiv2-error_posic)
     if not np.isfinite(error_dif):
-      error_dif = np.float32("inf")
+      error_dif = np.Inf
     if error_dif < model.rerank_error:
       
       # If there is not difference between errors swap if Size2nd < SizeFirst
