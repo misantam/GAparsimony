@@ -330,7 +330,7 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (len(best_val_cost)-(np.argmax(best_val_cost))) >= self.early_stop:
+            if (len(best_val_cost)-(np.argmax(best_val_cost)+1)) >= self.early_stop:
                 break
             
             
@@ -628,6 +628,9 @@ class GAparsimony(object):
         
         plt.xticks(np.arange(0,max_iter, steps))
         ax.set_xlabel("Number of Generation")
+
+        ax.set_zorder(ax2.get_zorder()+1) 
+        ax.patch.set_visible(False)
 
         plt.show()        
 
