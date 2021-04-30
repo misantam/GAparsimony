@@ -374,7 +374,7 @@ class GAparsimony(object):
             # Mutation function
             # -----------------
             if self.pmutation > 0:
-                self._mutation()
+                self._mutation() # Da problemas, es por la semilla aleatoria
                 if self.verbose == GAparsimony.DEBUG:
 
                     print("\nStep 7. Mutation")
