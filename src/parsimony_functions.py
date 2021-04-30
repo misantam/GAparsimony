@@ -7,11 +7,6 @@
 import numpy as np
 from src.ordenacion import order
 from lhs.base import *
-# from lhs.base.randomLHS import randomLHS
-# from lhs.base.maximinLHS import maximinLHS
-# from lhs.base.improvedLHS import improvedLHS
-# from lhs.base.optimumLHS import optimumLHS
-# from lhs.base.geneticLHS import geneticLHS
 
 
 #########################################################
@@ -29,7 +24,6 @@ def parsimony_rerank(model, verbose=False):
   complexity[np.isnan(cost1)] = np.Inf
   complexity = complexity[ord]
   position = range(len(cost1))
-  # position = position[ord]
   position = ord
   
   # start
@@ -112,11 +106,8 @@ def parsimony_importance(model, verbose=False):
     features_hist = np.c_[features_hist, model.history[iter][0][:nelitistm, model.nParams:]] ## ANALIZAR CON CUIDADO
 
   importance = np.mean(features_hist, axis=0)
-  # names(importance) <- model@names_features
   imp_features = 100*importance[order(importance,decreasing = True)]
   if verbose:
-    
-    # names(importance) <- model@names_features
     print("+--------------------------------------------+")
     print("|                  GA-PARSIMONY              |")
     print("+--------------------------------------------+\n")
@@ -184,11 +175,13 @@ def parsimony_lrSelection(model, r = None, q = None):
 
   sel = np.random.choice(list(rank), size=model.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
   
-  out = {"population" : model.population[sel],
-          "fitnessval" : model.fitnessval[sel],
-          "fitnesstst" : model.fitnesstst[sel],
-          "complexity" : model.complexity[sel]}
-  return out
+  # out = {"population" : model.population[sel],
+  #         "fitnessval" : model.fitnessval[sel],
+  #         "fitnesstst" : model.fitnesstst[sel],
+  #         "complexity" : model.complexity[sel]}
+  # return out
+
+  return model.population[sel], model.fitnessval[sel], model.fitnesstst[sel], model.complexity[sel]
 
 
 def parsimony_nlrSelection(model, q = 0.25):
@@ -200,11 +193,13 @@ def parsimony_nlrSelection(model, q = 0.25):
   
   sel = np.random.choice(list(rank), size=model.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
 
-  out = {"population" : model.population[sel],
-              "fitnessval" : model.fitnessval[sel],
-              "fitnesstst" : model.fitnesstst[sel],
-              "complexity" : model.complexity[sel]}
-  return out
+  # out = {"population" : model.population[sel],
+  #             "fitnessval" : model.fitnessval[sel],
+  #             "fitnesstst" : model.fitnesstst[sel],
+  #             "complexity" : model.complexity[sel]}
+  # return out
+
+  return model.population[sel], model.fitnessval[sel], model.fitnesstst[sel], model.complexity[sel]
 
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------
@@ -256,9 +251,11 @@ def parsimony_crossover(model, parents, alpha=0.1, perc_to_swap=0.5):
 
   aux = np.empty(2)
   aux[:] = np.nan
-  out = {"children" : children, "fitnessval" : aux.copy(), 
-              "fitnesstst" : aux.copy(), "complexity" : aux.copy()}
-  return out
+  # out = {"children" : children, "fitnessval" : aux.copy(), 
+  #             "fitnesstst" : aux.copy(), "complexity" : aux.copy()}
+  # return out
+
+  return children, aux.copy(),  aux.copy(), aux.copy()
 
 # ---------------------------------------------------------------------------------------------------
 # ---------------------------------------------------------------------------------------------------

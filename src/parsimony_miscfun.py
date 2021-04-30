@@ -1,20 +1,10 @@
 import os
 import numpy as np
 
-def clearConsoleLine():
-  ""*(os.get_terminal_size().columns-1)
-  os.system("cls" if os.name=="nt" else "clear")
 
-#############################################################################
-
-#----------------------------------------------------------------------------#
-
-def is_RStudio():
-  return not os.getenv("RSTUDIO")==None
-
-#----------------------------------------------------------------------------#
-# print a short version of a matrix by allowing to select the number of 
-# head/tail rows and columns to display
+# #----------------------------------------------------------------------------#
+# # print a short version of a matrix by allowing to select the number of 
+# # head/tail rows and columns to display
 
 def printShortMatrix(x, head=2, tail = 1, chead = 5, ctail = 1, **kwargs):
   # x es una matriz

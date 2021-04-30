@@ -337,11 +337,7 @@ class GAparsimony(object):
             # Selection Function
             # ------------------
             if (callable(self.selection)):
-                sel = self.selection(self)
-                self.population = sel["population"]
-                self.fitnessval = sel["fitnessval"]
-                self.fitnesstst = sel["fitnesstst"]
-                self.complexity = sel["complexity"]
+                self.population, self.fitnessval, self.fitnesstst, self.complexity = self.selection(self)
             else:
                 sel = np.random.choice(list(range(self.popSize)), size=self.popSize, replace=True)
                 self.population = self.population[sel]
@@ -363,12 +359,7 @@ class GAparsimony(object):
                 for i in range(nmating):
                     if self.pcrossover > np.random.uniform(low=0, high=1):
                         parents = mating[i]
-                        Crossover = self.crossover(self, parents)
-                        self.population[parents] = Crossover["children"]
-                        self.fitnessval[parents] = Crossover["fitnessval"]
-                        self.fitnesstst[parents] = Crossover["fitnesstst"]
-                        self.complexity[parents] = Crossover["complexity"]
-                        
+                        self.population[parents], self.fitnessval[parents], self.fitnesstst[parents], self.complexity[parents] = self.crossover(self, parents)
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 5. CrossOver")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
@@ -541,7 +532,7 @@ class GAparsimony(object):
         if x["suggestions"] is not None and x["suggestions"].shape[0]>0:
             print("Suggestions =")
             for m in x["suggestions"]:
-                printShortMatrix(m, head, tail, chead, ctail)
+                printShortMatrix(m, head, tail, chead, ctail) # Revisar
 
 
         print("\n\nGA-PARSIMONY results:")
