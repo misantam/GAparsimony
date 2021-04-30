@@ -1,5 +1,6 @@
 from .parsimony_monitor import parsimony_monitor, parsimony_summary
-from .parsimony_functions import parsimony_population, parsimony_nlrSelection, parsimony_crossover, parsimony_mutation, parsimony_rerank
+from .ordenacion import order
+from lhs.base import *
 from .parsimony_miscfun import printShortMatrix
 
 import sys
@@ -14,7 +15,6 @@ import matplotlib.patches as mpatches
 import time
 import inspect, opcode
 
-from src.ordenacion import order
 
 
 
@@ -41,10 +41,10 @@ class GAparsimony(object):
                 feat_mut_thres=0.10, 
                 not_muted=3,
                 elitism = None,
-                population = parsimony_population,
-                selection = parsimony_nlrSelection, 
-                crossover = parsimony_crossover, 
-                mutation = parsimony_mutation, 
+                # population = parsimony_population,
+                selection = "nlinear", 
+                # crossover = parsimony_crossover, 
+                # mutation = parsimony_mutation, 
                 keep_history = False,
                 early_stop = None, 
                 maxFitness = np.Inf, 
@@ -59,14 +59,16 @@ class GAparsimony(object):
 
         # Check parameters
         # ----------------
-        if not callable(population):
-            population = parsimony_population
-        if not callable(selection):
-            selection = parsimony_nlrSelection
-        if not callable(crossover):
-            crossover = parsimony_crossover
-        if not callable(mutation):
-            mutation = parsimony_mutation
+        # if not callable(population):
+        #     population = parsimony_population
+        # if not callable(selection):
+        #     selection = parsimony_nlrSelection
+        if selection is None or type(selection) is not str:
+            raise ValueError("A selection(sting) must be provided!!!")
+        # if not callable(crossover):
+        #     crossover = parsimony_crossover
+        # if not callable(mutation):
+        #     mutation = parsimony_mutation
         if not fitness:
             raise Exception("A fitness function must be provided!!!")
         if not callable(fitness):
@@ -110,8 +112,8 @@ class GAparsimony(object):
         self.not_muted=not_muted
         
         self.selection = selection
-        self.mutation = mutation
-        self.crossover = crossover
+        # self.mutation = mutation
+        # self.crossover = crossover
         self.keep_history = keep_history
         self.early_stop = maxiter if not early_stop else early_stop
         self.maxFitness = maxFitness
@@ -143,12 +145,14 @@ class GAparsimony(object):
         self.min_param = np.concatenate((self.min_param, np.zeros(self.nFeatures)), axis=0)
         self.max_param = np.concatenate((self.max_param, np.ones(self.nFeatures)), axis=0)
 
+        self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
+
         if self.suggestions:
             ng = min(self.suggestions.shape[0], popSize)
             if ng > 0:
                 self.population[:ng, :] = self.suggestions[:ng, :]
 
-        self.population = population(self, type_ini_pop=type_ini_pop)
+        
         
         
     def fit(self, iter_ini=0):
@@ -269,7 +273,7 @@ class GAparsimony(object):
             # Reorder models with ReRank function
             # -----------------------------------
             if self.rerank_error != 0.0 and self.iter >= self.iter_start_rerank:
-                ord_rerank = parsimony_rerank(self, verbose= self.verbose)
+                ord_rerank = self._rerank()
                 self.population = self.population[ord_rerank]
                 self.fitnessval = self.fitnessval[ord_rerank]
                 self.fitnesstst = self.fitnesstst[ord_rerank]
@@ -336,14 +340,7 @@ class GAparsimony(object):
             
             # Selection Function
             # ------------------
-            if (callable(self.selection)):
-                self.population, self.fitnessval, self.fitnesstst, self.complexity = self.selection(self)
-            else:
-                sel = np.random.choice(list(range(self.popSize)), size=self.popSize, replace=True)
-                self.population = self.population[sel]
-                self.fitnessval = self.fitnessval[sel]
-                self.fitnesstst = self.fitnesstst[sel]
-                self.complexity = self.complexity[sel]
+            self._selection()
 
             if self.verbose == GAparsimony.DEBUG:
                 print("\nStep 4. Selection")
@@ -353,13 +350,13 @@ class GAparsimony(object):
 
             # CrossOver Function
             # ------------------
-            if callable(self.crossover) and self.pcrossover > 0:
+            if self.pcrossover > 0:
                 nmating = int(np.floor(self.popSize/2))
                 mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
                 for i in range(nmating):
                     if self.pcrossover > np.random.uniform(low=0, high=1):
                         parents = mating[i]
-                        self.population[parents], self.fitnessval[parents], self.fitnesstst[parents], self.complexity[parents] = self.crossover(self, parents)
+                        self._crossover(parents=parents)
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 5. CrossOver")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
@@ -376,14 +373,206 @@ class GAparsimony(object):
 
             # Mutation function
             # -----------------
-            if callable(self.mutation) and self.pmutation > 0:
-                self = self.mutation(self)
+            if self.pmutation > 0:
+                self._mutation()
                 if self.verbose == GAparsimony.DEBUG:
 
                     print("\nStep 7. Mutation")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
                     # input("Press [enter] to continue")
     
+    def _rerank(self):
+
+        cost1 = self.fitnessval
+        cost1 = cost1.astype(float)
+        cost1[np.isnan(cost1)]= np.NINF
+
+        ord = order(cost1, decreasing = True)
+        cost1 = cost1[ord]
+        complexity = self.complexity
+        complexity[np.isnan(cost1)] = np.Inf
+        complexity = complexity[ord]
+        position = range(len(cost1))
+        position = ord
+  
+        # start
+        pos1 = 0
+        pos2 = 1
+        cambio = False
+        error_posic = self.best_score
+  
+        while not pos1 == self.popSize:
+            # Obtaining errors
+            if pos2 >= self.popSize:
+                if cambio:
+                    pos2 = pos1+1
+                    cambio = False
+                else:
+                    break
+            error_indiv2 = cost1[pos2]
+    
+            # Compare error of first individual with error_posic. Is greater than threshold go to next point
+            #      if ((Error.Indiv1-error_posic) > model@rerank_error) error_posic=Error.Indiv1
+        
+            error_dif = abs(error_indiv2-error_posic)
+            if not np.isfinite(error_dif):
+                error_dif = np.Inf
+            if error_dif < self.rerank_error:
+        
+                # If there is not difference between errors swap if Size2nd < SizeFirst
+                size_indiv1 = complexity[pos1]
+                size_indiv2 = complexity[pos2]
+                if size_indiv2<size_indiv1:
+            
+                    cambio = True
+                
+                    swap_indiv = cost1[pos1]
+                    cost1[pos1] = cost1[pos2]
+                    cost1[pos2] = swap_indiv
+                            
+                    complexity[pos1], complexity[pos2] = complexity[pos2], complexity[pos1]
+
+                    position[pos1], position[pos2] = position[pos2], position[pos1]
+                
+                    if self.verbose == GAparsimony.DEBUG:
+                        print(f"SWAP!!: pos1={pos1}({size_indiv1}), pos2={pos2}({size_indiv2}), error_dif={error_dif}")
+                        print("-----------------------------------------------------")
+                pos2 = pos2+1
+
+            elif cambio:
+                cambio = False
+                pos2 = pos1+1
+            else:
+                pos1 = pos1+1
+                pos2 = pos1+1
+                error_dif2 = abs(cost1[pos1]-error_posic)
+                if not np.isfinite(error_dif2):
+                    error_dif2 = np.float32("inf")
+                if error_dif2 >= self.rerank_error:
+                    error_posic = cost1[pos1]
+
+        return position
+    
+    def _selection(self, *args, **kwargs):
+        # Establezco esta cabecera para permitir una reimplementación si se desea
+
+        if self.selection == "linear":
+            r = 2/(self.popSize*(self.popSize-1)) if "r" not in kwargs else kwargs["r"]
+            q = 2/self.popSize if "q" not in kwargs else kwargs["q"]
+
+            rank = range(self.popSize)
+            prob = map(lambda x: q - (x)*r, rank)
+
+            sel = np.random.choice(list(rank), size=self.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
+        
+        elif self.selection == "nlinear":
+            # Nonlinear-rank selection
+            # Michalewicz (1996) Genetic Algorithms + Data Structures = Evolution Programs. p. 60
+            q = 0.25 if "q" not in kwargs else kwargs["q"]
+            rank = list(range(self.popSize)) # population are sorted
+            prob = np.array(list(map(lambda x: q*(1-q)**(x), rank)))
+            prob = prob / prob.sum()
+            
+            sel = np.random.choice(list(rank), size=self.popSize, replace=True, p=list(map(lambda x: np.min(np.ma.masked_array(np.array([max(0, x), 1]), np.isnan(np.array([max(0, x), 1])))), prob)))
+        
+        elif self.selection == "random":
+            sel = np.random.choice(list(range(self.popSize)), size=self.popSize, replace=True)
+        
+        else:
+            raise Exception("Not a valid selection mode provided!!!!!!")
+        
+        self.population = self.population[sel]
+        self.fitnessval = self.fitnessval[sel]
+        self.fitnesstst = self.fitnesstst[sel]
+        self.complexity = self.complexity[sel]
+                
+    def _crossover(self, parents, alpha=0.1, perc_to_swap=0.5):
+
+        p=parents.copy()
+
+        parents = self.population[parents]
+        children = parents # Vector
+        pos_param = list(range(self.nParams))
+        pos_features = np.array(list(range(self.nParams, self.nParams + self.nFeatures)))
+        
+        # Heuristic Blending for parameters
+        alpha = 0.1
+        Betas = np.random.uniform(size=self.nParams, low=0, high=1)*(2*alpha)-alpha  # 1+alpha*2??????
+        children[0,pos_param] = parents[0,pos_param]-Betas*parents[0,pos_param]+Betas*parents[1,pos_param]  ## MAP??
+        children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[0,pos_param]
+        
+        # Random swapping for features
+        swap_param = np.random.uniform(size=self.nFeatures, low=0, high=1)>=perc_to_swap
+        if np.sum(swap_param)>0:
+    
+            features_parent1 = parents[0,pos_features]
+            features_parent2 = parents[1,pos_features]
+            pos_features = pos_features[swap_param]
+            children[0,pos_features] = features_parent2[swap_param]
+            children[1,pos_features] = features_parent1[swap_param]
+  
+  
+        # correct params that are outside (min and max)
+        thereis_min = children[0] < self.min_param
+        children[0,thereis_min] = self.min_param[thereis_min]
+        thereis_min = children[1] < self.min_param
+        children[1,thereis_min] = self.min_param[thereis_min]
+        
+        thereis_max = children[0] > self.max_param
+        children[0,thereis_max] = self.max_param[thereis_max]
+        thereis_max = (children[1] > self.max_param)
+        children[1,thereis_max] = self.max_param[thereis_max]
+  
+        aux = np.empty(2)
+        aux[:] = np.nan
+
+        self.population[p] = children
+        self.fitnessval[p] = aux.copy()
+        self.fitnesstst[p] = aux.copy()
+        self.complexity[p] = aux.copy()
+
+    def _mutation(self):
+
+         # Uniform random mutation (except first individual)
+        nparam_to_mute = round(self.pmutation*(self.nParams+self.nFeatures)*self.popSize)
+        if nparam_to_mute<1:
+            nparam_to_mute = 1
+  
+        for _ in range(nparam_to_mute):
+  
+            i = np.random.randint((self.not_muted), self.popSize, size=1)[0]
+            j = np.random.randint(0, (self.nParams + self.nFeatures), size=1)[0]
+            self.population[i,j] = np.random.uniform(low=self.min_param[j], high=self.max_param[j])
+            # If is a binary feature selection convert to binary
+            if j>=(self.nParams):
+                self.population[i,j] = self.population[i,j] <= self.feat_mut_thres
+            
+            self.fitnessval[i] = np.nan
+            self.fitnesstst[i] = np.nan
+            self.complexity[i] = np.nan
+
+    def _population(self, type_ini_pop="randomLHS"):
+  
+        nvars = self.nParams+self.nFeatures
+        if type_ini_pop=="randomLHS":
+            self.population = randomLHS(self.popSize, nvars, seed=self.seed_ini)
+        elif type_ini_pop=="geneticLHS":
+            self.population = geneticLHS(self.popSize, nvars, seed=self.seed_ini)
+        elif type_ini_pop=="improvedLHS":
+            self.population = improvedLHS(self.popSize, nvars, seed=self.seed_ini)
+        elif type_ini_pop=="maximinLHS":
+            self.population = maximinLHS(self.popSize, nvars, seed=self.seed_ini)
+        elif type_ini_pop=="optimumLHS":
+            self.population = optimumLHS(self.popSize, nvars, seed=self.seed_ini)
+        elif type_ini_pop=="random":
+            self.population = (np.random.rand(self.popSize*nvars) * (nvars - self.popSize) + self.popSize).reshape(self.popSize*nvars, 1)
+  
+        # Scale matrix with the parameters range
+        self.population = self.population*(self.max_param-self.min_param)
+        self.population = self.population+self.min_param
+        # Convert features to binary 
+        self.population[:, self.nParams:nvars] = self.population[:, self.nParams:nvars]<=self.feat_thres
+
     def __str__(self):
         print("An object of class \"ga_parsimony\"")
         print(f"Call: {self.call}")
