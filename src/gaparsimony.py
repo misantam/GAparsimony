@@ -562,7 +562,7 @@ class GAparsimony(object):
             j = np.random.randint(0, (self.nParams + self.nFeatures), size=1)[0]
             self.population[i,j] = np.random.uniform(low=self.min_param[j], high=self.max_param[j])
             # If is a binary feature selection convert to binary
-            if j>=(1+self.nParams):
+            if j>=(self.nParams):
                 self.population[i,j] = self.population[i,j] <= self.feat_mut_thres
             
             self.fitnessval[i] = np.nan
