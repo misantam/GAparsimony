@@ -145,6 +145,9 @@ class GAparsimony(object):
         self.min_param = np.concatenate((self.min_param, np.zeros(self.nFeatures)), axis=0)
         self.max_param = np.concatenate((self.max_param, np.ones(self.nFeatures)), axis=0)
 
+        if self.seed_ini:
+            np.random.seed(self.seed_ini)
+
         self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
 
         if self.suggestions:
@@ -177,7 +180,8 @@ class GAparsimony(object):
 
         # Initial settings
         # ----------------
-        np.random.seed(self.seed_ini) if self.seed_ini else np.random.seed(1234)
+        if self.seed_ini:
+            np.random.seed(self.seed_ini)
 
         self._summary = np.empty((self.maxiter,6*3,))
         self._summary[:] = np.nan
@@ -218,11 +222,11 @@ class GAparsimony(object):
             if not self.parallel:
 
                 for t in range(self.popSize):
-                    if not self.fitnessval[t] and np.sum(self.population[t,range(1+self.nParams, self.nvars)])>0:
+                    if not self.fitnessval[t] and np.sum(self.population[t,range(self.nParams, self.nvars)])>0:
                         fit = self.fitness(self.population[t])
-                        self.fitnessval[t] = fit[1]
-                        self.fitnesstst[t] = fit[2]
-                        self.complexity[t] = fit[3]
+                        self.fitnessval[t] = fit[0]
+                        self.fitnesstst[t] = fit[1]
+                        self.complexity[t] = fit[2]
             else:
                 # %dopar% Nos dice que se hace en paralelo
                 # Results_parallel <- foreach(i = seq_len(popSize)) %dopar% 
@@ -245,16 +249,21 @@ class GAparsimony(object):
             
             # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
             if self.seed_ini:
-                np.random.seed(self.seed_ini) 
+                np.random.seed(self.seed_ini*iter) 
             
 
             # Sort by the Fitness Value
             # ----------------------------
             ord = order(self.fitnessval, kind='heapsort', decreasing = True, na_last = True)
-            self.population = self.population[ord]
+            self.population = self.population[ord, :]
             self.fitnessval = self.fitnessval[ord]
             self.fitnesstst = self.fitnesstst[ord]
             self.complexity = self.complexity[ord]
+
+            PopSorted = self.population.copy()
+            FitnessValSorted = self.fitnessval.copy()
+            FitnessTstSorted = self.fitnesstst.copy()
+            ComplexitySorted = self.complexity.copy()
             
             if np.max(self.fitnessval)>self.best_score:
                 self.best_score = np.nanmax(self.fitnessval)
@@ -278,6 +287,11 @@ class GAparsimony(object):
                 self.fitnessval = self.fitnessval[ord_rerank]
                 self.fitnesstst = self.fitnesstst[ord_rerank]
                 self.complexity = self.complexity[ord_rerank]
+
+                PopSorted = self.population.copy()
+                FitnessValSorted = self.fitnessval.copy()
+                FitnessTstSorted = self.fitnesstst.copy()
+                ComplexitySorted = self.complexity.copy()
                 
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 2. Fitness reranked")
@@ -355,7 +369,7 @@ class GAparsimony(object):
                 mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
                 for i in range(nmating):
                     if self.pcrossover > np.random.uniform(low=0, high=1):
-                        parents = mating[i]
+                        parents = mating[i, ]
                         self._crossover(parents=parents)
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 5. CrossOver")
@@ -365,7 +379,12 @@ class GAparsimony(object):
 
             # New generation with elitists
             # ----------------------------
-            if (self.elitism > 0) and (self.verbose == GAparsimony.DEBUG):
+            if (self.elitism > 0):
+                self.population[:self.elitism] = PopSorted[:self.elitism]
+                self.fitnessval[:self.elitism] = FitnessValSorted[:self.elitism]
+                self.fitnesstst[:self.elitism] = FitnessTstSorted[:self.elitism]
+                self.complexity[:self.elitism] = ComplexitySorted[:self.elitism]
+            if (self.verbose == GAparsimony.DEBUG):
                 print("\nStep 6. With Elitists")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
                 # input("Press [enter] to continue")
@@ -383,16 +402,15 @@ class GAparsimony(object):
     
     def _rerank(self):
 
-        cost1 = self.fitnessval
-        cost1 = cost1.astype(float)
+        cost1 = self.fitnessval.copy().astype(float)
         cost1[np.isnan(cost1)]= np.NINF
 
         ord = order(cost1, decreasing = True)
         cost1 = cost1[ord]
-        complexity = self.complexity
-        complexity[np.isnan(cost1)] = np.Inf
+        complexity = self.complexity.copy()
+        complexity[np.isnan(complexity)] = np.Inf
         complexity = complexity[ord]
-        position = range(len(cost1))
+        # position = range(len(cost1))
         position = ord
   
         # start
@@ -447,7 +465,7 @@ class GAparsimony(object):
                 pos2 = pos1+1
                 error_dif2 = abs(cost1[pos1]-error_posic)
                 if not np.isfinite(error_dif2):
-                    error_dif2 = np.float32("inf")
+                    error_dif2 = np.Inf
                 if error_dif2 >= self.rerank_error:
                     error_posic = cost1[pos1]
 
@@ -497,7 +515,7 @@ class GAparsimony(object):
         
         # Heuristic Blending for parameters
         alpha = 0.1
-        Betas = np.random.uniform(size=self.nParams, low=0, high=1)*(2*alpha)-alpha  # 1+alpha*2??????
+        Betas = np.random.uniform(size=self.nParams, low=0, high=1)*(1+2*alpha)-alpha  # 1+alpha*2??????
         children[0,pos_param] = parents[0,pos_param]-Betas*parents[0,pos_param]+Betas*parents[1,pos_param]  ## MAP??
         children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[0,pos_param]
         
@@ -544,7 +562,7 @@ class GAparsimony(object):
             j = np.random.randint(0, (self.nParams + self.nFeatures), size=1)[0]
             self.population[i,j] = np.random.uniform(low=self.min_param[j], high=self.max_param[j])
             # If is a binary feature selection convert to binary
-            if j>=(self.nParams):
+            if j>=(1+self.nParams):
                 self.population[i,j] = self.population[i,j] <= self.feat_mut_thres
             
             self.fitnessval[i] = np.nan
