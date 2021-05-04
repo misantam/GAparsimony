@@ -250,6 +250,7 @@ class GAparsimony(object):
             # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
             if self.seed_ini:
                 np.random.seed(self.seed_ini*iter) 
+                # np.random.seed(self.seed_ini) 
             
 
             # Sort by the Fitness Value
