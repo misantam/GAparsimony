@@ -65,7 +65,7 @@ def _improvedLHS( n,  k, dup=1, seed=None):
                 # * in the sample
                 for kindex in range(nparameters):
                     vec[kindex] = point1[kindex, jcol] - result[kindex, j]
-                    distSquared += (vec[kindex] + 10e-17)**2 # vec[kindex] * vec[kindex]   # Da un warning
+                    distSquared += (vec[kindex] + 10e-10)**2 # vec[kindex] * vec[kindex]   # Da un warning
                 
                 # * if the distSquard value is the smallest so far place it in
                 # * min candidate
