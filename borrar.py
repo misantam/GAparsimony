@@ -3,43 +3,57 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import RepeatedKFold
 from sklearn.model_selection import cross_val_score
-from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_squared_error, make_scorer
-from sklearn.preprocessing import StandardScaler
 from functools import reduce
 
+# https://xgboost.readthedocs.io/en/latest/python/python_api.html
+import xgboost as xgb
+
+# Cargar mi repo como paquete
 from sklearn.datasets import load_boston
+import sys
+from os.path import abspath
 
-from src.gaparsimony import GAparsimony
+try:
+    from src.gaparsimony import GAparsimony
+except:
+    sys.path.append(abspath("C:/Users/Millan/Desktop/GAparsimony"))
+    from src.gaparsimony import GAparsimony
 
 
+df = pd.read_csv("./data/ailerons_norm.csv")
 
-
-boston = load_boston()
-X, y = boston.data, boston.target 
-X = StandardScaler().fit_transform(X)
-
+X, y = df.iloc[:, :-1], df.iloc[:, -1]
 
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-data_train = pd.DataFrame(X_train, columns=boston.feature_names)
-data_test = pd.DataFrame(X_test, columns=boston.feature_names)
+data_train = pd.DataFrame(X_train, columns=df.columns[:-1]).reset_index(drop=True)
+data_test = pd.DataFrame(X_test, columns=df.columns[:-1]).reset_index(drop=True)
 
-
-def fitness_NNET(chromosome):
+def fitness_XGBoost(chromosome):
     # First two values in chromosome are 'C' & 'sigma' of 'svmRadial' method
-    tuneGrid = {"alpha": chromosome[0],"tol": chromosome[1]}
+    tuneGrid = {
+                "n_estimators ": int(chromosome[0]),
+                "max_depth": int(chromosome[1]),
+                "min_child_weight": int(chromosome[2]),
+                "reg_alpha": chromosome[3],
+                "reg_lambda": chromosome[4],
+                "subsample": chromosome[5],
+                "colsample_bytree": chromosome[6],
+                "learning_rate": 0.01,
+                "random_state": 1234,
+                "verbosity": 0}
     
     # Next values of chromosome are the selected features (TRUE if > 0.50)
-    selec_feat = chromosome[2:]>0.50
+    selec_feat = chromosome[7:]>0.50
     
     # Return -Inf if there is not selected features
     if np.sum(selec_feat)<1:
         return np.array([np.NINF, np.NINF, np.Inf])
     
     # Extract features from the original DB plus response (last column)
-    data_train_model = data_train.loc[: , boston.feature_names[selec_feat]] 
-    data_test_model = data_test.loc[: , boston.feature_names[selec_feat]] 
+    data_train_model = data_train.loc[: , data_train.columns[selec_feat]] 
+    data_test_model = data_test.loc[: , data_test.columns[selec_feat]] 
     
     # How to validate each individual
     # 'repeats' could be increased to obtain a more robust validation metric. Also,
@@ -47,9 +61,9 @@ def fitness_NNET(chromosome):
     train_control = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
 
     # train the model
-    np.random.seed(1234)
+#     np.random.seed(1234)
 
-    aux = Lasso(**tuneGrid)
+    aux = xgb.XGBRegressor(**tuneGrid)
 
     model = cross_val_score(aux, data_train_model, y_train, scoring="neg_mean_squared_error", cv=train_control, n_jobs=-1)
 
@@ -58,45 +72,44 @@ def fitness_NNET(chromosome):
     # Extract kappa statistics (the repeated k-fold CV and the kappa with the test DB)
     rmse_val = model.mean()
 
-    model = Lasso(**tuneGrid).fit(data_train_model, y_train)
+    model = xgb.XGBRegressor(**tuneGrid).fit(data_train_model, y_train)
 
     rmse_test = mean_squared_error(model.predict(data_test_model), y_test)
     # Obtain Complexity = Num_Features*1E6+Number of support vectors
-    coef = 0
-    for c in model.coef_:
-        coef += np.sum(np.power(c, 2))
-    complexity = np.sum(selec_feat)*1E6 + coef
+    complexity = np.sum(selec_feat)*1E6 + len(model.get_booster().get_dump())
     
     # Return(validation score, testing score, model_complexity)
     return np.array([rmse_val, -rmse_test, complexity])
 
 
 # Ranges of size and decay
-min_param = np.array([1., 0.0001])
-max_param = np.array([25, 0.9999])
-names_param = ["alpha","tol"]
+min_param = np.array([10, 2, 1, 0., 0., 0.6, 0.8])
+max_param = np.array([2000, 20, 20, 1., 1., 1., 1.])
+names_param = ["n_estimators(nrounds)","max_depth", "min_child_weight", 
+               "reg_alpha(lasso)", "reg_lambda(ridge)", "subsample",
+               "colsample_bytree"]
 
 # ga_parsimony can be executed with a different set of 'rerank_error' values
 rerank_error = 0.01
 
-
-GAparsimony_model = GAparsimony(fitness=fitness_NNET,
+GAparsimony_model = GAparsimony(fitness=fitness_XGBoost,
                                   min_param=min_param,
                                   max_param=max_param,
                                   names_param=names_param,
-                                  nFeatures=len(boston.feature_names),
-                                  names_features=boston.feature_names,
+                                  nFeatures=len(df.columns[:-1]),
+                                  names_features=df.columns[:-1],
                                   keep_history = True,
                                   rerank_error = rerank_error,
-                                  popSize = 40,
-                                  maxiter = 25, early_stop=10,
+                                  popSize = 64,
+                                  elitism = 16,
+                                  maxiter = 100, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234,
                                   verbose=GAparsimony.MONITOR)
 
-
 GAparsimony_model.fit()
+
 
 GAparsimony_model.summary()
 

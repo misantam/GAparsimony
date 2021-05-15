@@ -18,7 +18,7 @@ data_test = pd.DataFrame(X_test, columns=df.columns[:-1])
 
 def fitness_SVM(chromosome):
     # First two values in chromosome are 'C' & 'sigma' of 'svmRadial' method
-    tuneGrid = {"C": chromosome[0],"gamma": chromosome[1]}
+    tuneGrid = {"C": chromosome[0],"gamma": chromosome[1], "kernel": "poly"}
     
     # Next values of chromosome are the selected features (TRUE if > 0.50)
     selec_feat = chromosome[2:]>0.50
@@ -76,7 +76,7 @@ GAparsimony_model = GAparsimony(fitness=fitness_SVM,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 2, early_stop=10,
+                                  maxiter = 50, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   parallel = True, seed_ini = 1234)
