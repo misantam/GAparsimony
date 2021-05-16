@@ -6,7 +6,6 @@ from sklearn.model_selection import cross_val_score
 from sklearn.linear_model import Lasso
 from sklearn.metrics import mean_squared_error, make_scorer
 from sklearn.preprocessing import StandardScaler
-from functools import reduce
 
 from sklearn.datasets import load_boston
 
