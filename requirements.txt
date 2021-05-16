@@ -3,3 +3,5 @@ pandas
 pytest
 scikit-learn
 xgboost
+seaborn
+matplotlib
