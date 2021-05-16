@@ -62,7 +62,7 @@ def test_GAParsimony_regresion_boston(resultado):
     def fitness_XGBoost(chromosome):
         # First two values in chromosome are 'C' & 'sigma' of 'svmRadial' method
         tuneGrid = {
-                    "n_estimators ": int(chromosome[0]),
+                    "n_estimators": int(chromosome[0]),
                     "max_depth": int(chromosome[1]),
                     "min_child_weight": int(chromosome[2]),
                     "reg_alpha": chromosome[3],
