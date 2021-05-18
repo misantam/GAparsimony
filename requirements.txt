@@ -1,6 +1,5 @@
 numpy
 pandas
-pytest
 scikit-learn
 xgboost
 seaborn

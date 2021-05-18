@@ -2,7 +2,6 @@
 
 import numpy as np
 from lhs.util.utilityLHS import initializeAvailableMatrix, convertIntegerToNumericLhs
-from src.ordenacion import order
 
 # result es lo que devolvemos
 
