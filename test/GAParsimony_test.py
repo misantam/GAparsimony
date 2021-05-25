@@ -2,8 +2,10 @@ import numpy as np
 from src.gaparsimony import GAparsimony
 
 import pytest, json
-from .utilTest import autoargs
+from .utilTest import autoargs, readJSONFile
 
+
+# Clase generica, permite instanciarla con diferentes atributos.
 class GenericClass(object):
     @autoargs()
     def __init__(self,**kawargs):
@@ -35,10 +37,7 @@ def test_GAParsimony_regresion_boston_population(population):
 #*****************TEST RERANK*******************#
 #################################################
 
-with open('./test/outputs/rerank.json') as f:
-    rerank = json.load(f)
-
-@pytest.mark.parametrize("rerank", [rerank])
+@pytest.mark.parametrize("rerank", [readJSONFile('./test/outputs/rerank.json')])
 def test_GAParsimony_regresion_boston_rerank(rerank):
 
     
@@ -54,10 +53,7 @@ def test_GAParsimony_regresion_boston_rerank(rerank):
 #****************TEST SELECTION*****************#
 #################################################
 
-with open('./test/outputs/selection.json') as f:
-    selection = json.load(f)
-
-@pytest.mark.parametrize("selection", [selection])
+@pytest.mark.parametrize("selection", [readJSONFile('./test/outputs/selection.json')])
 def test_GAParsimony_regresion_boston_selection(selection):
     np.random.seed(selection["seed"])
     population=np.array(selection["population"])
@@ -75,11 +71,11 @@ def test_GAParsimony_regresion_boston_selection(selection):
     assert (model.population==population[selection["sel"]]).all() and (model.fitnessval==fitnessval[selection["sel"]]).all() and \
             (model.fitnesstst==fitnesstst[selection["sel"]]).all() and (model.complexity==complexity[selection["sel"]]).all()
 
+#################################################
+#****************TEST MUTATION*****************#
+#################################################
 
-with open('./test/outputs/mutation.json') as f:
-    mutation = json.load(f)
-
-@pytest.mark.parametrize("mutation", [mutation])
+@pytest.mark.parametrize("mutation", [readJSONFile('./test/outputs/mutation.json')])
 def test_GAParsimony_regresion_boston_mutation(mutation):
     np.random.seed(mutation["seed"])
     
@@ -93,13 +89,10 @@ def test_GAParsimony_regresion_boston_mutation(mutation):
     assert (model.population==np.array(mutation["resultado"])).all()
 
 #################################################
-#****************TEST SELECTION*****************#
+#****************TEST CROSSOVER*****************#
 #################################################
 
-with open('./test/outputs/crossover.json') as f:
-    crossover = json.load(f)
-
-@pytest.mark.parametrize("crossover", [crossover])
+@pytest.mark.parametrize("crossover", [readJSONFile('./test/outputs/crossover.json')])
 def test_GAParsimony_regresion_boston_crossover(crossover):
     np.random.seed(crossover["seed"])
     

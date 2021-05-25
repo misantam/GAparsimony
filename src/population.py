@@ -1,8 +1,4 @@
 import numpy as np
-import pandas as pd
-# # to_dict
-# # =========================
-# df.to_dict(orient='records')
 
 class Population:
 
@@ -19,158 +15,92 @@ class Population:
         if type(population) is not np.ndarray or len(population.shape) < 2:
             raise Exception("Popularion is not a numpy matrix")
 
-        self.params_dict = params
+        self._min = [(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT]
+        self._max = [(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT]
+
+        self._paramsnames = [x for x in params if params[x]["type"] is not Population.CONSTANT]
+        self._params = dict((x, params[x]) for x in params if params[x]["type"] is not Population.CONSTANT)
+        self._constnames = [x for x in params if params[x]["type"] is Population.CONSTANT]
+        self._const = [params[x]["value"] for x in params if params[x]["type"] is Population.CONSTANT]
+
+        if columns is None:
+            columns = [f"col_{i}" for i in range(population.shape[1] - len(self._paramsnames))]
+
+        self._colsnames = columns
+
         self.population = population
 
 
     @property
     def population(self):
-        return np.concatenate([self._params, self._cols]).T
+        return self._pop
 
     @population.setter
     def population(self, population):
-        self._min = [(0 if self.params_dict[x]["type"] is Population.STRING else self.params_dict[x]["range"][0]) for x in self.params_dict if self.params_dict[x]["type"] is not Population.CONSTANT]
-        self._max = [(len(self.params_dict[x]["range"]) if self.params_dict[x]["type"] is Population.STRING else self.params_dict[x]["range"][1]) for x in self.params_dict if self.params_dict[x]["type"] is not Population.CONSTANT]
 
-        population = population.T
+        self._pop = np.apply_along_axis(lambda x: x.astype(np.object), 1, population.astype(np.object))
         
-        self._paramsnames = [x for x in self.params_dict if self.params_dict[x]["type"] is not Population.CONSTANT]
-        self._params = list()
-        for x in self.params_dict:
-            if self.params_dict[x]["type"] is Population.INTEGER:
-                self._params.append(population[len(self._params)].astype(np.uint8))
-            elif self.params_dict[x]["type"] is Population.FLOAT:
-                self._params.append(population[len(self._params)].astype(np.float32))
-            elif self.params_dict[x]["type"] is Population.STRING:
-                self._params.append(np.array(list(map(lambda p: self.params_dict[x]["range"][int(np.trunc(p))], population[len(self._params)]))))
+        for i in range(self._pop.shape[1]):
+            param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
+            self._pop[:, i] = self._converValue(self._pop[:, i], param)
 
-        self._params = np.array(self._params, dtype=np.object)
 
-        self._constnames = [x for x in self.params_dict if self.params_dict[x]["type"] is Population.CONSTANT]
-        self._const = [self.params_dict[x]["value"] for x in self.params_dict if self.params_dict[x]["type"] is Population.CONSTANT]
+    def _converValue(self, value, param, axis=0):
+        if "array" in type(value).__name__:
+            if param is None or param["type"] is Population.INTEGER:
+                return np.vectorize(lambda x: int(x), otypes=[np.uint8])(value)
+            elif param["type"] is Population.FLOAT:
+                return np.vectorize(lambda x: float(x), otypes=[np.float32])(value)
+            elif param["type"] is Population.STRING:
+                return np.vectorize(lambda x: param["range"][int(np.trunc(x))], otypes=[np.object])(value)
 
-        self._cols = population[len(self._paramsnames):]
+        else:
+            if param is None or param["type"] is Population.INTEGER:
+                return int(value)
+            elif param["type"] is Population.FLOAT:
+                return float(value)
+            elif param["type"] is Population.STRING:
+                return param["range"][int(np.trunc(value))]
 
 
     def __getitem__(self, key):
+        return self._pop[key]
+
+
+
+    def __setitem__(self, key, newvalue):
         if type(key) is tuple:
-            if type(key[1]) is int:
-                return self._params[key[1], key[0]] if key[1] < len(self._params) else self._cols[key[1]-len(self._params), key[0]]
+            if type(key[1]) is slice:
+                start = 0 if key[1].start is None else key[1].start
+                stop = len(self._paramsnames) if key[1].stop is None else key[1].stop
             else:
-                dev = list()
-                if key[1].start is None or key[1].start < len(self._params):
-                    if key[1].stop is None or key[1].stop >= len(self._params):
-                        dev.append(self._params[slice(key[1].start, len(self._params), key[1].step), key[0]])
-                    else:
-                        dev.append(self._params[slice(key[1].start, key[1].stop, key[1].step), key[0]])
-                if key[1].stop is None or key[1].stop > len(self._params):
-                    if key[1].start is None:
-                        dev.append(self._cols[slice(0, key[1].stop, key[1].step), key[0]])
-                    else:
-                        dev.append(self._cols[slice(key[1].start-len(self._params), key[1].stop, key[1].step), key[0]])
-                return np.concatenate(dev).T
+                start, stop = key[1], key[1]+1
         else:
-            return np.concatenate([self._params[:, key], self._cols[:, key]]).T if type(key) is slice else np.concatenate([self._params[:, key], self._cols[:, key]])
-                    
+            start, stop = 0, len(self._paramsnames)
 
-    def __setitem__(self, key, newvalue): # Tunear para slices
-        newvalue = newvalue if len(newvalue.shape) > 1 else newvalue[np.newaxis, :]
-        if type(key) is tuple:
-            if type(key[1]) is int:
-                if key[1] < len(self._params):
-                    self._params[key[1], key[0]] = newvalue
-                else:
-                    self._params[key[1] - len(self._params), key[0]] = newvalue
-            elif type(key[1]) is slice:
-                if key[1].start is None:
-                    if key[1].stop is None:
-                        self._params[key[1], key[0]] = (newvalue[:, :len(self._params)] if "array" in type(newvalue).__name__ else newvalue)
-                        self._cols[key[1], key[0]] = (newvalue[:, len(self._params):] if "array" in type(newvalue).__name__ else newvalue)
-                    elif key[1].stop <= len(self._params):
-                        self._params[key[1], key[0]] = (newvalue[key[0], :key[1].stop] if "array" in type(newvalue).__name__ else newvalue)
-                    else:
-                        self._params[key[1], key[0]] = (newvalue[:, :len(self._params)] if "array" in type(newvalue).__name__ else newvalue)
-                        self._cols[:key[1].stop-len(self._params), key[0]] = (newvalue[:, len(self._params):] if "array" in type(newvalue).__name__ else newvalue)
-                elif key[1].start <= len(self._params):
-                    if key[1].stop is None:
-                        self._params[key[1], key[0]] = (newvalue[:, key[1].start:len(self._params)] if "array" in type(newvalue).__name__ else newvalue)
-                        self._cols[::key[1].step, key[0]] = (newvalue[:, len(self._params)-key[1].start:] if "array" in type(newvalue).__name__ else newvalue)
-                    elif key[1].stop <= len(self._params):
-                        self._params[key[1], key[0]] = (newvalue[key[0], key[1].start:key[1].stop] if "array" in type(newvalue).__name__ else newvalue)
-                    else:
-                        self._params[key[1].start::key[1].step, key[0]] = (newvalue[:, key[1].start:len(self._params)] if "array" in type(newvalue).__name__ else newvalue)
-                        self._cols[:key[1].stop-len(self._params), key[0]] = (newvalue[:, len(self._params):] if "array" in type(newvalue).__name__ else newvalue)
-                else:
-                    if key[1].stop is None:
-                        self._cols[::key[1].step, key[0]] = (newvalue[:, :] if "array" in type(newvalue).__name__ else newvalue)
-                    else:
-                        self._cols[:key[1].stop-len(self._params), key[0]] = (newvalue[:, :key[1].stop].T if "array" in type(newvalue).__name__ else newvalue)
+        if "array" in type(newvalue).__name__:
+            if len(newvalue.shape) > 1:
+                newvalue = np.apply_along_axis(lambda x: x.astype(np.object), 1, newvalue.astype(np.object))
+                for i in range(start, stop):
+                    param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
+                    newvalue[:, i] = self._converValue(newvalue[:, i], param)
+                self._pop[key] = newvalue
+            else:
+                newvalue = newvalue.astype(np.object)
+                for i in range(start, stop):
+                    param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
+                    newvalue[i] = self._converValue(newvalue[i], param)
+                self._pop[key] = newvalue
         else:
-            self._params[:, key] = (newvalue[:, :len(self._params)] if "array" in type(newvalue).__name__ else newvalue)
-            self._cols[:, key] = (newvalue[:, len(self._params):] if "array" in type(newvalue).__name__ else newvalue)
-
-    # def __setitem__(self, key, newvalue): # Tunear para slices
-    #     if type(key) is tuple:
-    #         if type(key[1]) is int:
-    #             if key[1] < len(self._params):
-    #                 self._params[key[1], key[0]] = newvalue
-    #             else:
-    #                 self._cols[key[1]-len(self._params), key[0]] = newvalue
-    #         else:
-    #             if key[1].start is None or key[1].start < len(self._params):
-    #                 slices = list()
-    #                 if key[1].stop is None or key[1].stop >= len(self._params):
-    #                     slices.append((slice(key[1].start, len(self._params), key[1].step), key[0]), slice(key[1].start, len(self._params)))
-    #                 else:
-    #                     slices.append((slice(key[1].start, key[1].stop, key[1].step), key[0]), slice(key[1].start, key[1].stop))
-    #             if key[1].stop is None or key[1].stop > len(self._params):
-    #                 if key[1].start is None or key[1].start < len(self._params):
-    #                     if key[1].stop is None:
-    #                         slices.append((slice(0, key[1].stop, key[1].step), key[0]),)
-    #                     else:
-    #                         slices[1] = ((slice(0, key[1].stop-len(self._params), key[1].step), key[0]),)
-
-    #                     slices[1] + (slice(len(self._params), key[1].stop) if key[1].start is None else slice(len(self._params)-key[1].start, key[1].stop))
-    #                 else:
-    #                     self._cols[slice(key[1].start-len(self._params), key[1].stop, key[1].step), key[0]] = newvalue[slice(key[1].start+len(self._params), key[1].stop)]
-    #     else:
-    #         self._params[:, key] = newvalue
-    #         self._cols[:, key] = newvalue
+            key = key[0] if type(key) is tuple else key
+            for i in range(start, stop):
+                param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
+                self._pop[key, i] = self._converValue(newvalue, param)
 
 
-
-  
-    # def __setitem__(self, key, newvalue): # Tunear para slices
-    #     if type(key) is tuple:
-    #         if key[1] < len(self._params):
-    #             self._params[key[1], key[0]] = newvalue
-    #         else:
-    #             self._cols[key[1], key[0]] = newvalue
-    #     else:
-    #         self._params[:, key] = newvalue[:len(self._params)]
-    #         self._cols[:, key] = newvalue[len(self._params):]
-
-    # def __getitem__(self, key):
-    #     if type(key) is tuple:
-    #         if key[1] < len(self._params):
-    #             return self._params[key[1], key[0]]
-    #         else:
-    #             return self._cols[key[1]-len(self._params), key[0]]
-    #     else:
-    #         return np.concatenate([self._params[:, key], self._cols[:, key]]).ravel()
-  
-    # def __setitem__(self, key, newvalue):
-    #     if type(key) is tuple:
-    #         if key[1] < len(self._params):
-    #             self._params[key[1], key[0]] = newvalue
-    #         else:
-    #             self._cols[key[1], key[0]] = newvalue
-    #     else:
-    #         self._params[:, key] = newvalue[:len(self._params)]
-    #         self._cols[:, key] = newvalue[len(self._params):]
 
     def getCromosoma(self, key):
-        return Cromosoma(self._params[:, key], self._paramsnames, self._const, self._constnames, self._cols, None)
+        return Cromosoma(self._pop[key, :len(self._paramsnames)], self._paramsnames, self._const, self._constnames, self._pop[key, len(self._paramsnames):], self._colsnames)
 
     
     
@@ -178,7 +108,7 @@ class Cromosoma:
 
     # @autoassign
     def __init__(self, params, name_params, const, name_const, cols, name_cols):
-        self._params = params.tolist()
+        self._params = params
         self.name_params = name_params
         self.const = const
         self.name_const = name_const
@@ -189,3 +119,6 @@ class Cromosoma:
     def params(self):
         return dict((x, y) for x, y in zip(self.name_params+self.name_const, self._params + self.const))
 
+    @property
+    def columns(self):
+        return self._cols

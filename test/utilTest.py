@@ -1,5 +1,7 @@
 import inspect
 import functools
+import json
+import numpy as np
 
 def autoargs(*include, **kwargs):
     def _autoargs(func):
@@ -46,3 +48,18 @@ def autoargs(*include, **kwargs):
 #         def __init__(self,**kawargs):
 #             pass
 #     return A
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
+
+
+def writeJSONFile(path, value):
+    with open(path, 'w') as f:
+        f.write(json.dumps(value, cls=NumpyEncoder))
+
+def readJSONFile(path):
+    with open(path) as f:
+        return json.load(f)
