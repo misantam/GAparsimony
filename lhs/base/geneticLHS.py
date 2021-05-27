@@ -28,7 +28,7 @@ def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S", seed=None):
     if seed:
         np.random.seed(seed)
 
-    A = np.empty(m_pop).astype(object_)
+    A = np.empty(m_pop).astype(object)
     
     for i in range(m_pop):
         # // fill A with random hypercubes
@@ -57,7 +57,7 @@ def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S", seed=None):
         # // H is used as an index on vector of matrices, A, so it should be using zero based order
         H = findorder_zero(B)
         posit = int(np.max(B) - B[0])
-        J = np.empty(m_pop).astype(object_)
+        J = np.empty(m_pop).astype(object)
         # // the first half of the next population gets the best hypercube from the first population
         for i in range(int(m_pop / 2)):
             J[i] = A[posit]
