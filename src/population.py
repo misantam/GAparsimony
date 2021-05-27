@@ -38,7 +38,7 @@ class Population:
     @population.setter
     def population(self, population):
 
-        self._pop = np.apply_along_axis(lambda x: x.astype(np.object), 1, population.astype(np.object))
+        self._pop = np.apply_along_axis(lambda x: x.astype(object), 1, population.astype(object))
         
         for i in range(self._pop.shape[1]):
             param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
@@ -52,7 +52,7 @@ class Population:
             elif param["type"] is Population.FLOAT:
                 return np.vectorize(lambda x: float(x), otypes=[np.float32])(value)
             elif param["type"] is Population.STRING:
-                return np.vectorize(lambda x: param["range"][int(np.trunc(x))], otypes=[np.object])(value)
+                return np.vectorize(lambda x: param["range"][int(np.trunc(x))], otypes=[object])(value)
 
         else:
             if param is None or param["type"] is Population.INTEGER:
@@ -80,13 +80,13 @@ class Population:
 
         if "array" in type(newvalue).__name__:
             if len(newvalue.shape) > 1:
-                newvalue = np.apply_along_axis(lambda x: x.astype(np.object), 1, newvalue.astype(np.object))
+                newvalue = np.apply_along_axis(lambda x: x.astype(object), 1, newvalue.astype(object))
                 for i in range(start, stop):
                     param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
                     newvalue[:, i] = self._converValue(newvalue[:, i], param)
                 self._pop[key] = newvalue
             else:
-                newvalue = newvalue.astype(np.object)
+                newvalue = newvalue.astype(object)
                 for i in range(start, stop):
                     param = self._params[self._paramsnames[i]] if i < len(self._paramsnames) else None
                     newvalue[i] = self._converValue(newvalue[i], param)
