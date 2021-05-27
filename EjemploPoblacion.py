@@ -6,6 +6,9 @@ import numpy as np
 
 # p = improvedLHS(20,20,seed=1234)
 
+aux = dict()
+
+
 p = np.array([[0.00000000e+00, 8.15403578e-02, 1.80000000e+01, 1.00000000e+00,
         1.00000000e+00, 1.00000000e+00, 1.00000000e+00, 0.00000000e+00,
         1.00000000e+00, 0.00000000e+00, 0.00000000e+00, 0.00000000e+00,
@@ -111,19 +114,61 @@ c = Population({"kernel":{"range": ["linear", "rbf", "random"], "type": Populati
 
 print(c[1,2])
 
+aux["population"] = p.copy()
+
+c[:2, :] = np.arange(20)
+
+aux["population_1"] = c.population.copy()
+
+c[:2, :] = np.array([np.arange(20), np.arange(1, 21)])
+
+aux["population_2"] = c.population.copy()
+
+c[:2, :] = 0
+
+aux["population_3"] = c.population.copy()
+
+c[1, :2] = 1
+
+aux["population_4"] = c.population.copy()
+
 c[1, :] = np.arange(20)
 
-# c[:, 2:5] = np.ones((2,3))
+aux["population_5"] = c.population.copy()
+
+c[1, :2] = np.array([2,2])
+
+aux["population_6"] = c.population.copy()
+
+
+c[:, 2] = 1
+
+aux["population_7"] = c.population.copy()
+
+c[:, 6] = 87
+
+aux["population_8"] = c.population.copy()
+
+c[:, 7] = 98
+
+aux["population_9"] = c.population.copy()
+
 
 # print(c.getCromosoma(1).params)
 
+# print("\n ================================================= \n")
+
 print(c.population)
 
-# print(c[1,2])
 
-# print(c[:2, :4])
+import json
 
-# print(c[:2])
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return json.JSONEncoder.default(self, obj)
 
-# print(c.getCromosoma(5).params)
+with open('./test/outputs/populationClass.json', 'w') as f:
+    f.write(json.dumps(aux, cls=NumpyEncoder))
 

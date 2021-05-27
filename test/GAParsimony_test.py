@@ -1,5 +1,6 @@
 import numpy as np
 from src.gaparsimony import GAparsimony
+from src.population import Population
 
 import pytest, json
 from .utilTest import autoargs, readJSONFile
@@ -16,10 +17,7 @@ class GenericClass(object):
 #***************TEST POPULATION*****************#
 #################################################
 
-with open('./test/outputs/population.json') as f:
-    population = np.array(json.load(f))
-
-@pytest.mark.parametrize("population", [(population)])
+@pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
 def test_GAParsimony_regresion_boston_population(population):
 
     min_param = np.concatenate((np.array([1., 0.0001]), np.zeros(13)), axis=0)
@@ -32,6 +30,24 @@ def test_GAParsimony_regresion_boston_population(population):
     assert (model.population==population).all()
 
 
+data = readJSONFile('./test/outputs/populationClass.json')
+population = Population(data["params"], np.array(data["population"]))
+
+@pytest.mark.parametrize("population, slice, value, resultado", 
+                        [(population,(slice(2), slice(None)), np.arange(20), np.array(data["population_1"], dtype=np.object)),
+                        (population,(slice(2), slice(None)), np.array([np.arange(20), np.arange(1, 21)]), np.array(data["population_2"], dtype=np.object)),
+                        (population,(slice(2), slice(None)), 0, np.array(data["population_3"], dtype=np.object)),
+                        (population,(1, slice(2)), 1, np.array(data["population_4"], dtype=np.object)),
+                        (population,(1, slice(None)), np.arange(20), np.array(data["population_5"], dtype=np.object)),
+                        (population,(1, slice(2)), np.array([2,2]), np.array(data["population_6"], dtype=np.object)),
+                        (population,(slice(None), 2), 1, np.array(data["population_7"], dtype=np.object)),
+                        (population,(slice(None), 6), 87, np.array(data["population_8"], dtype=np.object)),
+                        (population,(slice(None), 7), 98, np.array(data["population_9"], dtype=np.object))])
+def test_GAParsimony_regresion_population_class(population, slice, value, resultado):
+
+    population[slice] = value
+    
+    assert (population.population==resultado).all()
 
 #################################################
 #*****************TEST RERANK*******************#
