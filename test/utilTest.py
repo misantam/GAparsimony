@@ -5,7 +5,7 @@ import numpy as np
 
 def autoargs(*include, **kwargs):
     def _autoargs(func):
-        attrs, varargs, varkw, defaults = inspect.getargspec(func)
+        attrs, varargs, _, defaults, _, _, _ = inspect.getfullargspec(func)
 
         def sieve(attr):
             if kwargs and attr in kwargs['exclude']:
