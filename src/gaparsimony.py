@@ -1,13 +1,14 @@
+from src.population import Population
 from .parsimony_monitor import parsimony_monitor, parsimony_summary
 from .ordenacion import order
 from lhs.base import *
 from .parsimony_miscfun import printShortMatrix
 
-import sys
 import warnings
 import numpy as np
 import pandas as pd
 pd.set_option('display.max_columns', None)
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.lines as mlines
@@ -24,12 +25,9 @@ class GAparsimony(object):
     DEBUG = 2
 
     def __init__(self, 
-                fitness, 
-                min_param, 
-                max_param, 
-                nFeatures,                           
-                names_param=None, 
-                names_features=None,
+                fitness,
+                params,
+                features,
                 type_ini_pop="improvedLHS", 
                 popSize = 50, 
                 pcrossover = 0.8,  
@@ -41,15 +39,11 @@ class GAparsimony(object):
                 feat_mut_thres=0.10, 
                 not_muted=3,
                 elitism = None,
-                # population = parsimony_population,
                 selection = "nlinear", 
-                # crossover = parsimony_crossover, 
-                # mutation = parsimony_mutation, 
                 keep_history = False,
                 early_stop = None, 
                 maxFitness = np.Inf, 
-                suggestions = None, 
-                parallel = False,
+                suggestions = None,
                 seed_ini = None, 
                 verbose=MONITOR,
                 logger = None):
@@ -57,18 +51,13 @@ class GAparsimony(object):
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism
 
+        self.population = Population(params, columns=features)
+
+
         # Check parameters
         # ----------------
-        # if not callable(population):
-        #     population = parsimony_population
-        # if not callable(selection):
-        #     selection = parsimony_nlrSelection
         if selection is None or type(selection) is not str:
             raise ValueError("A selection(sting) must be provided!!!")
-        # if not callable(crossover):
-        #     crossover = parsimony_crossover
-        # if not callable(mutation):
-        #     mutation = parsimony_mutation
         if not fitness:
             raise Exception("A fitness function must be provided!!!")
         if not callable(fitness):
@@ -83,24 +72,19 @@ class GAparsimony(object):
             raise ValueError("Probability of crossover must be between 0 and 1!!!")
         if pmutation < 0 or pmutation > 1:
             raise ValueError("Probability of mutation must be between 0 and 1!!!")
-        if min_param is None and max_param is None:
+        if self.population._min is None and self.population._max is None:
             raise ValueError("A min and max range of values must be provided!!!")
-        if len(min_param)!=len(max_param):
+        if self.population._min.shape != self.population._max.shape:
             raise Exception("min_param and max_param must have the same length!!!")
-        if not nFeatures:
-            raise Exception("Number of features (nFeatures) must be provided!!!")
+        if not features:
+            raise Exception("Number of features or name of features must be provided!!!")
         if (suggestions is not None) or (type(suggestions) is list and len(suggestions)>0 and type(suggestions[0]) is not list) or (type(suggestions) is np.array and len(suggestions.shape) < 2):
             raise Exception("Provided suggestions is a vector")
-        if (type(suggestions) is np.array) and (len(min_param) + nFeatures) != suggestions.shape[1]:
+        if (type(suggestions) is np.array) and (self.population._min.shape + features) != suggestions.shape[1]:
             raise Exception("Provided suggestions (ncol) matrix do not match the number of variables (model parameters + vector with selected features) in the problem!")
 
         self.call = locals()
         self.fitness = fitness
-        self.min_param = min_param
-        self.max_param = max_param
-        self.nFeatures=nFeatures
-        self.names_param = None if not names_param else names_param
-        self.names_features = names_features
         self.popSize = popSize
         self.pcrossover = pcrossover
         self.maxiter = maxiter
@@ -112,43 +96,25 @@ class GAparsimony(object):
         self.not_muted=not_muted
         
         self.selection = selection
-        # self.mutation = mutation
-        # self.crossover = crossover
         self.keep_history = keep_history
         self.early_stop = maxiter if not early_stop else early_stop
         self.maxFitness = maxFitness
         self.suggestions = np.array(suggestions) if type(suggestions) is list else suggestions
-        self.parallel = parallel
         self.seed_ini = seed_ini
         self.verbose = verbose
         self.logger = None
 
-        self.nParams = len(min_param)
-        self.nvars = self.nParams + self.nFeatures
+        self.nvars = len(self.population.paramsnames) + (len(features) if type(features) is list else features)
 
         self.iter = 0
         self.minutes_total=0
         self.best_score = np.NINF
         self.history = list()
 
-        if type(self.names_param) is not list:
-            self.names_param = list(self.names_param)
-        if type(self.names_features) is not list:
-            self.names_features = list(self.names_features)
-        
-        
-        if not type(self.min_param) is np.array:
-            self.min_param = np.array(self.min_param)
-        if not type(self.max_param) is np.array:
-            self.max_param = np.array(self.max_param)
-            
-        self.min_param = np.concatenate((self.min_param, np.zeros(self.nFeatures)), axis=0)
-        self.max_param = np.concatenate((self.max_param, np.ones(self.nFeatures)), axis=0)
-
         if self.seed_ini:
             np.random.seed(self.seed_ini)
 
-        self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
+        self.population.population = self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
 
         if self.suggestions:
             ng = min(self.suggestions.shape[0], popSize)
@@ -159,19 +125,7 @@ class GAparsimony(object):
         
         
     def fit(self, iter_ini=0):
-
-        # Initialize parallel computing
-        # ----------------------
-        # Start parallel computing (if needed)
-        # POR IMPLEMENTAR
-        # if parallel:
-        #     parallel = startParallel(parallel);stopCluster <- TRUE} else {parallel <- stopCluster <- FALSE} 
-        # else:
-        #     stopCluster = False if type(parallel).__name__ is "cluster"  else True
-        #     parallel <- startParallel(parallel)
-        # on.exit(if(parallel & stopCluster) stopParallel(attr(parallel, "cluster")))
-        
-        
+           
         # Get suggestions
         # ---------------
         if self.verbose == GAparsimony.DEBUG and self.suggestions:
@@ -209,7 +163,7 @@ class GAparsimony(object):
         
         elif self.verbose == GAparsimony.DEBUG:
             print("\nStep 0. Initial population")
-            print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+            print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
             # input("Press [enter] to continue")
 
 
@@ -219,32 +173,13 @@ class GAparsimony(object):
             tic = time.time()
             
             self.iter = iter
-            if not self.parallel:
 
-                for t in range(self.popSize):
-                    if not self.fitnessval[t] and np.sum(self.population[t,range(self.nParams, self.nvars)])>0:
-                        fit = self.fitness(self.population[t])
-                        self.fitnessval[t] = fit[0]
-                        self.fitnesstst[t] = fit[1]
-                        self.complexity[t] = fit[2]
-            else:
-                # %dopar% Nos dice que se hace en paralelo
-                # Results_parallel <- foreach(i = seq_len(popSize)) %dopar% 
-                #     {if (is.na(self.fitnessval[i]) && sum(Pop[i,(1+object@nParams):nvars])>0) fitness(Pop[i, ]) else c(self.fitnessval[i],self.fitnesstst[i], self.complexity[i])}
-                Results_parallel = list()
-                for i in range(self.popSize):
-                    if np.isnan(self.fitnessval[i]) and np.sum(self.population[i, self.nParams:self.nvars])>0:
-                        Results_parallel.append(self.fitness(self.population[i]))
-                    else:
-                        Results_parallel.append(np.concatenate((self.fitnessval[i],self.fitnesstst[i], self.complexity[i]), axis=None))
-
-                # Results_parallel = np.array([fitness(self.population[i]) if not self.fitnessval[i] and np.sum(self.population[i,(1+object.nParams):nvars])>0 else np.r_[self.fitnessval[i],self.fitnesstst[i], self.complexity[i]] for i in range(popSize)])
-                Results_parallel = np.array(Results_parallel)
-                # Extract results
-                # Results_parallel = Results_parallel.reshape(((Results_parallel.shape[0]*Results_parallel.shape[1])/3, 3))
-                self.fitnessval = Results_parallel[:, 0]
-                self.fitnesstst = Results_parallel[:, 1]
-                self.complexity = Results_parallel[:, 2]
+            for t in range(self.popSize):
+                if np.isnan(self.fitnessval[t]) and np.sum(self.population[t,range(len(self.population.paramsnames), self.nvars)])>0:
+                    fit = self.fitness(self.population[t])
+                    self.fitnessval[t] = fit[0]
+                    self.fitnesstst[t] = fit[1]
+                    self.complexity[t] = fit[2]
                 
             
             # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
@@ -256,12 +191,12 @@ class GAparsimony(object):
             # Sort by the Fitness Value
             # ----------------------------
             ord = order(self.fitnessval, kind='heapsort', decreasing = True, na_last = True)
-            self.population = self.population[ord, :]
+            self.population.population = self.population[ord, :]
             self.fitnessval = self.fitnessval[ord]
             self.fitnesstst = self.fitnesstst[ord]
             self.complexity = self.complexity[ord]
 
-            PopSorted = self.population.copy()
+            PopSorted = self.population.population.copy()
             FitnessValSorted = self.fitnessval.copy()
             FitnessTstSorted = self.fitnesstst.copy()
             ComplexitySorted = self.complexity.copy()
@@ -276,7 +211,7 @@ class GAparsimony(object):
 
             if self.verbose == GAparsimony.DEBUG:
                 print("\nStep 1. Fitness sorted")
-                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
 
             
@@ -284,19 +219,19 @@ class GAparsimony(object):
             # -----------------------------------
             if self.rerank_error != 0.0 and self.iter >= self.iter_start_rerank:
                 ord_rerank = self._rerank()
-                self.population = self.population[ord_rerank]
+                self.population.population = self.population[ord_rerank]
                 self.fitnessval = self.fitnessval[ord_rerank]
                 self.fitnesstst = self.fitnesstst[ord_rerank]
                 self.complexity = self.complexity[ord_rerank]
 
-                PopSorted = self.population.copy()
+                PopSorted = self.population.population.copy()
                 FitnessValSorted = self.fitnessval.copy()
                 FitnessTstSorted = self.fitnesstst.copy()
                 ComplexitySorted = self.complexity.copy()
                 
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 2. Fitness reranked")
-                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population.population][:10, :])
                     # input("Press [enter] to continue")
 
 
@@ -324,11 +259,7 @@ class GAparsimony(object):
             # Keep this generation into the History list
             # ------------------------------------------
             if self.keep_history:
-                if not self.names_param:
-                    self.names_param = [f"param_{i}" for i in range(self.nParams)]
-                if not self.names_features:
-                    self.names_features = [f"col_{i}" for i in range(self.nFeatures)]
-                self.history.append(pd.DataFrame(np.c_[self.population, self.fitnessval, self.fitnesstst, self.complexity], columns=self.names_param+self.names_features+["fitnessval", "fitnesstst", "complexity"]))
+                self.history.append(pd.DataFrame(np.c_[self.population.population, self.fitnessval, self.fitnesstst, self.complexity], columns=self.population.paramsnames+self.population.colsnames+["fitnessval", "fitnesstst", "complexity"]))
             
 
             # Call to 'monitor' function
@@ -338,7 +269,7 @@ class GAparsimony(object):
             
             if self.verbose == GAparsimony.DEBUG:
                 print("\nStep 3. Fitness results")
-                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
             
             
@@ -359,7 +290,7 @@ class GAparsimony(object):
 
             if self.verbose == GAparsimony.DEBUG:
                 print("\nStep 4. Selection")
-                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
 
 
@@ -374,7 +305,7 @@ class GAparsimony(object):
                         self._crossover(parents=parents)
                 if self.verbose == GAparsimony.DEBUG:
                     print("\nStep 5. CrossOver")
-                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                     # input("Press [enter] to continue")
 
 
@@ -387,7 +318,7 @@ class GAparsimony(object):
                 self.complexity[:self.elitism] = ComplexitySorted[:self.elitism]
             if (self.verbose == GAparsimony.DEBUG):
                 print("\nStep 6. With Elitists")
-                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
             
 
@@ -398,7 +329,7 @@ class GAparsimony(object):
                 if self.verbose == GAparsimony.DEBUG:
 
                     print("\nStep 7. Mutation")
-                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population][:10, :])
+                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                     # input("Press [enter] to continue")
     
     def _rerank(self):
@@ -500,7 +431,7 @@ class GAparsimony(object):
         else:
             raise Exception("Not a valid selection mode provided!!!!!!")
         
-        self.population = self.population[sel]
+        self.population.population = self.population[sel]
         self.fitnessval = self.fitnessval[sel]
         self.fitnesstst = self.fitnesstst[sel]
         self.complexity = self.complexity[sel]
@@ -511,17 +442,17 @@ class GAparsimony(object):
 
         parents = self.population[parents]
         children = parents # Vector
-        pos_param = list(range(self.nParams))
-        pos_features = np.array(list(range(self.nParams, self.nParams + self.nFeatures)))
+        pos_param = list(range(len(self.population.paramsnames)))
+        pos_features = np.array(list(range(len(self.population.paramsnames), len(self.population.paramsnames) + len(self.population.colsnames))))
         
         # Heuristic Blending for parameters
         alpha = 0.1
-        Betas = np.random.uniform(size=self.nParams, low=0, high=1)*(1+2*alpha)-alpha  # 1+alpha*2??????
+        Betas = np.random.uniform(size=len(self.population.paramsnames), low=0, high=1)*(1+2*alpha)-alpha  # 1+alpha*2??????
         children[0,pos_param] = parents[0,pos_param]-Betas*parents[0,pos_param]+Betas*parents[1,pos_param]  ## MAP??
         children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[0,pos_param]
         
         # Random swapping for features
-        swap_param = np.random.uniform(size=self.nFeatures, low=0, high=1)>=perc_to_swap
+        swap_param = np.random.uniform(size=len(self.population.colsnames), low=0, high=1)>=perc_to_swap
         if np.sum(swap_param)>0:
     
             features_parent1 = parents[0,pos_features]
@@ -532,15 +463,15 @@ class GAparsimony(object):
   
   
         # correct params that are outside (min and max)
-        thereis_min = children[0] < self.min_param
-        children[0,thereis_min] = self.min_param[thereis_min]
-        thereis_min = children[1] < self.min_param
-        children[1,thereis_min] = self.min_param[thereis_min]
+        thereis_min = children[0] < self.population._min
+        children[0,thereis_min] = self.population._min[thereis_min]
+        thereis_min = children[1] < self.population._min
+        children[1,thereis_min] = self.population._min[thereis_min]
         
-        thereis_max = children[0] > self.max_param
-        children[0,thereis_max] = self.max_param[thereis_max]
-        thereis_max = (children[1] > self.max_param)
-        children[1,thereis_max] = self.max_param[thereis_max]
+        thereis_max = children[0] > self.population._max
+        children[0,thereis_max] = self.population._max[thereis_max]
+        thereis_max = (children[1] > self.population._max)
+        children[1,thereis_max] = self.population._max[thereis_max]
   
         aux = np.empty(2)
         aux[:] = np.nan
@@ -553,18 +484,17 @@ class GAparsimony(object):
     def _mutation(self):
 
          # Uniform random mutation (except first individual)
-        nparam_to_mute = round(self.pmutation*(self.nParams+self.nFeatures)*self.popSize)
+        nparam_to_mute = round(self.pmutation*(len(self.population.paramsnames)+len(self.population.colsnames))*self.popSize)
         if nparam_to_mute<1:
             nparam_to_mute = 1
   
         for _ in range(nparam_to_mute):
   
             i = np.random.randint((self.not_muted), self.popSize, size=1)[0]
-            j = np.random.randint(0, (self.nParams + self.nFeatures), size=1)[0]
-            self.population[i,j] = np.random.uniform(low=self.min_param[j], high=self.max_param[j])
-            # If is a binary feature selection convert to binary
-            if j>=(self.nParams):
-                self.population[i,j] = self.population[i,j] <= self.feat_mut_thres
+            j = np.random.randint(0, (len(self.population.paramsnames) + len(self.population.colsnames)), size=1)[0]
+
+            value = np.random.uniform(low=self.population._min[j], high=self.population._max[j])
+            self.population[i,j] = value <= self.feat_mut_thres if j>=(len(self.population.paramsnames)) else value
             
             self.fitnessval[i] = np.nan
             self.fitnesstst[i] = np.nan
@@ -572,25 +502,27 @@ class GAparsimony(object):
 
     def _population(self, type_ini_pop="randomLHS"):
   
-        nvars = self.nParams+self.nFeatures
+        nvars = len(self.population.paramsnames) + len(self.population.colsnames)
         if type_ini_pop=="randomLHS":
-            self.population = randomLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = randomLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="geneticLHS":
-            self.population = geneticLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = geneticLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="improvedLHS":
-            self.population = improvedLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = improvedLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="maximinLHS":
-            self.population = maximinLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = maximinLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="optimumLHS":
-            self.population = optimumLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = optimumLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="random":
-            self.population = (np.random.rand(self.popSize*nvars) * (nvars - self.popSize) + self.popSize).reshape(self.popSize*nvars, 1)
+            population = (np.random.rand(self.popSize*nvars) * (nvars - self.popSize) + self.popSize).reshape(self.popSize*nvars, 1)
   
         # Scale matrix with the parameters range
-        self.population = self.population*(self.max_param-self.min_param)
-        self.population = self.population+self.min_param
+        population = population*(self.population._max-self.population._min)
+        population = population+self.population._min
         # Convert features to binary 
-        self.population[:, self.nParams:nvars] = self.population[:, self.nParams:nvars]<=self.feat_thres
+        population[:, len(self.population.paramsnames):nvars] = population[:, len(self.population.paramsnames):nvars]<=self.feat_thres
+
+        return population
 
     def __str__(self):
         print("An object of class \"ga_parsimony\"")
@@ -600,17 +532,17 @@ class GAparsimony(object):
         print(f"bestfitnessTst: {self.bestfitnessTst}")
         print(f"bestcomplexity: {self.bestcomplexity}")
         print(f"bestsolution: {self.bestsolution}")
-        print(f"min_param: {self.min_param}")
-        print(f"max_param: {self.max_param}")
-        print(f"nParams: {self.nParams}")
+        print(f"min_param: {self.population._min}")
+        print(f"max_param: {self.population._max}")
+        print(f"nParams: {len(self.population.paramsnames)}")
         print(f"feat_thres: {self.feat_thres}")
         print(f"feat_mut_thres: {self.feat_mut_thres}")
         print(f"not_muted: {self.not_muted}")
         print(f"rerank_error: {self.rerank_error}")
         print(f"iter_start_rerank: {self.iter_start_rerank}")
-        print(f"nFeatures: {self.nFeatures}")
-        print(f"names_param: {self.names_param}")
-        print(f"names_features: {self.names_features}")
+        print(f"nFeatures: {len(self.population.colsnames)}")
+        print(f"names_param: {self.population.paramsnames}")
+        print(f"names_features: {self.population.colsnames}")
         print(f"popSize: {self.popSize}")
         print(f"iter: {self.iter}") 
         print(f"early_stop: {self.early_stop}")
@@ -642,17 +574,17 @@ class GAparsimony(object):
     #     print(f"bestfitnessTst: {self.bestfitnessTst}")
     #     print(f"bestcomplexity: {self.bestcomplexity}")
     #     print(f"bestsolution: {self.bestsolution}")
-    #     print(f"min_param: {self.min_param}")
-    #     print(f"max_param: {self.max_param}")
-    #     print(f"nParams: {self.nParams}")
+    #     print(f"min_param: {self.population._min}")
+    #     print(f"max_param: {self.population._max}")
+    #     print(f"nParams: {len(self.population.paramsnames)}")
     #     print(f"feat_thres: {self.feat_thres}")
     #     print(f"feat_mut_thres: {self.feat_mut_thres}")
     #     print(f"not_muted: {self.not_muted}")
     #     print(f"rerank_error: {self.rerank_error}")
     #     print(f"iter_start_rerank: {self.iter_start_rerank}")
-    #     print(f"nFeatures: {self.nFeatures}")
-    #     print(f"names_param: {self.names_param}")
-    #     print(f"names_features: {self.names_features}")
+    #     print(f"nFeatures: {len(self.population.colsnames)}")
+    #     print(f"names_param: {self.population.paramsnames}")
+    #     print(f"names_features: {self.population.colsnames}")
     #     print(f"popSize: {self.popSize}")
     #     print(f"iter: {self.iter}") 
     #     print(f"early_stop: {self.early_stop}")
@@ -685,14 +617,14 @@ class GAparsimony(object):
                 "early_stop" : self.early_stop,
                 "rerank_error" : self.rerank_error,
                 "elitism" : self.elitism,
-                "nParams" : self.nParams,
-                "nFeatures" : self.nFeatures,
+                "nParams" : len(self.population.paramsnames),
+                "nFeatures" : len(self.population.colsnames),
                 "pcrossover" : self.pcrossover,
                 "pmutation" : self.pmutation,
                 "feat_thres" : self.feat_thres,
                 "feat_mut_thres" : self.feat_mut_thres,
                 "not_muted" : self.not_muted,
-                "domain" : np.stack([self.min_param, self.max_param], axis=0),
+                "domain" : np.stack([self.population._min, self.population._max], axis=0),
                 "suggestions" : self.suggestions,
                 "iter" : self.iter,
                 "best_score" : self.best_score,
@@ -735,7 +667,7 @@ class GAparsimony(object):
         print(f" Prob. to be 1 in mutation = {x['feat_mut_thres']}")
         
         print("\n Search domain = ")
-        print(pd.DataFrame(data=x["domain"], columns=self.names_param+self.names_features, index=["Min_param", "Max_param"]))
+        print(pd.DataFrame(data=x["domain"], columns=self.population.paramsnames+self.population.colsnames, index=["Min_param", "Max_param"]))
 
         if x["suggestions"] is not None and x["suggestions"].shape[0]>0:
             print("Suggestions =")
@@ -747,7 +679,7 @@ class GAparsimony(object):
         print(f" Iterations                = {x['iter']+1}")
         print(f" Best validation score = {x['best_score']}")
         print(f"\n\nSolution with the best validation score in the whole GA process = \n")
-        print(pd.DataFrame(data=x["solution_best_score"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.names_param+self.names_features))
+        print(pd.DataFrame(data=x["solution_best_score"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.population.paramsnames+self.population.colsnames))
         
         print(f"\n\nResults of the best individual at the last generation = \n")
         print(f" Best indiv's validat.cost = {x['bestfitnessVal']}")
@@ -755,7 +687,7 @@ class GAparsimony(object):
         print(f" Best indiv's complexity   = {x['bestcomplexity']}")
         print(f" Elapsed time in minutes   = {x['minutes_total']}")
         print(f"\n\nBEST SOLUTION = \n")
-        print(pd.DataFrame(data=x["bestsolution"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.names_param+self.names_features))
+        print(pd.DataFrame(data=x["bestsolution"][np.newaxis,], columns=["fitnessVal","fitnessTst","complexity"]+self.population.paramsnames+self.population.colsnames))
     
 
     # Plot a boxplot evolution of val cost, tst cost and complexity for the elitists
@@ -779,10 +711,13 @@ class GAparsimony(object):
             mat_val = np.c_[mat_val, self.history[iter].fitnessval[:self.elitism]] if mat_val is not None else self.history[iter].fitnessval[:self.elitism]
             mat_tst = np.c_[mat_tst, self.history[iter].fitnesstst[:self.elitism]] if mat_tst is not None else self.history[iter].fitnesstst[:self.elitism]
 
-            aux = np.sum(self.history[iter].values[:self.elitism,(self.nParams):(self.nParams+self.nFeatures)], axis=1)
+            aux = np.sum(self.history[iter].values[:self.elitism,(len(self.population.paramsnames)):(len(self.population.paramsnames)+len(self.population.colsnames))], axis=1)
             mat_complex = np.c_[mat_complex, aux] if mat_complex is not None else aux
 
         x = list(range(min_iter, max_iter))
+        mat_val = mat_val.astype(float)
+        mat_tst = mat_tst.astype(float)
+        mat_complex = mat_complex.astype(float)
 
         # Grafica
         # ======================
@@ -834,3 +769,25 @@ class GAparsimony(object):
         plt.show()        
 
 
+    def importance(self):
+    
+        if len(self.history[0]) < 1:
+            print("'object.history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
+        min_iter = 1
+        max_iter = self.iter
+        
+        nelitistm = self.elitism
+        features_hist = None
+        for iter in range(min_iter, max_iter+1):
+            features_hist = np.c_[features_hist, self.history[iter][0][:nelitistm, len(self.population.paramsnames):]] ## ANALIZAR CON CUIDADO
+
+        importance = np.mean(features_hist, axis=0)
+        imp_features = 100*importance[order(importance,decreasing = True)]
+        if self.verbose > 0:
+            print("+--------------------------------------------+")
+            print("|                  GA-PARSIMONY              |")
+            print("+--------------------------------------------+\n")
+            print("Percentage of appearance of each feature in elitists: \n")
+            print(imp_features)
+
+        return imp_features 

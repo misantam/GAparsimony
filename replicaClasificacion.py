@@ -7,6 +7,9 @@ from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score, make_scorer
 
 from src.gaparsimony import GAparsimony
+from src.population import Population
+
+from test.utilTest import writeJSONFile
 
 df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
 
@@ -58,28 +61,22 @@ def fitness_SVM(chromosome):
     return np.array([kappa_val, kappa_test, complexity])
 
 
-# Ranges of size and decay
-min_param = np.array([00.0001, 0.00001])
-max_param = np.array([99.9999, 0.99999])
-names_param = ["C","gamma"]
-
 # ga_parsimony can be executed with a different set of 'rerank_error' values
 rerank_error = 0.001
 
+params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT}, "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}}
+
 
 GAparsimony_model = GAparsimony(fitness=fitness_SVM,
-                                  min_param=min_param,
-                                  max_param=max_param,
-                                  names_param=names_param,
-                                  nFeatures=len(df.columns[:-1]),
-                                  names_features=df.columns[:-1],
+                                  params=params,
+                                  features=len(df.columns[:-1]),
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 50, early_stop=10,
+                                  maxiter = 5, early_stop=10,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                  parallel = True, seed_ini = 1234)
+                                  seed_ini = 1234)
 
 
 GAparsimony_model.fit()
@@ -87,6 +84,8 @@ GAparsimony_model.fit()
 GAparsimony_model.summary()
 
 aux = GAparsimony_model.summary()
+
+# writeJSONFile("./test/outputs/replicaClasificacion.json", aux)
 
 # print(aux)
 

@@ -17,21 +17,21 @@ class GenericClass(object):
 #***************TEST POPULATION*****************#
 #################################################
 
-@pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
-def test_GAParsimony_regresion_boston_population(population):
+# @pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
+# def test_GAParsimony_regresion_boston_population(population):
 
-    min_param = np.concatenate((np.array([1., 0.0001]), np.zeros(13)), axis=0)
-    max_param = np.concatenate((np.array([25, 0.9999]), np.ones(13)), axis=0)
+#     min_param = np.concatenate((np.array([1., 0.0001]), np.zeros(13)), axis=0)
+#     max_param = np.concatenate((np.array([25, 0.9999]), np.ones(13)), axis=0)
     
-    model = GenericClass(nParams=2, nFeatures=13, popSize=40, seed_ini=1234, max_param=max_param, min_param=min_param, feat_thres=0.90, population=None)
+#     model = GenericClass(nParams=2, nFeatures=13, popSize=40, seed_ini=1234, max_param=max_param, min_param=min_param, feat_thres=0.90, population=Population(2, 13))
 
-    GAparsimony._population(model, type_ini_pop="improvedLHS")
+#     population[:] = GAparsimony._population(model, type_ini_pop="improvedLHS")
     
-    assert (model.population==population).all()
+#     assert (model.population==population).all()
 
 
 data = readJSONFile('./test/outputs/populationClass.json')
-population = Population(data["params"], np.array(data["population"]))
+population = Population(data["params"], data["columns"], np.array(data["population"]))
 
 @pytest.mark.parametrize("population, slice, value, resultado", 
                         [(population,(slice(2), slice(None)), np.arange(20), np.array(data["population_1"], dtype=object)),
