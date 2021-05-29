@@ -17,21 +17,20 @@ class GenericClass(object):
 #***************TEST POPULATION*****************#
 #################################################
 
-# @pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
-# def test_GAParsimony_regresion_boston_population(population):
+@pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
+def test_GAParsimony_regresion_boston_population(population):
 
-#     min_param = np.concatenate((np.array([1., 0.0001]), np.zeros(13)), axis=0)
-#     max_param = np.concatenate((np.array([25, 0.9999]), np.ones(13)), axis=0)
+    pop = Population(population["params"], columns=population["features"])
     
-#     model = GenericClass(nParams=2, nFeatures=13, popSize=40, seed_ini=1234, max_param=max_param, min_param=min_param, feat_thres=0.90, population=Population(2, 13))
+    model = GenericClass(popSize=population["popSize"], seed_ini=population["seed"], feat_thres=population["feat_thres"], population=pop)
 
-#     population[:] = GAparsimony._population(model, type_ini_pop="improvedLHS")
+    pop.population = GAparsimony._population(model, type_ini_pop="improvedLHS")
     
-#     assert (model.population==population).all()
+    assert (pop.population==np.array(population["population_resultado"])).all()
 
 
 data = readJSONFile('./test/outputs/populationClass.json')
-population = Population(data["params"], data["columns"], np.array(data["population"]))
+population = Population(data["params"], data["features"], np.array(data["population"]))
 
 @pytest.mark.parametrize("population, slice, value, resultado", 
                         [(population,(slice(2), slice(None)), np.arange(20), np.array(data["population_1"], dtype=object)),
@@ -58,70 +57,71 @@ def test_GAParsimony_regresion_boston_rerank(rerank):
 
     
     model = GenericClass(fitnessval=np.array(rerank["fitnessval"]), complexity=np.array(rerank["complexity"]), 
-                        best_score=rerank["best_score"], popSize=rerank["popSize"], rerank_error = 0.01, verbose=0)
+                        best_score=rerank["best_score"], popSize=rerank["popSize"], rerank_error = 0.01, verbose=0, 
+                        population=Population(rerank["params"], rerank["popSize"]))
 
     result = GAparsimony._rerank(model)
     
     assert (result==np.array(rerank["position"])).all()
 
 
-#################################################
-#****************TEST SELECTION*****************#
-#################################################
+# #################################################
+# #****************TEST SELECTION*****************#
+# #################################################
 
-@pytest.mark.parametrize("selection", [readJSONFile('./test/outputs/selection.json')])
-def test_GAParsimony_regresion_boston_selection(selection):
-    np.random.seed(selection["seed"])
-    population=np.array(selection["population"])
-    fitnessval=np.array(selection["fitnessval"])
-    fitnesstst=np.array(selection["fitnesstst"])
-    complexity=np.array(selection["complexity"])
+# @pytest.mark.parametrize("selection", [readJSONFile('./test/outputs/selection.json')])
+# def test_GAParsimony_regresion_boston_selection(selection):
+#     np.random.seed(selection["seed"])
+#     population=np.array(selection["population"])
+#     fitnessval=np.array(selection["fitnessval"])
+#     fitnesstst=np.array(selection["fitnesstst"])
+#     complexity=np.array(selection["complexity"])
     
-    model = GenericClass(selection=selection["selection"], popSize=selection["popSize"], 
-                        sel=selection["sel"], population=population, fitnessval=fitnessval,
-                        complexity=complexity, fitnesstst=fitnesstst
-                        )
+#     model = GenericClass(selection=selection["selection"], popSize=selection["popSize"], 
+#                         sel=selection["sel"], population=population, fitnessval=fitnessval,
+#                         complexity=complexity, fitnesstst=fitnesstst
+#                         )
 
-    GAparsimony._selection(model)
+#     GAparsimony._selection(model)
     
-    assert (model.population==population[selection["sel"]]).all() and (model.fitnessval==fitnessval[selection["sel"]]).all() and \
-            (model.fitnesstst==fitnesstst[selection["sel"]]).all() and (model.complexity==complexity[selection["sel"]]).all()
+#     assert (model.population==population[selection["sel"]]).all() and (model.fitnessval==fitnessval[selection["sel"]]).all() and \
+#             (model.fitnesstst==fitnesstst[selection["sel"]]).all() and (model.complexity==complexity[selection["sel"]]).all()
 
-#################################################
-#****************TEST MUTATION*****************#
-#################################################
+# #################################################
+# #****************TEST MUTATION*****************#
+# #################################################
 
-@pytest.mark.parametrize("mutation", [readJSONFile('./test/outputs/mutation.json')])
-def test_GAParsimony_regresion_boston_mutation(mutation):
-    np.random.seed(mutation["seed"])
+# @pytest.mark.parametrize("mutation", [readJSONFile('./test/outputs/mutation.json')])
+# def test_GAParsimony_regresion_boston_mutation(mutation):
+#     np.random.seed(mutation["seed"])
     
-    model = GenericClass(pmutation=mutation["pmutation"], nParams=mutation["nParams"], nFeatures=mutation["nFeatures"],
-                        popSize=mutation["popSize"], not_muted=mutation["not_muted"], population=np.array(mutation["population"]), 
-                        min_param=np.array(mutation["min_param"]), max_param=np.array(mutation["max_param"]), feat_mut_thres=mutation["feat_mut_thres"],
-                        fitnessval=np.array(mutation["fitnessval"]), fitnesstst=np.array(mutation["fitnesstst"]), complexity=np.array(mutation["complexity"]))
+#     model = GenericClass(pmutation=mutation["pmutation"], nParams=mutation["nParams"], nFeatures=mutation["nFeatures"],
+#                         popSize=mutation["popSize"], not_muted=mutation["not_muted"], population=np.array(mutation["population"]), 
+#                         min_param=np.array(mutation["min_param"]), max_param=np.array(mutation["max_param"]), feat_mut_thres=mutation["feat_mut_thres"],
+#                         fitnessval=np.array(mutation["fitnessval"]), fitnesstst=np.array(mutation["fitnesstst"]), complexity=np.array(mutation["complexity"]))
 
-    GAparsimony._mutation(model)
+#     GAparsimony._mutation(model)
     
-    assert (model.population==np.array(mutation["resultado"])).all()
+#     assert (model.population==np.array(mutation["resultado"])).all()
 
-#################################################
-#****************TEST CROSSOVER*****************#
-#################################################
+# #################################################
+# #****************TEST CROSSOVER*****************#
+# #################################################
 
-@pytest.mark.parametrize("crossover", [readJSONFile('./test/outputs/crossover.json')])
-def test_GAParsimony_regresion_boston_crossover(crossover):
-    np.random.seed(crossover["seed"])
+# @pytest.mark.parametrize("crossover", [readJSONFile('./test/outputs/crossover.json')])
+# def test_GAParsimony_regresion_boston_crossover(crossover):
+#     np.random.seed(crossover["seed"])
     
-    model = GenericClass(nFeatures=crossover["nFeatures"], nParams=crossover["nParams"], pcrossover=crossover["pcrossover"],
-                        popSize=crossover["popSize"], population=np.array(crossover["population"]), min_param=np.array(crossover["min_param"]), 
-                        max_param=np.array(crossover["max_param"]), fitnessval=np.array(crossover["fitnessval"]), 
-                        fitnesstst=np.array(crossover["fitnesstst"]), complexity=np.array(crossover["complexity"]))
+#     model = GenericClass(nFeatures=crossover["nFeatures"], nParams=crossover["nParams"], pcrossover=crossover["pcrossover"],
+#                         popSize=crossover["popSize"], population=np.array(crossover["population"]), min_param=np.array(crossover["min_param"]), 
+#                         max_param=np.array(crossover["max_param"]), fitnessval=np.array(crossover["fitnessval"]), 
+#                         fitnesstst=np.array(crossover["fitnesstst"]), complexity=np.array(crossover["complexity"]))
 
-    nmating = int(np.floor(model.popSize/2))
-    mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
-    for i in range(nmating):
-        if model.pcrossover > np.random.uniform(low=0, high=1):
-            parents = mating[i, ]
-            GAparsimony._crossover(model, parents=parents)
+#     nmating = int(np.floor(model.popSize/2))
+#     mating = np.random.choice(list(range(2 * nmating)), size=(2 * nmating), replace=False).reshape((nmating, 2))
+#     for i in range(nmating):
+#         if model.pcrossover > np.random.uniform(low=0, high=1):
+#             parents = mating[i, ]
+#             GAparsimony._crossover(model, parents=parents)
     
-    assert (model.population==np.array(crossover["resultado"])).all()
+#     assert (model.population==np.array(crossover["resultado"])).all()

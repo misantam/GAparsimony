@@ -110,7 +110,9 @@ p = np.array([[0.00000000e+00, 8.15403578e-02, 1.80000000e+01, 1.00000000e+00,
         0.00000000e+00, 0.00000000e+00, 1.00000000e+00, 0.00000000e+00,
         0.00000000e+00, 1.00000000e+00, 0.00000000e+00, 1.00000000e+00]])
 
-c = Population({"kernel":{"range": ["linear", "rbf", "random"], "type": Population.STRING}, "min_samples_leaf":{"range": (0.,1.), "type": Population.FLOAT}, "C":{"range": (0,101), "type": Population.INTEGER}, "seed":{"value": 1234, "type": Population.CONSTANT}, "criterion":{"value": "gini", "type": Population.CONSTANT}}, p)
+aux["params"] = {"kernel":{"range": ["linear", "rbf", "random"], "type": Population.STRING}, "min_samples_leaf":{"range": (0.,1.), "type": Population.FLOAT}, "C":{"range": (0,101), "type": Population.INTEGER}, "seed":{"value": 1234, "type": Population.CONSTANT}, "criterion":{"value": "gini", "type": Population.CONSTANT}}
+aux["features"] = 18
+c = Population({"kernel":{"range": ["linear", "rbf", "random"], "type": Population.STRING}, "min_samples_leaf":{"range": (0.,1.), "type": Population.FLOAT}, "C":{"range": (0,101), "type": Population.INTEGER}, "seed":{"value": 1234, "type": Population.CONSTANT}, "criterion":{"value": "gini", "type": Population.CONSTANT}}, 18, p)
 
 print(c[1,2])
 
@@ -169,6 +171,6 @@ class NumpyEncoder(json.JSONEncoder):
             return obj.tolist()
         return json.JSONEncoder.default(self, obj)
 
-with open('./test/outputs/populationClass.json', 'w') as f:
+with open('./test/outputs/populationClass2.json', 'w') as f:
     f.write(json.dumps(aux, cls=NumpyEncoder))
 
