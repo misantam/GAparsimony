@@ -4,9 +4,7 @@ from sklearn.model_selection import RepeatedKFold
 from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score
 
-from src.gaparsimony import GAparsimony
-from src.population import Population
-from src.fitness import getFitness
+from src import GAparsimony, Population, getFitness
 
 df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
 

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from lhs.util.utilityLHS import initializeAvailableMatrix, convertIntegerToNumericLhs
+from lhs.util import initializeAvailableMatrix, convertIntegerToNumericLhs
 
 # result es lo que devolvemos
 

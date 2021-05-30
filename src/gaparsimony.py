@@ -45,8 +45,7 @@ class GAparsimony(object):
                 maxFitness = np.Inf, 
                 suggestions = None,
                 seed_ini = None, 
-                verbose=MONITOR,
-                logger = None):
+                verbose=MONITOR):
 
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism
@@ -510,15 +509,15 @@ class GAparsimony(object):
   
         nvars = len(self.population.paramsnames) + len(self.population.colsnames)
         if type_ini_pop=="randomLHS":
-            population = randomLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = randomLHS.randomLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="geneticLHS":
-            population = geneticLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = geneticLHS.geneticLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="improvedLHS":
-            population = improvedLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = improvedLHS.improvedLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="maximinLHS":
-            population = maximinLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = maximinLHS.maximinLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="optimumLHS":
-            population = optimumLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = optimumLHS.optimumLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="random":
             population = (np.random.rand(self.popSize*nvars) * (nvars - self.popSize) + self.popSize).reshape(self.popSize*nvars, 1)
   

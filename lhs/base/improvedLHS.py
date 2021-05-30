@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from lhs.util.utilityLHS import initializeAvailableMatrix, convertIntegerToNumericLhs
+from lhs.util import initializeAvailableMatrix, convertIntegerToNumericLhs
 
 
 def _improvedLHS( n,  k, dup=1, seed=None):

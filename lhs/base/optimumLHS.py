@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from lhs.util.bclib import findorder
-from lhs.util.utilityLHS import sumInvDistance, convertIntegerToNumericLhs
+from lhs.util import findorder, sumInvDistance, convertIntegerToNumericLhs
 
 
 def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):

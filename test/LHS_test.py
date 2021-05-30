@@ -1,9 +1,5 @@
-from lhs.base.randomLHS import randomLHS, randomLHS_int
-from lhs.base.maximinLHS import maximinLHS
-from lhs.base.improvedLHS import improvedLHS
-from lhs.base.optimumLHS import optimumLHS
-from lhs.base.geneticLHS import geneticLHS
-from lhs.util.utilityLHS import isValidLHS, isValidLHS_int
+from lhs.util import isValidLHS, isValidLHS_int
+from lhs.base import *
 
 import pytest
 
@@ -13,7 +9,7 @@ import pytest
     (3, 8)
 ])
 def test_randomLHS_int(shape):
-    assert isValidLHS_int(randomLHS_int(*shape))
+    assert isValidLHS_int(randomLHS.randomLHS_int(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -21,7 +17,7 @@ def test_randomLHS_int(shape):
     (3, 8)
 ])
 def test_randomLHS(shape):
-    assert isValidLHS(randomLHS(*shape))
+    assert isValidLHS(randomLHS.randomLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -29,7 +25,7 @@ def test_randomLHS(shape):
     (3, 8)
 ])
 def test_geneticLHS(shape):
-    assert isValidLHS(geneticLHS(*shape))
+    assert isValidLHS(geneticLHS.geneticLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -37,7 +33,7 @@ def test_geneticLHS(shape):
     (3, 8)
 ])
 def test_improvedLHS(shape):
-    assert isValidLHS(improvedLHS(*shape))
+    assert isValidLHS(improvedLHS.improvedLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -45,7 +41,7 @@ def test_improvedLHS(shape):
     (3, 8)
 ])
 def test_maximinLHS(shape):
-    assert isValidLHS(maximinLHS(*shape))
+    assert isValidLHS(maximinLHS.maximinLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -53,4 +49,4 @@ def test_maximinLHS(shape):
     (8, 8)
 ])
 def test_optimumLHS(shape):
-    assert isValidLHS(optimumLHS(*shape))
+    assert isValidLHS(optimumLHS.optimumLHS(*shape))

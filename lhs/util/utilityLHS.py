@@ -1,5 +1,5 @@
 import numpy as np
-from lhs.util.bclib import inner_product
+from .bclib import inner_product
 
 def isValidLHS_int(matrix):
     for jcol in range(matrix.shape[1]):

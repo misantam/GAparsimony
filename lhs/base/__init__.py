@@ -1,7 +1,7 @@
-# __all__ = ['geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS', 'randomLHS']
+__all__ = ['geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS', 'randomLHS']
 
-from lhs.base.randomLHS import randomLHS
-from lhs.base.maximinLHS import maximinLHS
-from lhs.base.improvedLHS import improvedLHS
-from lhs.base.optimumLHS import optimumLHS
-from lhs.base.geneticLHS import geneticLHS
+# from .geneticLHS import geneticLHS
+# from .improvedLHS import improvedLHS
+# from .maximinLHS import maximinLHS
+# from .optimumLHS import optimumLHS
+# from .randomLHS import randomLHS, randomLHS_int

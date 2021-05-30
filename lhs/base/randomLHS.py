@@ -2,8 +2,7 @@
 
 # https://github.com/bertcarnell/lhs/blob/master
 
-from src.ordenacion import order
-from lhs.util.bclib import findorder
+from lhs.util import findorder, order
 import numpy as np
 
    
