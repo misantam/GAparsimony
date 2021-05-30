@@ -104,8 +104,6 @@ class GAparsimony(object):
         self.verbose = verbose
         self.logger = None
 
-        # self.nvars = len(self.population.paramsnames) + (len(features) if type(features) is list else features)
-
         self.iter = 0
         self.minutes_total=0
         self.best_score = np.NINF
@@ -124,7 +122,7 @@ class GAparsimony(object):
         
         
         
-    def fit(self, iter_ini=0):
+    def fit(self, X, y, iter_ini=0):
            
         # Get suggestions
         # ---------------
@@ -146,6 +144,7 @@ class GAparsimony(object):
         self.fitnesstst[:] = np.nan
         self.complexity = np.empty(self.popSize)
         self.complexity[:] = np.nan
+        _models = np.empty(self.popSize).astype(object)
 
 
         if len(self.history) > 0:
@@ -177,16 +176,15 @@ class GAparsimony(object):
             for t in range(self.popSize):
                 c = self.population.getCromosoma(t)
                 if np.isnan(self.fitnessval[t]) and np.sum(c.columns)>0:
-                    fit = self.fitness(c)
-                    self.fitnessval[t] = fit[0]
-                    self.fitnesstst[t] = fit[1]
-                    self.complexity[t] = fit[2]
+                    fit = self.fitness(c, X=X, y=y)
+                    self.fitnessval[t] = fit[0][0]
+                    self.fitnesstst[t] = fit[0][1]
+                    self.complexity[t] = fit[0][2]
+                    _models[t] = fit[1]
                 
-            
-            # np.random.seed(self.seed_ini*iter) if not self.seed_ini else np.random.seed(1234*iter)
+
             if self.seed_ini:
                 np.random.seed(self.seed_ini*iter) 
-                # np.random.seed(self.seed_ini) 
             
 
             # Sort by the Fitness Value
@@ -196,6 +194,7 @@ class GAparsimony(object):
             self.fitnessval = self.fitnessval[ord]
             self.fitnesstst = self.fitnesstst[ord]
             self.complexity = self.complexity[ord]
+            _models = _models[ord]
 
             PopSorted = self.population.population.copy()
             FitnessValSorted = self.fitnessval.copy()
@@ -224,6 +223,7 @@ class GAparsimony(object):
                 self.fitnessval = self.fitnessval[ord_rerank]
                 self.fitnesstst = self.fitnesstst[ord_rerank]
                 self.complexity = self.complexity[ord_rerank]
+                _models = _models[ord_rerank]
 
                 PopSorted = self.population.population.copy()
                 FitnessValSorted = self.fitnessval.copy()
@@ -248,6 +248,11 @@ class GAparsimony(object):
             self.bestcomplexity = self.complexity[0]
             self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population[0]])
             self.bestSolList.append(self.bestsolution)
+
+            # Keep Best Model
+            # ------------------
+            self.best_model = _models[0]
+            self.best_model_conf = self.population.getCromosoma(0)
             
 
             # Keep elapsed time in minutes
@@ -526,90 +531,51 @@ class GAparsimony(object):
         return population
 
     def __str__(self):
-        print("An object of class \"ga_parsimony\"")
-        print(f"Call: {self.call}")
-        print("Available slots:")
-        print(f"bestfitnessVal: {self.bestfitnessVal}")
-        print(f"bestfitnessTst: {self.bestfitnessTst}")
-        print(f"bestcomplexity: {self.bestcomplexity}")
-        print(f"bestsolution: {self.bestsolution}")
-        print(f"min_param: {self.population._min}")
-        print(f"max_param: {self.population._max}")
-        print(f"nParams: {len(self.population.paramsnames)}")
-        print(f"feat_thres: {self.feat_thres}")
-        print(f"feat_mut_thres: {self.feat_mut_thres}")
-        print(f"not_muted: {self.not_muted}")
-        print(f"rerank_error: {self.rerank_error}")
-        print(f"iter_start_rerank: {self.iter_start_rerank}")
-        print(f"nFeatures: {len(self.population.colsnames)}")
-        print(f"names_param: {self.population.paramsnames}")
-        print(f"names_features: {self.population.colsnames}")
-        print(f"popSize: {self.popSize}")
-        print(f"iter: {self.iter}") 
-        print(f"early_stop: {self.early_stop}")
-        print(f"maxiter: {self.maxiter}")
-        print(f"minutes_gen: {self.minutes_gen}")
-        print(f"minutes_total: {self.minutes_total}")
-        print(f"suggestions: {self.suggestions}")
-        print(f"population: {self.population}")
-        print(f"elitism: {self.elitism}")
-        print(f"pcrossover: {self.pcrossover}")
-        print(f"pmutation: {self.pmutation}")
-        print(f"best_score: {self.best_score}")
-        print(f"solution_best_score: {self.solution_best_score}")
-        print(f"fitnessval: {self.fitnessval}")
-        print(f"fitnesstst: {self.fitnesstst}")
-        print(f"complexity: {self.complexity}")
-        print(f"summary: {self._summary}")
-        print(f"bestSolList: {self.bestSolList}")
-
-        print(f"history: ")
+        dev =  "An object of class \"ga_parsimony\"\r" + \
+                f"Call: {self.call}\r" + \
+                "Available slots:\r" + \
+                f"bestfitnessVal: {self.bestfitnessVal}\r" + \
+                f"bestfitnessTst: {self.bestfitnessTst}\r" + \
+                f"bestcomplexity: {self.bestcomplexity}\r" + \
+                f"bestsolution: {self.bestsolution}\r" + \
+                f"min_param: {self.population._min}\r" + \
+                f"max_param: {self.population._max}\r" + \
+                f"nParams: {len(self.population.paramsnames)}\r" + \
+                f"feat_thres: {self.feat_thres}\r" + \
+                f"feat_mut_thres: {self.feat_mut_thres}\r" + \
+                f"not_muted: {self.not_muted}\r" + \
+                f"rerank_error: {self.rerank_error}\r" + \
+                f"iter_start_rerank: {self.iter_start_rerank}\r" + \
+                f"nFeatures: {len(self.population.colsnames)}\r" + \
+                f"names_param: {self.population.paramsnames}\r" + \
+                f"names_features: {self.population.colsnames}\r" + \
+                f"popSize: {self.popSize}\r" + \
+                f"iter: {self.iter}\r" + \
+                f"early_stop: {self.early_stop}\r" + \
+                f"maxiter: {self.maxiter}\r" + \
+                f"minutes_gen: {self.minutes_gen}\r" + \
+                f"minutes_total: {self.minutes_total}\r" + \
+                f"suggestions: {self.suggestions}\r" + \
+                f"population: {self.population}\r" + \
+                f"elitism: {self.elitism}\r" + \
+                f"pcrossover: {self.pcrossover}\r" + \
+                f"pmutation: {self.pmutation}\r" + \
+                f"best_score: {self.best_score}\r" + \
+                f"solution_best_score: {self.solution_best_score}\r" + \
+                f"fitnessval: {self.fitnessval}\r" + \
+                f"fitnesstst: {self.fitnesstst}\r" + \
+                f"complexity: {self.complexity}\r" + \
+                f"summary: {self._summary}\r" + \
+                f"bestSolList: {self.bestSolList}\r" + \
+                f"history: \r"
+        
         for h in self.history:
-            print(h)
+            dev += (h + "\r")
 
-    # def __repr__(self):
-    #     print("An object of class \"ga_parsimony\"")
-    #     print(f"Call: {self.call}")
-    #     print("Available slots:")
-    #     print(f"bestfitnessVal: {self.bestfitnessVal}")
-    #     print(f"bestfitnessTst: {self.bestfitnessTst}")
-    #     print(f"bestcomplexity: {self.bestcomplexity}")
-    #     print(f"bestsolution: {self.bestsolution}")
-    #     print(f"min_param: {self.population._min}")
-    #     print(f"max_param: {self.population._max}")
-    #     print(f"nParams: {len(self.population.paramsnames)}")
-    #     print(f"feat_thres: {self.feat_thres}")
-    #     print(f"feat_mut_thres: {self.feat_mut_thres}")
-    #     print(f"not_muted: {self.not_muted}")
-    #     print(f"rerank_error: {self.rerank_error}")
-    #     print(f"iter_start_rerank: {self.iter_start_rerank}")
-    #     print(f"nFeatures: {len(self.population.colsnames)}")
-    #     print(f"names_param: {self.population.paramsnames}")
-    #     print(f"names_features: {self.population.colsnames}")
-    #     print(f"popSize: {self.popSize}")
-    #     print(f"iter: {self.iter}") 
-    #     print(f"early_stop: {self.early_stop}")
-    #     print(f"maxiter: {self.maxiter}")
-    #     print(f"minutes_gen: {self.minutes_gen}")
-    #     print(f"minutes_total: {self.minutes_total}")
-    #     print(f"suggestions: {self.suggestions}")
-    #     print(f"population: {self.population}")
-    #     print(f"elitism: {self.elitism}")
-    #     print(f"pcrossover: {self.pcrossover}")
-    #     print(f"pmutation: {self.pmutation}")
-    #     print(f"best_score: {self.best_score}")
-    #     print(f"solution_best_score: {self.solution_best_score}")
-    #     print(f"fitnessval: {self.fitnessval}")
-    #     print(f"fitnesstst: {self.fitnesstst}")
-    #     print(f"complexity: {self.complexity}")
-    #     print(f"summary: {self._summary}")
-    #     print(f"bestSolList: {self.bestSolList}")
+        return dev
 
-    #     print(f"history: ")
-    #     for h in self.history:
-    #         print(h)
-
-
+    def __repr__(self):
+        return self.__str__()
 
     def summary(self, **kwargs):
 
@@ -791,4 +757,13 @@ class GAparsimony(object):
             print("Percentage of appearance of each feature in elitists: \n")
             print(imp_features)
 
-        return imp_features 
+        return imp_features
+
+    def predict(self, X):
+        X = X.values if type(X).__name__ == 'DataFrame' else X
+        return self.best_model.predict(X[:, self.best_model_conf.columns.astype(bool)])
+
+
+
+
+

@@ -4,9 +4,6 @@ import numpy  as np
 # new function for monitoring
 def parsimony_monitor(object, digits = 7, *args):
   fitnessval = object.fitnessval[~np.isnan(object.fitnessval)]
-  fitnesstst = object.fitnesstst[~np.isnan(object.fitnesstst)]
-  complexity = object.complexity[~np.isnan(object.complexity)]
-  time_min = object.minutes_gen
     
   print(f"GA-PARSIMONY | iter = {object.iter}")
   print("|".join([f"MeanVal = {round(np.mean(fitnessval), digits)}".center(16+digits), 
