@@ -58,7 +58,7 @@ class GAparsimony(object):
         # ----------------
         if selection is None or type(selection) is not str:
             raise ValueError("A selection(sting) must be provided!!!")
-        if not fitness:
+        if fitness is None:
             raise Exception("A fitness function must be provided!!!")
         if not callable(fitness):
             raise Exception("A fitness function must be provided!!!")
@@ -76,7 +76,7 @@ class GAparsimony(object):
             raise ValueError("A min and max range of values must be provided!!!")
         if self.population._min.shape != self.population._max.shape:
             raise Exception("min_param and max_param must have the same length!!!")
-        if not features:
+        if features is None:
             raise Exception("Number of features or name of features must be provided!!!")
         if (suggestions is not None) or (type(suggestions) is list and len(suggestions)>0 and type(suggestions[0]) is not list) or (type(suggestions) is np.array and len(suggestions.shape) < 2):
             raise Exception("Provided suggestions is a vector")
@@ -104,7 +104,7 @@ class GAparsimony(object):
         self.verbose = verbose
         self.logger = None
 
-        self.nvars = len(self.population.paramsnames) + (len(features) if type(features) is list else features)
+        # self.nvars = len(self.population.paramsnames) + (len(features) if type(features) is list else features)
 
         self.iter = 0
         self.minutes_total=0
@@ -175,8 +175,9 @@ class GAparsimony(object):
             self.iter = iter
 
             for t in range(self.popSize):
-                if np.isnan(self.fitnessval[t]) and np.sum(self.population[t,range(len(self.population.paramsnames), self.nvars)])>0:
-                    fit = self.fitness(self.population[t])
+                c = self.population.getCromosoma(t)
+                if np.isnan(self.fitnessval[t]) and np.sum(c.columns)>0:
+                    fit = self.fitness(c)
                     self.fitnessval[t] = fit[0]
                     self.fitnesstst[t] = fit[1]
                     self.complexity[t] = fit[2]

@@ -10,6 +10,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import load_boston
 
 from src.gaparsimony import GAparsimony
+from src.population import Population
 
 
 
@@ -26,11 +27,8 @@ data_test = pd.DataFrame(X_test, columns=boston.feature_names)
 
 
 def fitness_NNET(chromosome):
-    # First two values in chromosome are 'C' & 'sigma' of 'svmRadial' method
-    tuneGrid = {"alpha": chromosome[0],"tol": chromosome[1]}
-    
     # Next values of chromosome are the selected features (TRUE if > 0.50)
-    selec_feat = chromosome[2:]>0.50
+    selec_feat = chromosome.columns>0.50
     
     # Return -Inf if there is not selected features
     if np.sum(selec_feat)<1:
@@ -48,16 +46,16 @@ def fitness_NNET(chromosome):
     # train the model
     np.random.seed(1234)
 
-    aux = Lasso(**tuneGrid)
+    aux = Lasso(**chromosome.params)
 
-    model = cross_val_score(aux, data_train_model, y_train, scoring="neg_mean_squared_error", cv=train_control, n_jobs=-1)
+    model = cross_val_score(aux, data_train_model, y_train, scoring=make_scorer(mean_squared_error), cv=train_control, n_jobs=-1)
 
     
 
     # Extract kappa statistics (the repeated k-fold CV and the kappa with the test DB)
     rmse_val = model.mean()
 
-    model = Lasso(**tuneGrid).fit(data_train_model, y_train)
+    model = Lasso(**chromosome.params).fit(data_train_model, y_train)
 
     rmse_test = mean_squared_error(model.predict(data_test_model), y_test)
     # Obtain Complexity = Num_Features*1E6+Number of support vectors
@@ -67,32 +65,26 @@ def fitness_NNET(chromosome):
     complexity = np.sum(selec_feat)*1E6 + coef
     
     # Return(validation score, testing score, model_complexity)
-    return np.array([rmse_val, -rmse_test, complexity])
-
-
-# Ranges of size and decay
-min_param = np.array([1., 0.0001])
-max_param = np.array([25, 0.9999])
-names_param = ["alpha","tol"]
+    return np.array([-rmse_val, -rmse_test, complexity])
 
 # ga_parsimony can be executed with a different set of 'rerank_error' values
 rerank_error = 0.01
 
+params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
+            "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
+
 
 GAparsimony_model = GAparsimony(fitness=fitness_NNET,
-                                  min_param=min_param,
-                                  max_param=max_param,
-                                  names_param=names_param,
-                                  nFeatures=len(boston.feature_names),
-                                  names_features=boston.feature_names,
-                                  keep_history = True,
-                                  rerank_error = rerank_error,
-                                  popSize = 40,
-                                  maxiter = 25, early_stop=10,
-                                  feat_thres=0.90, # Perc selected features in first generation
-                                  feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                  parallel = True, seed_ini = 1234,
-                                  verbose=GAparsimony.MONITOR)
+                                params = params, 
+                                features = boston.feature_names,
+                                keep_history = True,
+                                rerank_error = rerank_error,
+                                popSize = 40,
+                                maxiter = 5, early_stop=10,
+                                feat_thres=0.90, # Perc selected features in first generation
+                                feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                seed_ini = 1234,
+                                verbose=GAparsimony.MONITOR)
 
 
 GAparsimony_model.fit()

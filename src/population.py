@@ -20,7 +20,7 @@ class Population:
         self._constnames = [x for x in params if params[x]["type"] is Population.CONSTANT]
         self._const = [params[x]["value"] for x in params if params[x]["type"] is Population.CONSTANT]
 
-        columns = columns if type(columns) is list else [f"col_{i}" for i in range(columns)]
+        columns = (columns if type(columns) is list else columns.tolist()) if hasattr(columns, '__iter__') else [f"col_{i}" for i in range(columns)]
         self._min = np.concatenate((self._min, np.zeros(len(columns))), axis=0)
         self._max = np.concatenate((self._max, np.ones(len(columns))), axis=0)
         self.colsnames = columns
@@ -101,7 +101,7 @@ class Cromosoma:
 
     # @autoassign
     def __init__(self, params, name_params, const, name_const, cols, name_cols):
-        self._params = params
+        self._params = params.tolist()
         self.name_params = name_params
         self.const = const
         self.name_const = name_const
