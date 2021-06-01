@@ -42,7 +42,7 @@ jobs:
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       with:
         args: >
-          -sonar.projectKey=${{ secrets.SONAR_TOKEN }}
+          -sonar.projectKey=GAparsimony-Github
 
   # docker-example:
   #   runs-on: ubuntu-latest
