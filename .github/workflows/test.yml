@@ -39,7 +39,7 @@ jobs:
       uses: sonarsource/sonarqube-scan-action@master
       with:
         args: >
-          -sonar.projectKey=GAparsimony-Github
+          -sonar.projectKey='${{ secrets.SONAR_TOKEN }}'
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
