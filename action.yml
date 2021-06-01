@@ -5,8 +5,7 @@ branding:
   icon: check
   color: green
 runs:
-  using: docker
-  image: Dockerfile
+  runs-on: ubuntu-latest
 inputs:
   args:
     description: Additional arguments to the sonar-scanner
