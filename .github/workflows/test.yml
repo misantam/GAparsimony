@@ -37,12 +37,12 @@ jobs:
         fetch-depth: 0
     - name: SonarQube Scan
       uses: sonarsource/sonarqube-scan-action@master
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       with:
         args: >
           -sonar.projectKey=GAparsimony-Github
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   # docker-example:
   #   runs-on: ubuntu-latest
