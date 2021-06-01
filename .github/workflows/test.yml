@@ -28,6 +28,18 @@ jobs:
     - name: Test with pytest
       run: |
         pytest -vv
+  sonarqube:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        # Disabling shallow clone is recommended for improving relevancy of reporting
+        fetch-depth: 0
+    - name: SonarQube Scan
+      uses: misantam/GAparsimony@develop
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   # docker-example:
   #   runs-on: ubuntu-latest
