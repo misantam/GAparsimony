@@ -5,7 +5,7 @@ branding:
   icon: check
   color: green
 runs:
-  runs-on: ubuntu-latest
+  on: ubuntu-latest
 inputs:
   args:
     description: Additional arguments to the sonar-scanner
