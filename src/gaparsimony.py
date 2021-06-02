@@ -451,7 +451,6 @@ class GAparsimony(object):
         pos_features = np.array(list(range(len(self.population.paramsnames), len(self.population.paramsnames) + len(self.population.colsnames))))
         
         # Heuristic Blending for parameters
-        alpha = 0.1
         Betas = np.random.uniform(size=len(self.population.paramsnames), low=0, high=1)*(1+2*alpha)-alpha  # 1+alpha*2??????
         children[0,pos_param] = parents[0,pos_param]-Betas*parents[0,pos_param]+Betas*parents[1,pos_param]  ## MAP??
         children[1,pos_param] = parents[1,pos_param]-Betas*parents[1,pos_param]+Betas*parents[0,pos_param]
