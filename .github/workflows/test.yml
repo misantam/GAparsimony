@@ -36,19 +36,20 @@ jobs:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
     - name: SonarQube Scan
-      uses: docker://sonarsource/sonar-scanner-cli:latest
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-#       uses: sonarsource/sonarqube-scan-action@master
-#       with:
-#         args: >
-#           -Dsonar.projectKey=GAparsimony 
-#           -Dsonar.sources=. 
+#       uses: docker://sonarsource/sonar-scanner-cli:latest
 #       env:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 #         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      uses: sonarsource/sonarqube-scan-action@master
+      with:
+        args: >
+          -Dsonar.projectKey=GAparsimony 
+          -Dsonar.sources=. 
+          -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
 
   # docker-example:
   #   runs-on: ubuntu-latest
