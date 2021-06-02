@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.model_selection import train_test_split, cross_val_score, RepeatedKFold
 from sklearn.metrics import make_scorer
 import numpy as np

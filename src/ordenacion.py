@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import numpy as np
 
 def order(obj, kind='heapsort', decreasing = False, na_last = True):

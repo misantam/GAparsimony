@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from lhs.util import isValidLHS, isValidLHS_int
 from lhs.base import *
 

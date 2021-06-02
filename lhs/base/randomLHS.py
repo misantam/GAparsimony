@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# https://github.com/bertcarnell/lhs/blob/master
-
 from lhs.util import findorder, order
 import numpy as np
 

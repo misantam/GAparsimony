@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from src.population import Population
 from .parsimony_monitor import parsimony_monitor, parsimony_summary
 from .ordenacion import order
@@ -101,7 +103,6 @@ class GAparsimony(object):
         self.suggestions = np.array(suggestions) if type(suggestions) is list else suggestions
         self.seed_ini = seed_ini
         self.verbose = verbose
-        self.logger = None
 
         self.iter = 0
         self.minutes_total=0
