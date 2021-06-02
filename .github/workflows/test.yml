@@ -44,8 +44,10 @@ jobs:
       uses: sonarsource/sonarqube-scan-action@master
       with:
         args: >
-          -sonar.projectKey=GAparsimony 
+          -Dsonar.projectKey=GAparsimony 
           -Dsonar.sources=.
+          -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+          -Dsonar.password=${{ secrets.SONAR_PASSWORD }}
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
