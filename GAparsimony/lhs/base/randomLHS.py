@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from lhs.util import findorder, order
+from GAparsimony.lhs.util import findorder, order
 import numpy as np
 
    

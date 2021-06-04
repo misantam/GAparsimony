@@ -1,10 +1,41 @@
 # -*- coding: utf-8 -*-
 
-from src.population import Population
-from .parsimony_monitor import parsimony_monitor, parsimony_summary
-from .ordenacion import order
-from lhs.base import *
-from .parsimony_miscfun import printShortMatrix
+"""Combines feature selection, model tuning, and parsimonious model selection with GA optimization.
+GA selection procedure is based on separate cost and complexity evaluations. Therefore, the best
+individuals are initially sorted by an error fitness function, and afterwards, models with similar
+costs are rearranged according to modelcomplexity measurement so as to foster models of lesser
+complexity. The algorithm can be run sequentially or in parallel using an explicit master-slave
+parallelisation.
+
+GAparsimonypackage is a new GA wrapper automatic method that efficiently generated predic-tion models 
+with reduced complexity and adequate generalization capacity.ga_parsimonyfunctionis primarily based on 
+combining feature selection and model parameter tuning with a second novelGA selection process (ReRank algorithm) 
+in order to achieve better overall parsimonious models.Unlike other GA methodologies that use a penalty parameter 
+for combining loss and complexitymeasures into a unique fitness function, the main contribution of this 
+package is thatga_parsimonyselects the best models by considering cost and complexity separately. For 
+this purpose, the ReRankalgorithm rearranges individuals by their complexity when there is not a significant 
+difference be-tween their costs. Thus, less complex models with similar accuracy are promoted. Furthermore,
+because the penalty parameter is unnecessary, there is no consequent uncertainty associated withassigning a 
+correct value beforehand. As a result, with GA-PARSIMONY, an automatic method forobtaining parsimonious models 
+is finally made possible.
+
+References
+----------
+Sanz-Garcia A., Fernandez-Ceniceros J., Antonanzas-Torres F., Pernia-Espinoza A.V., Martinez-de-Pison F.J. (2015). 
+GA-PARSIMONY: A GA-SVR approach with feature selection and param-eter optimization to obtain parsimonious solutions 
+for predicting temperature settings in a contin-uous annealing furnace.  Applied Soft Computing 35, 23-38. 
+Fernandez-Ceniceros J., Sanz-GarciaA., Antonanzas-Torres F., Martinez-de-Pison F.J. (2015). A numerical-informational 
+approach forcharacterising the ductile behaviour of the T-stub component. Part 2: Parsimonious soft-computing-based metamodel. 
+Engineering Structures 82, 249-260. Antonanzas-Torres F., Urraca R., Antonan-zas J., Fernandez-Ceniceros J., 
+Martinez-de-Pison  F.J. (2015). Generation of daily global solarirradiation with support vector machines for regression.  
+Energy Conversion and Management 96,277-286.
+
+"""
+
+from GAparsimony import Population, order
+from GAparsimony.parsimony_monitor import parsimony_monitor, parsimony_summary
+from GAparsimony.lhs.base import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
+from GAparsimony.parsimony_miscfun import printShortMatrix
 
 import warnings
 import numpy as np
@@ -48,7 +79,100 @@ class GAparsimony(object):
                 suggestions = None,
                 seed_ini = None, 
                 verbose=MONITOR):
+        r"""
+        A GA-based optimization method for searching accurate parsimonious models by combining fea-ture selection, model tuning, 
+        and parsimonious model selection (PMS). PMS procedure is basedon separate cost and complexity evaluations. The best individuals 
+        are initially sorted by an errorfitness function, and afterwards, models with similar costs are rearranged according to their 
+        modelcomplexity so as to foster models of lesser complexity. The algorithm can be run sequentially or inparallel using an 
+        explicit master-slave parallelisation.
 
+        Parameters
+        ----------
+        fitness : function
+            The fitness function, any function which takes as input an chromosome(`Chromosome`) which combines the model parameters 
+            to tune and the features to be selected. Fitness function returns a numerical vector with three values:validation_cost, 
+            testing_cost and model_complexity, and the trained model. 
+        params : dict
+            It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
+
+            {
+                "<< hyperparameter name >>": {
+                    "range": [<< minimum value >>, << maximum value >>],
+                    "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                },
+                "<< hyperparameter name >>": {
+                    "value": << constant value >>,
+                    "type": GAparsimony.CONSTANT
+                }
+            }
+        features : int or list of str
+            The number of features/columns in the dataset or a list with their names.
+        type_ini_pop : str
+            Method to create the first population with `GAparsimony._population` function. Possible values: 'randomLHS', 'geneticLHS', 
+            'improvedLHS', 'maximinLHS', 'optimumLHS', 'random'.First 5 methods correspond with several latine hypercube sampling. By default is set to `improvedLHS`.
+        popSize : int
+            The population size.
+        pcrossover : float
+            The probability of crossover between pairs of chromosomes. Typically this is alarge value and by default is set to `0.8`.
+        maxiter : float
+            The maximum number of iterations to run before the GA process is halted.
+        feat_thres : float
+            Proportion of selected features in the initial population. It is recommended ahigh percentage of selected features for 
+            the first generations. By default is set to `0.90`.
+        rerank_error : float
+            When a value is provided, a second reranking process according to the model complexities is called by `parsimony_rerank` function. 
+            Its primary objective isto select individuals with high validation cost while maintaining the robustnessof a parsimonious model. 
+            This function switches the position of two models if the first one is more complex than the latter and no significant difference 
+            is found between their fitness values in terms of cost. Therefore, if the absolute difference between the validation costs are 
+            lower than `rerank_error` they areconsidered similar. Default value=`0.01`.
+        iter_start_rerank : int
+            Iteration when ReRanking process is actived. Default=`0`. Sometimes is useful not to use ReRanking process in the first generations.
+        pmutation : float
+            The probability of mutation in a parent chromosome. Usually mutation occurswith a small probability. By default is set to `0.10`.
+        feat_mut_thres : float
+            Probability of the muted `features-chromosome` to be one. Default value is set to `0.10`.
+        not_muted : int
+            Number of the best elitists that are not muted in each generation. Default valueis set to `3`.
+        elitism : int
+            The number of best individuals to survive at each generation. By default the top `20%` individuals will survive at each iteration.
+        selection : str
+            Method to perform selection with `GAparsimony._selection` function. Possible values: 'linear', 'nlinear', 'random'. By default is set to `nlinear`.
+        keep_history : bool
+            If it is `True` keeps in the list GAparsimony.history each generation as `pandas.DataFrame`. This parameter must set `True` in 
+            order to use `GAparsimony.plot` method or `GAparsimony.importance` function.
+        early_stop : int
+            The upper bound on the fitness function after that the GA search is interrupted. Default value is set to +Inf.
+        maxFitness : int
+            The number of consecutive generations without any improvement in the bestfitness value before the GA is stopped.
+        suggestions : numpy.array
+            A matrix of solutions strings to be included in the initial population.
+        suggestions : int
+            An integer value containing the random number generator state.
+        verbose : int
+            The level of messages that we want it to show us. Possible values: `GAparsimony.MONITOR`=1,  `GAparsimony.DEBUG`=2, if 0 no messages. Default `GAparsimony.MONITOR`.
+
+
+        Attributes
+        ----------
+        population : Population
+            The current (or final) population.
+        minutes_total : float
+            Total elapsed time (in minutes).
+        history : float
+            A list with the population of all iterations.
+        best_score : float
+            The best validation score in the whole GA process.
+        best_model
+            The best model in the whole GA process.
+        best_model_conf : Cromosoma
+            The parameters and features of the best model in the whole GA process.
+        bestfitnessVal : float
+            The validation cost of the best solution at the last iteration.
+        bestfitnessTst : float
+            The testing cost of the best solution at the last iteration.
+        bestcomplexity : float
+            The model complexity of the best solution at the last iteration.
+        """
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism
 
