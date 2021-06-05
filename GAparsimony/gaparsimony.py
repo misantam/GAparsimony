@@ -80,11 +80,9 @@ class GAparsimony(object):
                 seed_ini = None, 
                 verbose=MONITOR):
         r"""
-        A GA-based optimization method for searching accurate parsimonious models by combining fea-ture selection, model tuning, 
-        and parsimonious model selection (PMS). PMS procedure is basedon separate cost and complexity evaluations. The best individuals 
-        are initially sorted by an errorfitness function, and afterwards, models with similar costs are rearranged according to their 
-        modelcomplexity so as to foster models of lesser complexity. The algorithm can be run sequentially or inparallel using an 
-        explicit master-slave parallelisation.
+        A class for searching parsimonious models by feature selection and parameter tuning with
+        genetic algorithms.
+
 
         Parameters
         ----------
@@ -247,6 +245,23 @@ class GAparsimony(object):
         
         
     def fit(self, X, y, iter_ini=0):
+        r"""
+        A GA-based optimization method for searching accurate parsimonious models by combining feature selection, model tuning, 
+        and parsimonious model selection (PMS). PMS procedure is basedon separate cost and complexity evaluations. The best individuals 
+        are initially sorted by an errorfitness function, and afterwards, models with similar costs are rearranged according to their 
+        modelcomplexity so as to foster models of lesser complexity.
+
+        Parameters
+        ----------
+        X : pandas.DataFrame or numpy.array
+            Training vector.
+        y : pandas.DataFrame or numpy.array
+            Target vector relative to X.
+        iter_ini : int
+            Iteration/generation of `GAparsimony.history` to be used when model is pretrained. If
+            `iter_ini==None` uses the last iteration of the model.
+
+        """
            
         # Get suggestions
         # ---------------
@@ -463,6 +478,21 @@ class GAparsimony(object):
                     # input("Press [enter] to continue")
     
     def _rerank(self):
+        r"""
+        Function for reranking by complexity in parsimonious model selectionprocess. Promotes models with similar fitness but lower complexity to top positions.
+
+        This method corresponds with the second step of parsimonious model selection (PMS) procedure.PMS works in the 
+        following way: in each GA generation, best solutions are first sorted by their cost,J. Then, in a second step, 
+        individuals with less complexity are moved to the top positions when theabsolute difference of their J is lower 
+        than aobject@rerank_errorthreshold value. Therefore, theselection of less complex solutions among those with similar 
+        accuracy promotes the evolution ofrobust solutions with better generalization capabilities.
+
+        Returns
+        -------
+        numpy.array
+            A vector with the new position of the individuals
+
+        """
 
         cost1 = self.fitnessval.copy().astype(float)
         cost1[np.isnan(cost1)]= np.NINF
@@ -534,6 +564,15 @@ class GAparsimony(object):
         return position
     
     def _selection(self, *args, **kwargs):
+        r"""
+        Function for selection in GAparsimony.
+
+        Functions implementing selection genetic operator in GA-PARSIMONY after parsimony_rerankprocess. 
+        Linear-rank or Nonlinear-rank selection (Michalewicz (1996)). The type of selection is specified 
+        with the model selection attribute, it can be: `linear`, `nlinear` or `random`. Modify the attributes: 
+        `population`, `fitnessval`, `fitnesstst` and `complexity`.
+        """
+
         # Establezco esta cabecera para permitir una reimplementación si se desea
 
         if self.selection == "linear":
@@ -567,6 +606,25 @@ class GAparsimony(object):
         self.complexity = self.complexity[sel]
                 
     def _crossover(self, parents, alpha=0.1, perc_to_swap=0.5):
+        r"""
+        Function for crossover in GAparsimony.
+
+        Functions implementing particular crossover genetic operator for GA-PARSIMONY. 
+        Method usesfor model parameters Heuristic Blending and random swapping for 
+        binary selected features. Modify the attributes: `population`, `fitnessval`, 
+        `fitnesstst` and `complexity`.
+
+        Parameters
+        ----------
+        parents : list
+            A list with two integers that correspond to the indices of the rows of the parents 
+            of the current population.
+        alpha : float
+            A tuning parameter for the Heuristic Blending outer bounds [Michalewicz, 1991].
+            Typical and default value is `0.1`.
+        perc_to_swap : float
+            Percentage of features for swapping in the crossovering process. Default value is `0.5`.
+        """
 
         p=parents.copy()
 
@@ -611,6 +669,15 @@ class GAparsimony(object):
         self.complexity[p] = aux.copy()
 
     def _mutation(self):
+        r"""
+        Function for mutation in GAparsimony.
+
+        Functions implementing mutation genetic operator for GA-PARSIMONY. Method mutes a `GAparsimony.pmutation` percentage 
+        of them. If the value corresponds to a model parameter, algorithm uses uniform random mutation. For binary 
+        select features, method sets to one if the random value between `[0,1]` is loweror equal to `GAparsimony.feat_mut_thres`. 
+        Modify the attributes: `population`, `fitnessval`, `fitnesstst` and `complexity`.
+        """
+
 
          # Uniform random mutation (except first individual)
         nparam_to_mute = round(self.pmutation*(len(self.population.paramsnames)+len(self.population.colsnames))*self.popSize)
@@ -630,6 +697,28 @@ class GAparsimony(object):
             self.complexity[i] = np.nan
 
     def _population(self, type_ini_pop="randomLHS"):
+        r"""
+        Population initialization in GA-PARSIMONY with a combined chromosome of model parameters 
+        and selected features. Functions for creating an initial population to be used in the GA-PARSIMONY process.
+
+        Generates a random population of `GAparsimony.popSize` individuals. For each individual a 
+        random chromosome is generated with `len(GAparsimony.population.paramsnames)` real values in the `range[GAparsimony._min, GAparsimony._max] `
+        plus `len(GAparsimony.population.colsnames)` random binary values for feature selection. `random` or Latin Hypercube Sampling can 
+        be used to create a efficient spread initial population.
+
+        Parameters
+        ----------
+        type_ini_pop : list
+            How to create the initial population. `random` optiom initialize a random population between the 
+            predefined ranges. Values `randomLHS`, `geneticLHS`, `im-provedLHS`, `maximinLHS` & `optimumLHS` 
+            corresponds with several meth-ods of the Latin Hypercube Sampling (see `lhs` package for more details).
+
+        Returns
+        -------
+        numpy.array
+            A matrix of dimension `GAparsimony.popSize` rows and `len(GAparsimony.population.paramsnames)+len(GAparsimony.population.colsnames)` columns.
+
+        """
   
         nvars = len(self.population.paramsnames) + len(self.population.colsnames)
         if type_ini_pop=="randomLHS":
@@ -701,6 +790,18 @@ class GAparsimony(object):
         return self.__str__()
 
     def summary(self, **kwargs):
+        r"""
+        Summary for GA-PARSIMONY.
+
+        Summary method for class `GAparsimony`. If it is assigned, it returns a dict if not displayed on the screen.
+
+        Returns
+        -------
+        dict
+            A `dict` with information about the GAparsimony object.
+
+        """
+
 
         x = {"popSize" : self.popSize,
                 "maxiter" : self.maxiter,
@@ -784,9 +885,33 @@ class GAparsimony(object):
     # ------------------------------------------------------------------------------
     def plot(self, min_iter=None, max_iter=None, main_label="Boxplot cost evolution", 
                                 steps=5, size_plot=None, *args):
+        r"""
+        Plot of GA evolution of elitists.
+
+        Plot method shows the evolution of validation and testing errors, and the number 
+        of model featuresselected of elitists.  White and grey box-plots represent validation 
+        and testing errors of elitists evo-lution, respectively. Continuous and dashed-dotted 
+        lines show the validation and testing error ofthe best individual for each generation, 
+        respectively. Finally, the shaded area delimits the maximumand minimum number of 
+        features, and the dashed line, the number fo features of the best individual.
+
+        Parameters
+        ----------
+        min_iter : int
+            Min GA iteration to visualize.
+        max_iter : int
+            Max GA iteration to visualize.
+        main_label : str
+            Main plot title.
+        steps : int
+            Number of divisions in y-axis. Default `5`.
+        size_plot : tuple
+            The size of the plot.
+
+        """
 
         if (len(self.history[0])<1):
-            print("'object@history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
+            print("'GAparsimony.history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
         if not min_iter:
             min_iter = 0
         if not max_iter:
@@ -860,6 +985,19 @@ class GAparsimony(object):
 
 
     def importance(self):
+        r"""
+        Percentage of appearance of each feature in elitist population.
+
+        Shows the percentage of appearance of each feature in the whole GA-PARSIMONY 
+        process butonly for the elitist-population. If it is assigned, it returns a 
+        dict if not displayed on the screen.
+
+        Returns
+        -------
+        numpy.array
+            A `numpy.array` with information about feature importance.
+
+        """
     
         if len(self.history[0]) < 1:
             print("'object.history' must be provided!! Set 'keep_history' to TRUE in ga_parsimony() function.")
@@ -873,16 +1011,33 @@ class GAparsimony(object):
 
         importance = np.mean(features_hist, axis=0)
         imp_features = 100*importance[order(importance,decreasing = True)]
-        if self.verbose > 0:
-            print("+--------------------------------------------+")
-            print("|                  GA-PARSIMONY              |")
-            print("+--------------------------------------------+\n")
-            print("Percentage of appearance of each feature in elitists: \n")
-            print(imp_features)
 
-        return imp_features
+        # Para contolar si lo está asignando
+        try:
+            frame = inspect.currentframe().f_back
+            next_opcode = opcode.opname[frame.f_code.co_code[frame.f_lasti+2]]
+            if next_opcode not in ["POP_TOP", "PRINT_EXPR"]: # Si no lo asigna
+                return imp_features 
+        finally:
+            del frame 
+
+        print("+--------------------------------------------+")
+        print("|                  GA-PARSIMONY              |")
+        print("+--------------------------------------------+\n")
+        print("Percentage of appearance of each feature in elitists: \n")
+        print(imp_features)
 
     def predict(self, X):
+        r"""
+        Predict result for samples in X.
+
+        Returns
+        -------
+        numpy.array
+            A `numpy.array` with predictions.
+
+        """
+
         X = X.values if type(X).__name__ == 'DataFrame' else X
         return self.best_model.predict(X[:, self.best_model_conf.columns.astype(bool)])
 
