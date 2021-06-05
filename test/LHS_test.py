@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from lhs.util import isValidLHS, isValidLHS_int
-from lhs.base import *
+from GAparsimony.lhs.util import isValidLHS, isValidLHS_int
+from GAparsimony.lhs.base import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
 
 import pytest
 

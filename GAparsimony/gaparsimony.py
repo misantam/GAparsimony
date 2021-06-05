@@ -33,9 +33,8 @@ Energy Conversion and Management 96,277-286.
 """
 
 from GAparsimony import Population, order
-from GAparsimony.parsimony_monitor import parsimony_monitor, parsimony_summary
-from GAparsimony.lhs.base import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
-from GAparsimony.parsimony_miscfun import printShortMatrix
+from GAparsimony.util import parsimony_monitor, parsimony_summary, printShortMatrix
+from GAparsimony.lhs import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
 
 import warnings
 import numpy as np
@@ -722,15 +721,15 @@ class GAparsimony(object):
   
         nvars = len(self.population.paramsnames) + len(self.population.colsnames)
         if type_ini_pop=="randomLHS":
-            population = randomLHS.randomLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = randomLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="geneticLHS":
-            population = geneticLHS.geneticLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = geneticLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="improvedLHS":
-            population = improvedLHS.improvedLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = improvedLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="maximinLHS":
-            population = maximinLHS.maximinLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = maximinLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="optimumLHS":
-            population = optimumLHS.optimumLHS(self.popSize, nvars, seed=self.seed_ini)
+            population = optimumLHS(self.popSize, nvars, seed=self.seed_ini)
         elif type_ini_pop=="random":
             population = (np.random.rand(self.popSize*nvars) * (nvars - self.popSize) + self.popSize).reshape(self.popSize*nvars, 1)
   

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from GAparsimony.lhs.base.randomLHS import randomLHS_int
+from GAparsimony.lhs import randomLHS_int
 from GAparsimony.lhs.util import calculateSOptimal, calculateDistance, runifint, runif_std, findorder_zero
 
 def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S", seed=None):

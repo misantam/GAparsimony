@@ -1,6 +1,4 @@
-__all__ = ["fitness", "gaparsimony", "ordenacion", "population"]
+__all__ = ["gaparsimony", "util"]
 
-from GAparsimony.gaparsimony import GAparsimony
-from GAparsimony.population import Population, Cromosoma
-from GAparsimony.ordenacion import order
-from GAparsimony.fitness import getFitness
+from .util import Population, getFitness, order
+from .gaparsimony import GAparsimony

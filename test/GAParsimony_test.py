@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from src.gaparsimony import GAparsimony
-from src.population import Population
+from GAparsimony import GAparsimony, Population
 
 import pytest, json
 from .utilTest import autoargs, readJSONFile
