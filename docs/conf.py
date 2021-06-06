@@ -11,7 +11,14 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 
 import os
-import sys
+import sys, subprocess
+
+try:
+    import sphinx_rtd_theme
+except:
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "sphinx-rtd-theme"])
+    import sphinx_rtd_theme
+
 sys.path.insert(0, os.path.abspath('../'))
 
 def skip(app, what, name, obj, would_skip, options):
