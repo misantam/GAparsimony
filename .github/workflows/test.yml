@@ -62,7 +62,7 @@ jobs:
       run: |
             cd docs
             ls -a
-            ./make html
+            ./make.bat html
     - name: Invoke deployment hook
       uses: distributhor/workflow-webhook@v2
       env:
