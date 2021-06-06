@@ -51,23 +51,6 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-  readthedocs:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        # Disabling shallow clone is recommended for improving relevancy of reporting
-        fetch-depth: 0
-    - name: updateDocs
-      run: |
-            cd docs
-            ls -a
-            ./make.bat html
-    - name: Invoke deployment hook
-      uses: distributhor/workflow-webhook@v2
-      env:
-        webhook_url: ${{ secrets.WEBHOOK_URL }}
-        # webhook_secret: ${{ secrets.WEBHOOK_SECRET }}
 
   # docker-example:
   #   runs-on: ubuntu-latest

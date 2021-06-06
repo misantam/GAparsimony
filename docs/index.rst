@@ -10,6 +10,15 @@ Welcome to GAparsimony's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+.. toctree::
+   :maxdepth: 2
+   :caption: Modules:
+
+   GAparsimony
+   GAparsimony.lhs
+
+
+
 
 
 Indices and tables
