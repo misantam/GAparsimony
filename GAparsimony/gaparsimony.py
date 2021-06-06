@@ -82,7 +82,6 @@ class GAparsimony(object):
         A class for searching parsimonious models by feature selection and parameter tuning with
         genetic algorithms.
 
-
         Parameters
         ----------
         fitness : function
@@ -94,11 +93,15 @@ class GAparsimony(object):
 
             {
                 "<< hyperparameter name >>": {
+
                     "range": [<< minimum value >>, << maximum value >>],
+
                     "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
                 },
                 "<< hyperparameter name >>": {
+
                     "value": << constant value >>,
+
                     "type": GAparsimony.CONSTANT
                 }
             }
@@ -169,6 +172,13 @@ class GAparsimony(object):
             The testing cost of the best solution at the last iteration.
         bestcomplexity : float
             The model complexity of the best solution at the last iteration.
+
+        Examples
+        --------
+        Usage example for a regression model using the sklearn boston dataset 
+
+        >>> print([i for i in example_generator(4)])
+        [0, 1, 2, 3]
         """
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism

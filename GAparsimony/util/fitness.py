@@ -18,11 +18,15 @@ def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, ran
         cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=random_state)
     
     def fitness(cromosoma, **kwargs):
+        if "pandas" in str(type(kwargs["X"])):
+            kwargs["X"] = kwargs["X"].values
+        if "pandas" in str(type(kwargs["y"])):
+            kwargs["y"] = kwargs["y"].values
         X_train, X_test, y_train, y_test = train_test_split(kwargs["X"], kwargs["y"], test_size=test_size, random_state=random_state)
         try:
             # Extract features from the original DB plus response (last column)
-            data_train_model = X_train.iloc[: , cromosoma.columns] 
-            data_test_model = X_test.iloc[: , cromosoma.columns] 
+            data_train_model = X_train[: , cromosoma.columns] 
+            data_test_model = X_test[: , cromosoma.columns] 
 
             # train the model
 
