@@ -1,10 +1,38 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from .randomLHS import randomLHS_int
-from lhs.util import calculateSOptimal, calculateDistance, runifint, runif_std, findorder_zero
+from GAparsimony.lhs import randomLHS_int
+from GAparsimony.lhs.util import calculateSOptimal, calculateDistance, runifint, runif_std, findorder_zero
 
 def geneticLHS(n, k, pop=100, gen=4, pMut=0.1, criterium="S", seed=None):
+    r"""Latin Hypercube Sampling with a Genetic Algorithm
+
+    Draws a Latin Hypercube Sample from a set of uniform distributions for use in creating 
+    a LatinHypercube Design.  This function attempts to optimize the sample with respect 
+    to the S optimalitycriterion through a genetic type algorithm.
+
+    Parameters
+    ----------
+    n : int
+        The number of rows or samples. 
+    k : int
+        The number of columns or parameters/variables.
+    pop : int, optional
+        The number of designs in the initial population. Default `100`.
+    gen : int, optional
+        The number of generations over which the algorithm is applied. Default `4`.
+    pMut : float, optional
+        The probability with which a mutation occurs in a column of the progeny. Default `0.1`.
+    criterium : str, {'S', 'Maximin'}, optional
+        The optimality criterium of the algorithm. Default is `'S'`. Maximin is also supported.
+    seed : int, optional
+        Random seed. Default `None`.
+
+    Returns
+    -------
+    numpy.array
+        A `numpy.array` of `float` with shape `(n, k)`.
+    """
 
     if n < 1 or k < 1:
         raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k)")

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from lhs.util import initializeAvailableMatrix, convertIntegerToNumericLhs
+from GAparsimony.lhs.util import initializeAvailableMatrix, convertIntegerToNumericLhs
 
 
 def _improvedLHS( n,  k, dup=1, seed=None):
@@ -97,9 +97,29 @@ def _improvedLHS( n,  k, dup=1, seed=None):
     
     return result.transpose()
 
-
-
-
-
 def improvedLHS(n, k, dup=1, seed=None):
+    r"""Improved Latin Hypercube Sample
+
+    Draws a Latin Hypercube Sample from a set of uniform distributions for use in creating a Latin
+    Hypercube Design. This function attempts to optimize the sample with respect to 
+    an optimum euclidean distance between design points.
+
+    Parameters
+    ----------
+    n : int
+        The number of rows or samples. 
+    k : int
+        The number of columns or parameters/variables.
+    dup : int, optional
+        A factor that determines the number of candidate points used in the search. 
+        A multiple of the number of remaining points than can be added. Default `1`.
+    seed : int, optional
+        Random seed. Default `None`.
+
+    Returns
+    -------
+    numpy.array
+        A `numpy.array` of `float` with shape `(n, k)`.
+    """
+
     return np.random.rand(k)[np.newaxis, :] if n == 1 else convertIntegerToNumericLhs(_improvedLHS(n, k, dup, seed))
