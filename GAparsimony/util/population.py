@@ -10,9 +10,53 @@ class Population:
     CONSTANT = 3
 
     def __init__(self, params, columns, population = None):
+        r"""
+        This class is used to model the population of the chromosomes of the genetic algorithms. 
+        Allow chromosomes to have int, float, and string values. 
+
+
+        Parameters
+        ----------
+        params : dict
+            It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
+
+            {
+                "<< hyperparameter name >>": {
+                    "range": [<< minimum value >>, << maximum value >>],
+                    "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                },
+                "<< hyperparameter name >>": {
+                    "value": << constant value >>,
+                    "type": GAparsimony.CONSTANT
+                }
+            }
+        columns : int or list of str
+            The number of features/columns in the dataset or a list with their names.
+        population : numpy.array, optional
+            It is a float matrix that represents the population. Default `None`.
+
+        Attributes
+        ----------
+        population : Population
+            The population.
+        _min : numpy.array
+            A vector of length `params+columns` with the smallest values that can take.
+        _max : numpy.array
+            A vector of length `params+columns` with the highest values that can take.
+        paramsnames : list of str
+            List with parameter names.
+        _params : dict
+            Dict with the params values.
+        _constnames : list of str
+            List with constants names.
+        _const : dict
+            Dict with the constants values.
+        colsnames : list of str
+            List with the columns names.
+        """
         
         if type(params) is not dict:
-            raise Exception("La variable params tiene que ser de tipo dict!!!")
+            raise Exception("params must be of type dict !!!")
 
         self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
         self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
@@ -96,6 +140,19 @@ class Population:
                 self._pop[key, i] = self._converValue(newvalue, param)
 
     def getCromosoma(self, key):
+        r"""
+        This method returns a chromosome from the population. 
+
+        Parameters
+        ----------
+        key : int
+            Chromosome row index .
+
+        Returns
+        -------
+        Cromosoma
+            A `Cromosoma` object.
+        """
         return Cromosoma(self._pop[key, :len(self.paramsnames)], self.paramsnames, self._const, self._constnames, self._pop[key, len(self.paramsnames):], self.colsnames)
 
     
@@ -103,6 +160,32 @@ class Cromosoma:
 
     # @autoassign
     def __init__(self, params, name_params, const, name_const, cols, name_cols):
+        r"""
+        This class models a chromosome, allowing the hyperparameters and column selection to be obtained in a simple way.
+
+
+        Parameters
+        ----------
+        params : numpy.array
+            The hyperparameters of the chromosome.
+        name_params : list of str
+            The names of the params.
+        const : numpy.array
+            The constants of the chromosome.
+        name_const : list of str
+            The names of the constants.
+        cols : numpy.array
+            The columns of the chromosome.
+        name_cols : list of str
+            The names of the columns.
+
+        Attributes
+        ----------
+        params : dict
+            A dictionary whose keys are the name of the parameter and its value the value of the parameter.
+        columns : numpy.array of bool
+            A boolean vector with the selected columns.
+        """
         self._params = params.tolist()
         self.name_params = name_params
         self.const = const
@@ -116,4 +199,4 @@ class Cromosoma:
 
     @property
     def columns(self):
-        return self._cols
+        return self._cols>0.5

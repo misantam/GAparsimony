@@ -6,7 +6,7 @@ from GAparsimony.lhs.util import initializeAvailableMatrix, convertIntegerToNume
 # result es lo que devolvemos
 
 def _maximinLHS(n, k, dup=1, seed=None):
-    
+
     if n < 1 or k < 1 or dup < 1:
         raise Exception("nsamples are less than 1 (n) or nparameters less than 1 (k) or duplication is less than 1")
 
@@ -99,9 +99,29 @@ def _maximinLHS(n, k, dup=1, seed=None):
     return result.transpose()
 
 
-# def degenerateCase(k):
-#   return np.random.rand(k)[np.newaxis, :]
-
-
 def maximinLHS(n, k, dup=1, seed=None):
-  return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_maximinLHS(n, k, dup, seed))
+    r"""Maximin Latin Hypercube Sample
+
+    Draws a Latin Hypercube Sample from a set of uniform distributions for use in creating 
+    a Latin Hypercube Design. This function attempts to optimize the sample by 
+    maximizing the minium distance between design points (maximin criteria).
+
+    Parameters
+    ----------
+    n : int
+        The number of rows or samples. 
+    k : int
+        The number of columns or parameters/variables.
+    dup : int, optional
+        A factor that determines the number of candidate points used in the search. 
+        A multiple of the number of remaining points than can be added. Default `1`.
+    seed : int, optional
+        Random seed. Default `None`.
+
+    Returns
+    -------
+    numpy.array
+        An `n` by `n` Latin Hypercube Sample matrix with values uniformly distributed on `[0,1]`.
+    """
+    
+    return np.random.rand(k)[np.newaxis, :] if n==0 else convertIntegerToNumericLhs(_maximinLHS(n, k, dup, seed))

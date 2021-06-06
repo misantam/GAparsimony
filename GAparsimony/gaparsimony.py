@@ -104,48 +104,48 @@ class GAparsimony(object):
             }
         features : int or list of str
             The number of features/columns in the dataset or a list with their names.
-        type_ini_pop : str
-            Method to create the first population with `GAparsimony._population` function. Possible values: 'randomLHS', 'geneticLHS', 
-            'improvedLHS', 'maximinLHS', 'optimumLHS', 'random'.First 5 methods correspond with several latine hypercube sampling. By default is set to `improvedLHS`.
-        popSize : int
+        type_ini_pop : str, {'randomLHS', 'geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS', 'random'}, optional
+            Method to create the first population with `GAparsimony._population` function. Possible values: `randomLHS`, `geneticLHS`, 
+            `improvedLHS`, `maximinLHS`, `optimumLHS`, `random`.First 5 methods correspond with several latine hypercube sampling. By default is set to `improvedLHS`.
+        popSize : int, optional
             The population size.
-        pcrossover : float
+        pcrossover : float, optional
             The probability of crossover between pairs of chromosomes. Typically this is alarge value and by default is set to `0.8`.
-        maxiter : float
+        maxiter : float, optional
             The maximum number of iterations to run before the GA process is halted.
-        feat_thres : float
+        feat_thres : float, optional
             Proportion of selected features in the initial population. It is recommended ahigh percentage of selected features for 
             the first generations. By default is set to `0.90`.
-        rerank_error : float
+        rerank_error : float, optional
             When a value is provided, a second reranking process according to the model complexities is called by `parsimony_rerank` function. 
             Its primary objective isto select individuals with high validation cost while maintaining the robustnessof a parsimonious model. 
             This function switches the position of two models if the first one is more complex than the latter and no significant difference 
             is found between their fitness values in terms of cost. Therefore, if the absolute difference between the validation costs are 
             lower than `rerank_error` they areconsidered similar. Default value=`0.01`.
-        iter_start_rerank : int
+        iter_start_rerank : int, optional
             Iteration when ReRanking process is actived. Default=`0`. Sometimes is useful not to use ReRanking process in the first generations.
-        pmutation : float
+        pmutation : float, optional
             The probability of mutation in a parent chromosome. Usually mutation occurswith a small probability. By default is set to `0.10`.
-        feat_mut_thres : float
+        feat_mut_thres : float, optional
             Probability of the muted `features-chromosome` to be one. Default value is set to `0.10`.
-        not_muted : int
+        not_muted : int, optional
             Number of the best elitists that are not muted in each generation. Default valueis set to `3`.
-        elitism : int
+        elitism : int, optional
             The number of best individuals to survive at each generation. By default the top `20%` individuals will survive at each iteration.
-        selection : str
-            Method to perform selection with `GAparsimony._selection` function. Possible values: 'linear', 'nlinear', 'random'. By default is set to `nlinear`.
-        keep_history : bool
+        selection : str, optional
+            Method to perform selection with `GAparsimony._selection` function. Possible values: `linear`, `nlinear`, `random`. By default is set to `nlinear`.
+        keep_history : bool, optional
             If it is `True` keeps in the list GAparsimony.history each generation as `pandas.DataFrame`. This parameter must set `True` in 
             order to use `GAparsimony.plot` method or `GAparsimony.importance` function.
-        early_stop : int
+        early_stop : int, optional
             The upper bound on the fitness function after that the GA search is interrupted. Default value is set to +Inf.
-        maxFitness : int
+        maxFitness : int, optional
             The number of consecutive generations without any improvement in the bestfitness value before the GA is stopped.
-        suggestions : numpy.array
+        suggestions : numpy.array, optional
             A matrix of solutions strings to be included in the initial population.
-        suggestions : int
+        suggestions : int, optional
             An integer value containing the random number generator state.
-        verbose : int
+        verbose : int, optional
             The level of messages that we want it to show us. Possible values: `GAparsimony.MONITOR`=1,  `GAparsimony.DEBUG`=2, if 0 no messages. Default `GAparsimony.MONITOR`.
 
 
@@ -239,10 +239,7 @@ class GAparsimony(object):
             ng = min(self.suggestions.shape[0], popSize)
             if ng > 0:
                 self.population[:ng, :] = self.suggestions[:ng, :]
-
-        
-        
-        
+    
     def fit(self, X, y, iter_ini=0):
         r"""
         A GA-based optimization method for searching accurate parsimonious models by combining feature selection, model tuning, 
@@ -256,7 +253,7 @@ class GAparsimony(object):
             Training vector.
         y : pandas.DataFrame or numpy.array
             Target vector relative to X.
-        iter_ini : int
+        iter_ini : int, optional
             Iteration/generation of `GAparsimony.history` to be used when model is pretrained. If
             `iter_ini==None` uses the last iteration of the model.
 
@@ -618,10 +615,10 @@ class GAparsimony(object):
         parents : list
             A list with two integers that correspond to the indices of the rows of the parents 
             of the current population.
-        alpha : float
+        alpha : float, optional
             A tuning parameter for the Heuristic Blending outer bounds [Michalewicz, 1991].
             Typical and default value is `0.1`.
-        perc_to_swap : float
+        perc_to_swap : float, optional
             Percentage of features for swapping in the crossovering process. Default value is `0.5`.
         """
 
@@ -707,9 +704,9 @@ class GAparsimony(object):
 
         Parameters
         ----------
-        type_ini_pop : list
+        type_ini_pop : list, {'randomLHS', 'geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS'}, optional
             How to create the initial population. `random` optiom initialize a random population between the 
-            predefined ranges. Values `randomLHS`, `geneticLHS`, `im-provedLHS`, `maximinLHS` & `optimumLHS` 
+            predefined ranges. Values `randomLHS`, `geneticLHS`, `improvedLHS`, `maximinLHS` & `optimumLHS` 
             corresponds with several meth-ods of the Latin Hypercube Sampling (see `lhs` package for more details).
 
         Returns
@@ -896,16 +893,16 @@ class GAparsimony(object):
 
         Parameters
         ----------
-        min_iter : int
-            Min GA iteration to visualize.
-        max_iter : int
-            Max GA iteration to visualize.
-        main_label : str
-            Main plot title.
-        steps : int
+        min_iter : int, optional
+            Min GA iteration to visualize. Default `None`.
+        max_iter : int, optional
+            Max GA iteration to visualize.Default `None`.
+        main_label : str, optional
+            Main plot title.Default 'Boxplot cost evolution'.
+        steps : int, optional
             Number of divisions in y-axis. Default `5`.
-        size_plot : tuple
-            The size of the plot.
+        size_plot : tuple, optional
+            The size of the plot. Default `None`
 
         """
 
@@ -1029,6 +1026,11 @@ class GAparsimony(object):
     def predict(self, X):
         r"""
         Predict result for samples in X.
+
+        Parameters
+        ----------
+        X : numpy.array or pandas.DataFrame
+            Samples.
 
         Returns
         -------

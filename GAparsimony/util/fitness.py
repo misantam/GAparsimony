@@ -20,15 +20,11 @@ def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, ran
     def fitness(cromosoma, **kwargs):
         X_train, X_test, y_train, y_test = train_test_split(kwargs["X"], kwargs["y"], test_size=test_size, random_state=random_state)
         try:
-            # Next values of chromosome are the selected features (TRUE if > 0.50)
-            selec_feat = cromosoma.columns>0.50
-            
             # Extract features from the original DB plus response (last column)
-            data_train_model = X_train.iloc[: , selec_feat] 
-            data_test_model = X_test.iloc[: , selec_feat] 
+            data_train_model = X_train.iloc[: , cromosoma.columns] 
+            data_test_model = X_test.iloc[: , cromosoma.columns] 
 
             # train the model
-            np.random.seed(1234)
 
             aux = model(**cromosoma.params)
             fitness_val = cross_val_score(aux, data_train_model, y_train, scoring=make_scorer(metric), cv=cv, n_jobs=n_jobs).mean()
@@ -39,7 +35,7 @@ def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, ran
                 fitness_val = -fitness_val
                 fitness_test = -fitness_test
 
-            return np.array([fitness_val, fitness_test, complexity(modelo, selec_feat)]), modelo
+            return np.array([fitness_val, fitness_test, complexity(modelo, cromosoma.columns)]), modelo
         except Exception as e:    
             print(e)
             return np.array([np.NINF, np.NINF, np.Inf]), None

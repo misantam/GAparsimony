@@ -120,6 +120,31 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
 
 
 def optimumLHS(n, k, maxsweeps=2, eps=0.1, seed=None):
+    r"""Optimum Latin Hypercube Sample
+
+    Draws a Latin Hypercube Sample from a set of uniform distributions for use in creating a LatinHypercube Design. 
+    This function uses the Columnwise Pairwise (CP) algorithm to generate an optimal design with respect to the S optimality criterion.
+
+    Parameters
+    ----------
+    n : int
+        The number of partitions (simulations or design points or rows). 
+    k : int
+        The number of replications (variables or columns).
+    maxsweeps : int, optional
+        The maximum number of times the CP algorithm is applied to all the columns. Default `2`
+    eps : float, optional
+        The optimal stopping criterion. Algorithm stops when the change in optimality
+        measure is less than `eps*100%` of the previous value. Default `0.01`
+    seed : int, optional
+        Random seed. Default `None`.
+
+    Returns
+    -------
+    numpy.array
+        An `n` by `n` Latin Hypercube Sample matrix with values uniformly distributed on `[0,1]`.
+    """
+
     if seed:
         np.random.seed(seed)
     jLen = int(np.math.factorial(n)/(np.math.factorial(2)*np.math.factorial(n-2)) + 1.0)
