@@ -56,9 +56,11 @@ jobs:
   readthedocs:
     runs-on: ubuntu-latest
     steps:
+    - name: Set env BRANCH
+      run: echo "BRANCH=$(echo $GITHUB_REF | cut -d'/' -f 3)" >> $GITHUB_ENV
     - run: |
             echo ${GITHUB_REF#refs/heads/}
-            curl -X POST -d "branches=${{ GITHUB_REF#refs/heads/ }}" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
+            curl -X POST -d "branches=$BRANCH" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
   # with: 
 
   # docker-example:
