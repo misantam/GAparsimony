@@ -53,8 +53,8 @@ jobs:
       shell: bash
       run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
       id: extract_branch
-    - run: |
-            echo "branches=${{ steps.extract_branch.outputs.branch }}"
+    - name: webook readthedocs.io
+      run: |
             curl -X POST -d "branches=${{ steps.extract_branch.outputs.branch }}" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
   # with: 
 
