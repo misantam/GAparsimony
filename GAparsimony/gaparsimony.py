@@ -92,17 +92,17 @@ class GAparsimony(object):
             It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
 
             {
-                "<< hyperparameter name >>": {
+            "<< hyperparameter name >>": {
 
-                    "range": [<< minimum value >>, << maximum value >>],
+                "range": [<< minimum value >>, << maximum value >>],
 
-                    "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
                 },
-                "<< hyperparameter name >>": {
+            "<< hyperparameter name >>": {
 
-                    "value": << constant value >>,
+                "value": << constant value >>,
 
-                    "type": GAparsimony.CONSTANT
+                "type": GAparsimony.CONSTANT
                 }
             }
         features : int or list of str
