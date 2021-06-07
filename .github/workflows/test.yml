@@ -58,8 +58,8 @@ jobs:
     steps:
     - run: |
             echo ${GITHUB_REF#refs/heads/}
-            curl -X POST -d "branches=${GITHUB_REF#refs/heads/}" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
-  # with:
+            
+  # with: curl -X POST -d "branches=${GITHUB_REF#refs/heads/}" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
 
   # docker-example:
   #   runs-on: ubuntu-latest
