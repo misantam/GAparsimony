@@ -91,20 +91,21 @@ class GAparsimony(object):
         params : dict
             It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
 
-            {
-            "<< hyperparameter name >>": {
+            .. code-block::
 
-                "range": [<< minimum value >>, << maximum value >>],
-
-                "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
-                },
-            "<< hyperparameter name >>": {
-
-                "value": << constant value >>,
-
-                "type": GAparsimony.CONSTANT
+                {
+                    "<< hyperparameter name >>": 
+                    {
+                        "range": [<< minimum value >>, << maximum value >>],
+                        "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                    },
+                    "<< hyperparameter name >>": 
+                    {
+                        "value": << constant value >>,
+                        "type": GAparsimony.CONSTANT
+                    }
                 }
-            }
+
         features : int or list of str
             The number of features/columns in the dataset or a list with their names.
         type_ini_pop : str, {'randomLHS', 'geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS', 'random'}, optional
@@ -177,8 +178,137 @@ class GAparsimony(object):
         --------
         Usage example for a regression model using the sklearn boston dataset 
 
-        >>> print([i for i in example_generator(4)])
-        [0, 1, 2, 3]
+        .. highlight:: python
+        .. code-block:: python
+
+            import numpy as np
+            from sklearn.model_selection import RepeatedKFold
+            from sklearn.linear_model import Lasso
+            from sklearn.preprocessing import StandardScaler
+            from sklearn.metrics import mean_squared_error
+
+            from sklearn.datasets import load_boston
+
+            from GAparsimony import GAparsimony, Population, getFitness
+
+            boston = load_boston()
+            X, y = boston.data, boston.target 
+            X = StandardScaler().fit_transform(X)
+
+            # ga_parsimony can be executed with a different set of 'rerank_error' values
+            rerank_error = 0.01
+
+            params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
+                        "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
+
+            def complexity(model, features):
+                coef = 0
+                for c in model.coef_:
+                    coef += np.sum(np.power(c, 2))
+                return np.sum(features)*1E6 + coef
+
+            cv = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
+
+            fitness = getFitness(Lasso, mean_squared_error, complexity, cv, regresion=True, test_size=0.2, random_state=42, n_jobs=-1)
+
+
+            GAparsimony_model = GAparsimony(fitness=fitness,
+                                            params = params, 
+                                            features = boston.feature_names,
+                                            keep_history = True,
+                                            rerank_error = rerank_error,
+                                            popSize = 40,
+                                            maxiter = 5, early_stop=10,
+                                            feat_thres=0.90, # Perc selected features in first generation
+                                            feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                            seed_ini = 1234,
+                                            verbose=GAparsimony.MONITOR)
+
+
+            GAparsimony_model.fit(X, y)
+
+            GAparsimony_model.summary()
+
+            GAparsimony_model.plot()
+
+        .. code-block:: text
+
+            GA-PARSIMONY | iter = 0
+            MeanVal = -79.3006166 | ValBest = -30.3831028 | TstBest = -29.2466835 |ComplexBest = 13000021.9272632| Time(min) = 0.1369608  
+
+            GA-PARSIMONY | iter = 1
+            MeanVal = -55.1542772 | ValBest = -30.3595118 | TstBest = -29.2267507 |ComplexBest = 12000022.0887434| Time(min) = 0.0749257  
+
+            GA-PARSIMONY | iter = 2
+            MeanVal = -34.9137256 | ValBest = -30.3041538 | TstBest = -28.8701544 |ComplexBest = 10000021.7746837| Time(min) = 0.0472499  
+
+            GA-PARSIMONY | iter = 3
+            MeanVal = -38.6039299 | ValBest = -30.0481843 | TstBest = -29.2006941 |ComplexBest = 9000022.5018183| Time(min) = 0.0479027  
+
+            GA-PARSIMONY | iter = 4
+            MeanVal = -38.1393988 | ValBest = -29.9147592 | TstBest = -28.8454181 |ComplexBest = 9000022.3326941| Time(min) = 0.0532206  
+
+            +------------------------------------+
+            |             GA-PARSIMONY           |
+            +------------------------------------+
+
+            GA-PARSIMONY settings:
+            Number of Parameters      = 2
+            Number of Features        = 13
+            Population size           = 40
+            Maximum of generations    = 5
+            Number of early-stop gen. = 10
+            Elitism                   = 8
+            Crossover probability     = 0.8
+            Mutation probability      = 0.1
+            Max diff(error) to ReRank = 0.01
+            Perc. of 1s in first popu.= 0.9
+            Prob. to be 1 in mutation = 0.1
+
+            Search domain =
+                    alpha     tol  CRIM   ZN  INDUS  CHAS  NOX   RM  AGE  DIS  RAD  \
+            Min_param    1.0  0.0001   0.0  0.0    0.0   0.0  0.0  0.0  0.0  0.0  0.0
+            Max_param   25.9  0.9999   1.0  1.0    1.0   1.0  1.0  1.0  1.0  1.0  1.0
+
+                    TAX  PTRATIO    B  LSTAT
+            Min_param  0.0      0.0  0.0    0.0
+            Max_param  1.0      1.0  1.0    1.0
+
+
+            GA-PARSIMONY results:
+            Iterations                = 5
+            Best validation score = -29.91475923589228
+
+
+            Solution with the best validation score in the whole GA process =
+
+            fitnessVal fitnessTst   complexity    alpha       tol CRIM ZN INDUS CHAS  \
+            0   -29.9148   -28.8454  9.00002e+06  1.29788  0.329711    0  1     0    1
+
+            NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
+            0   1  1   0   1   1   0       1  1     1
+
+
+            Results of the best individual at the last generation =
+
+            Best indiv's validat.cost = -29.91475923589228
+            Best indiv's testing cost = -28.84541811737489
+            Best indiv's complexity   = 9000022.332694123
+            Elapsed time in minutes   = 0.3602596958478292
+
+
+            BEST SOLUTION =
+
+            fitnessVal fitnessTst   complexity    alpha       tol CRIM ZN INDUS CHAS  \
+            0   -29.9148   -28.8454  9.00002e+06  1.29788  0.329711    0  1     0    1
+
+            NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
+            0   1  1   0   1   1   0       1  1     1
+        
+        .. image:: ./img/regresion.png
+            :align: center
+            :width: 600
+            :alt: Regresion plot
         """
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism
