@@ -51,6 +51,13 @@ jobs:
       env:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+  readthedocs:
+    runs-on: ubuntu-latest
+    steps:
+    - run: |
+            echo ${GITHUB_REF#refs/heads/}
+            curl -X POST -d "branches=${GITHUB_REF#refs/heads/}" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
+  # with:
 
   # docker-example:
   #   runs-on: ubuntu-latest
