@@ -305,10 +305,12 @@ class GAparsimony(object):
             NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
             0   1  1   0   1   1   0       1  1     1
         
-        .. image:: ./img/regresion.png
+        .. figure:: ./img/regresion.png
             :align: center
             :width: 600
             :alt: Regresion plot
+
+            Regresion plot
         """
         
         self.elitism = max(1, round(popSize * 0.20)) if not elitism else elitism
