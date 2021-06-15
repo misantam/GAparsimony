@@ -43,14 +43,6 @@ def autoargs(*include, **kwargs):
         return wrapper
     return _autoargs
 
-
-# def autoClass():
-#     class A(object):
-#         @autoargs()
-#         def __init__(self,**kawargs):
-#             pass
-#     return A
-
 class NumpyEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, np.ndarray):

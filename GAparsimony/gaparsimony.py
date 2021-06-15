@@ -53,9 +53,6 @@ import inspect, opcode
 
 class GAparsimony(object):
 
-    MONITOR = 1
-    DEBUG = 2
-
     def __init__(self, 
                 fitness,
                 params,
@@ -77,7 +74,7 @@ class GAparsimony(object):
                 maxFitness = np.Inf, 
                 suggestions = None,
                 seed_ini = None, 
-                verbose=MONITOR):
+                verbose=1):
         r"""
         A class for searching parsimonious models by feature selection and parameter tuning with
         genetic algorithms.
@@ -150,7 +147,7 @@ class GAparsimony(object):
         suggestions : int, optional
             An integer value containing the random number generator state.
         verbose : int, optional
-            The level of messages that we want it to show us. Possible values: `GAparsimony.MONITOR`=1,  `GAparsimony.DEBUG`=2, if 0 no messages. Default `GAparsimony.MONITOR`.
+            The level of messages that we want it to show us. Possible values: 1=monitor level,  2=debug level, if 0 no messages. Default `1`.
 
 
         Attributes
@@ -165,7 +162,7 @@ class GAparsimony(object):
             The best validation score in the whole GA process.
         best_model
             The best model in the whole GA process.
-        best_model_conf : Cromosoma
+        best_model_conf : Chromosome
             The parameters and features of the best model in the whole GA process.
         bestfitnessVal : float
             The validation cost of the best solution at the last iteration.
@@ -222,7 +219,7 @@ class GAparsimony(object):
                                             feat_thres=0.90, # Perc selected features in first generation
                                             feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                             seed_ini = 1234,
-                                            verbose=GAparsimony.MONITOR)
+                                            verbose=1)
 
 
             GAparsimony_model.fit(X, y)
@@ -403,7 +400,7 @@ class GAparsimony(object):
            
         # Get suggestions
         # ---------------
-        if self.verbose == GAparsimony.DEBUG and self.suggestions:
+        if self.verbose == 2 and self.suggestions:
             print(self.suggestions)
 
 
@@ -425,7 +422,7 @@ class GAparsimony(object):
 
 
         if len(self.history) > 0:
-            if self.verbose == GAparsimony.DEBUG:
+            if self.verbose == 2:
                 print("There is a GAparsimony 'object'!!!")
                 print(self)
 
@@ -434,10 +431,10 @@ class GAparsimony(object):
                 iter_ini = 0
 
             self.history = self.history[iter_ini].values[0]
-            if self.verbose == GAparsimony.DEBUG:
+            if self.verbose == 2:
                 print(f"Starting GA optimization with a provided GAparsimony 'object'. Using object's GA settings and its population from iter={iter_ini}.")
         
-        elif self.verbose == GAparsimony.DEBUG:
+        elif self.verbose == 2:
             print("\nStep 0. Initial population")
             print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
             # input("Press [enter] to continue")
@@ -451,7 +448,7 @@ class GAparsimony(object):
             self.iter = iter
 
             for t in range(self.popSize):
-                c = self.population.getCromosoma(t)
+                c = self.population.getChromosome(t)
                 if np.isnan(self.fitnessval[t]) and np.sum(c.columns)>0:
                     fit = self.fitness(c, X=X, y=y)
                     self.fitnessval[t] = fit[0][0]
@@ -486,7 +483,7 @@ class GAparsimony(object):
                                                 self.population[np.argmax(self.fitnessval)]]
 
 
-            if self.verbose == GAparsimony.DEBUG:
+            if self.verbose == 2:
                 print("\nStep 1. Fitness sorted")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
@@ -507,7 +504,7 @@ class GAparsimony(object):
                 FitnessTstSorted = self.fitnesstst.copy()
                 ComplexitySorted = self.complexity.copy()
                 
-                if self.verbose == GAparsimony.DEBUG:
+                if self.verbose == 2:
                     print("\nStep 2. Fitness reranked")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population.population][:10, :])
                     # input("Press [enter] to continue")
@@ -529,7 +526,7 @@ class GAparsimony(object):
             # Keep Best Model
             # ------------------
             self.best_model = _models[0]
-            self.best_model_conf = self.population.getCromosoma(0)
+            self.best_model_conf = self.population.getChromosome(0)
             
 
             # Keep elapsed time in minutes
@@ -550,7 +547,7 @@ class GAparsimony(object):
             if self.verbose > 0:
                 parsimony_monitor(self)  
             
-            if self.verbose == GAparsimony.DEBUG:
+            if self.verbose == 2:
                 print("\nStep 3. Fitness results")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
@@ -571,7 +568,7 @@ class GAparsimony(object):
             # ------------------
             self._selection()
 
-            if self.verbose == GAparsimony.DEBUG:
+            if self.verbose == 2:
                 print("\nStep 4. Selection")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
@@ -586,7 +583,7 @@ class GAparsimony(object):
                     if self.pcrossover > np.random.uniform(low=0, high=1):
                         parents = mating[i, ]
                         self._crossover(parents=parents)
-                if self.verbose == GAparsimony.DEBUG:
+                if self.verbose == 2:
                     print("\nStep 5. CrossOver")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                     # input("Press [enter] to continue")
@@ -599,7 +596,7 @@ class GAparsimony(object):
                 self.fitnessval[:self.elitism] = FitnessValSorted[:self.elitism]
                 self.fitnesstst[:self.elitism] = FitnessTstSorted[:self.elitism]
                 self.complexity[:self.elitism] = ComplexitySorted[:self.elitism]
-            if (self.verbose == GAparsimony.DEBUG):
+            if (self.verbose == 2):
                 print("\nStep 6. With Elitists")
                 print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                 # input("Press [enter] to continue")
@@ -609,7 +606,7 @@ class GAparsimony(object):
             # -----------------
             if self.pmutation > 0:
                 self._mutation() # Da problemas, es por la semilla aleatoria
-                if self.verbose == GAparsimony.DEBUG:
+                if self.verbose == 2:
 
                     print("\nStep 7. Mutation")
                     print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
@@ -682,7 +679,7 @@ class GAparsimony(object):
 
                     position[pos1], position[pos2] = position[pos2], position[pos1]
                 
-                    if self.verbose == GAparsimony.DEBUG:
+                    if self.verbose == 2:
                         print(f"SWAP!!: pos1={pos1}({size_indiv1}), pos2={pos2}({size_indiv2}), error_dif={error_dif}")
                         print("-----------------------------------------------------")
                 pos2 = pos2+1

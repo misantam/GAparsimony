@@ -20,3 +20,11 @@ GAparsimony.gaparsimony module
    :members:
    :undoc-members:
    :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: GAparsimony
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -139,7 +139,7 @@ class Population:
                 param = self._params[self.paramsnames[i]] if i < len(self.paramsnames) else None
                 self._pop[key, i] = self._converValue(newvalue, param)
 
-    def getCromosoma(self, key):
+    def getChromosome(self, key):
         r"""
         This method returns a chromosome from the population. 
 
@@ -150,13 +150,13 @@ class Population:
 
         Returns
         -------
-        Cromosoma
-            A `Cromosoma` object.
+        Chromosome
+            A `Chromosome` object.
         """
-        return Cromosoma(self._pop[key, :len(self.paramsnames)], self.paramsnames, self._const, self._constnames, self._pop[key, len(self.paramsnames):], self.colsnames)
+        return Chromosome(self._pop[key, :len(self.paramsnames)], self.paramsnames, self._const, self._constnames, self._pop[key, len(self.paramsnames):], self.colsnames)
 
     
-class Cromosoma:
+class Chromosome:
 
     # @autoassign
     def __init__(self, params, name_params, const, name_const, cols, name_cols):

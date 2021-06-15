@@ -5,6 +5,7 @@ from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score
 
 from GAparsimony import GAparsimony, Population, getFitness
+from GAparsimony.util import svm
 
 df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
 
@@ -13,12 +14,12 @@ params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT},
             "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
             "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
-def complexity(model, features):
-    return np.sum(features)*1E6 + model.support_vectors_.shape[0]
+# def complexity(model, features):
+#     return np.sum(features)*1E6 + model.support_vectors_.shape[0]
 
 cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=123)
 
-fitness = getFitness(SVC, cohen_kappa_score, complexity, cv, regresion=False, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(SVC, cohen_kappa_score, svm, cv, regresion=False, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,

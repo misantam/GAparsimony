@@ -4,6 +4,14 @@ GAparsimony.util package
 Submodules
 ----------
 
+GAparsimony.util.complexity module
+----------------------------------
+
+.. automodule:: GAparsimony.util.complexity
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 GAparsimony.util.fitness module
 -------------------------------
 
@@ -12,10 +20,10 @@ GAparsimony.util.fitness module
    :undoc-members:
    :show-inheritance:
 
-GAparsimony.util.ordenacion module
-----------------------------------
+GAparsimony.util.order module
+-----------------------------
 
-.. automodule:: GAparsimony.util.ordenacion
+.. automodule:: GAparsimony.util.order
    :members:
    :undoc-members:
    :show-inheritance:

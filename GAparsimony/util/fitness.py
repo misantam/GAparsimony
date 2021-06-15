@@ -39,7 +39,7 @@ def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, ran
                 fitness_val = -fitness_val
                 fitness_test = -fitness_test
 
-            return np.array([fitness_val, fitness_test, complexity(modelo, cromosoma.columns)]), modelo
+            return np.array([fitness_val, fitness_test, complexity(modelo, np.sum(cromosoma.columns))]), modelo
         except Exception as e:    
             print(e)
             return np.array([np.NINF, np.NINF, np.Inf]), None

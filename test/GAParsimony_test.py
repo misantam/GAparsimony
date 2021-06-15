@@ -3,7 +3,7 @@
 import numpy as np
 from GAparsimony import GAparsimony, Population
 
-import pytest, json
+import pytest
 from .utilTest import autoargs, readJSONFile
 
 
