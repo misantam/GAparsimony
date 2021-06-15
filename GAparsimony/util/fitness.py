@@ -4,9 +4,50 @@ from sklearn.model_selection import train_test_split, cross_val_score, RepeatedK
 from sklearn.metrics import make_scorer
 import numpy as np
 
-def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, random_state=42, n_jobs=-1): #X, y, 
+def getFitness(model, metric, complexity, cv, regression=True, test_size=0.2, random_state=42, n_jobs=-1):
+    r"""
+    Generating function of a fitness function.
+
+    Parameters
+    ----------
+    model : object
+        The model we want to optimize. 
+    metric : function
+        A function that computes the metric.
+    complexity : function
+        A function that calculates the complexity of the model. You can use for some models those defined in `GAparsimony.util.complexity`
+    cv : object
+        An `sklearn.model_selection`, Splitter Classes. If `None`, `sklearn.model_selection.RepeatedKFold`.
+    regression : bool, optional
+        If it is a regression model `True` else `False`.
+    test_size : float, optional
+        If float, should be between 0.0 and 1.0 and represent the proportion
+        of the dataset to include in the test split. If int, represents the
+        absolute number of test samples. If None, the value is set to the
+        complement of the train size. Default 0.2.
+    random_state : int, optional
+        Controls the shuffling applied to the data before applying the split.
+        Pass an int for reproducible output across multiple function calls.
+        Default `42`
+    n_jobs : int, optional
+        Number of jobs to run in parallel. Training the estimator and computing
+        the score are parallelized over the cross-validation splits.
+        ``-1`` means using all processors. Default `-1`
+    Examples
+    --------
+    Usage example for a regression model 
     
-    # X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
+    .. highlight:: python
+    .. code-block:: python
+
+        from sklearn.svm import SVC
+        from sklearn.metrics import cohen_kappa_score
+
+        from GAparsimony import getFitness
+        from GAparsimony.util import svm
+
+        fitness = getFitness(SVC, cohen_kappa_score, svm, cv, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
+    """
 
     if model is None:
         raise Exception("A model class must be provided!!!")
@@ -35,7 +76,7 @@ def getFitness(model, metric, complexity, cv, regresion=True, test_size=0.2, ran
             modelo = model(**cromosoma.params).fit(data_train_model, y_train)
             fitness_test = metric(modelo.predict(data_test_model), y_test)
 
-            if regresion:
+            if regression:
                 fitness_val = -fitness_val
                 fitness_test = -fitness_test
 

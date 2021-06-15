@@ -19,7 +19,7 @@ class GenericClass(object):
 #################################################
 
 @pytest.mark.parametrize("population", [(readJSONFile('./test/outputs/population.json'))])
-def test_GAParsimony_regresion_boston_population(population):
+def test_GAParsimony_regression_boston_population(population):
 
     pop = Population(population["params"], columns=population["features"])
     
@@ -43,7 +43,7 @@ population = Population(data["params"], data["features"], np.array(data["populat
                         (population,(slice(None), 2), 1, np.array(data["population_7"], dtype=object)),
                         (population,(slice(None), 6), 87, np.array(data["population_8"], dtype=object)),
                         (population,(slice(None), 7), 98, np.array(data["population_9"], dtype=object))])
-def test_GAParsimony_regresion_population_class(population, slice, value, resultado):
+def test_GAParsimony_regression_population_class(population, slice, value, resultado):
 
     population[slice] = value
     
@@ -54,7 +54,7 @@ def test_GAParsimony_regresion_population_class(population, slice, value, result
 #################################################
 
 @pytest.mark.parametrize("rerank", [readJSONFile('./test/outputs/rerank.json')])
-def test_GAParsimony_regresion_boston_rerank(rerank):
+def test_GAParsimony_regression_boston_rerank(rerank):
 
     
     model = GenericClass(fitnessval=np.array(rerank["fitnessval"]), complexity=np.array(rerank["complexity"]), 
@@ -71,7 +71,7 @@ def test_GAParsimony_regresion_boston_rerank(rerank):
 #################################################
 
 @pytest.mark.parametrize("selection", [readJSONFile('./test/outputs/selection.json')])
-def test_GAParsimony_regresion_boston_selection(selection):
+def test_GAParsimony_regression_boston_selection(selection):
     np.random.seed(selection["seed"])
     population=np.array(selection["population"])
     fitnessval=np.array(selection["fitnessval"])
@@ -93,7 +93,7 @@ def test_GAParsimony_regresion_boston_selection(selection):
 #################################################
 
 @pytest.mark.parametrize("mutation", [readJSONFile('./test/outputs/mutation.json')])
-def test_GAParsimony_regresion_boston_mutation(mutation):
+def test_GAParsimony_regression_boston_mutation(mutation):
     np.random.seed(mutation["seed"])
     
     model = GenericClass(pmutation=mutation["pmutation"], popSize=mutation["popSize"], not_muted=mutation["not_muted"], 
@@ -110,7 +110,7 @@ def test_GAParsimony_regresion_boston_mutation(mutation):
 #################################################
 
 @pytest.mark.parametrize("crossover", [readJSONFile('./test/outputs/crossover.json')])
-def test_GAParsimony_regresion_boston_crossover(crossover):
+def test_GAParsimony_regression_boston_crossover(crossover):
     np.random.seed(crossover["seed"])
     
     model = GenericClass(pcrossover=crossover["pcrossover"],

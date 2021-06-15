@@ -206,7 +206,7 @@ class GAparsimony(object):
 
             cv = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
 
-            fitness = getFitness(Lasso, mean_squared_error, complexity, cv, regresion=True, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(Lasso, mean_squared_error, complexity, cv, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
 
 
             GAparsimony_model = GAparsimony(fitness=fitness,
@@ -302,7 +302,7 @@ class GAparsimony(object):
             NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
             0   1  1   0   1   1   0       1  1     1
         
-        .. figure:: ./img/regresion.png
+        .. figure:: ./img/regression.png
             :align: center
             :width: 600
             :alt: Regresion plot

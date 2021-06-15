@@ -21,7 +21,7 @@ params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT},
 
 cv = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
 
-fitness = getFitness(Lasso, mean_squared_error, linearModels, cv, regresion=True, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(Lasso, mean_squared_error, linearModels, cv, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,

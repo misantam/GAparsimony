@@ -19,7 +19,7 @@ params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT},
 
 cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=123)
 
-fitness = getFitness(SVC, cohen_kappa_score, svm, cv, regresion=False, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(SVC, cohen_kappa_score, svm, cv, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,
