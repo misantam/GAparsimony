@@ -19,6 +19,7 @@ class Population:
         ----------
         params : dict
             It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
+            
             .. code-block::
 
                 {
@@ -31,7 +32,7 @@ class Population:
                         "type": GAparsimony.CONSTANT
                     }
                 }
-                
+
         columns : int or list of str
             The number of features/columns in the dataset or a list with their names.
         population : numpy.array, optional
