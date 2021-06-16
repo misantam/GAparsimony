@@ -32,7 +32,7 @@ Energy Conversion and Management 96,277-286.
 """
 
 from GAparsimony import Population, order
-from GAparsimony.util import parsimony_monitor, parsimony_summary, printShortMatrix
+from GAparsimony.util import parsimony_monitor, parsimony_summary
 from GAparsimony.lhs import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
 
 import warnings
@@ -343,7 +343,6 @@ class GAparsimony(object):
         if (type(suggestions) is np.array) and (self.population._min.shape + features) != suggestions.shape[1]:
             raise Exception("Provided suggestions (ncol) matrix do not match the number of variables (model parameters + vector with selected features) in the problem!")
 
-        self.call = locals()
         self.fitness = fitness
         self.popSize = popSize
         self.pcrossover = pcrossover
@@ -636,7 +635,6 @@ class GAparsimony(object):
         complexity = self.complexity.copy()
         complexity[np.isnan(complexity)] = np.Inf
         complexity = complexity[sort]
-        # position = range(len(cost1))
         position = sort
   
         # start
@@ -878,7 +876,6 @@ class GAparsimony(object):
 
     def __str__(self):
         dev =  "An object of class \"ga_parsimony\"\r" + \
-                f"Call: {self.call}\r" + \
                 "Available slots:\r" + \
                 f"bestfitnessVal: {self.bestfitnessVal}\r" + \
                 f"bestfitnessTst: {self.bestfitnessTst}\r" + \
@@ -996,8 +993,7 @@ class GAparsimony(object):
 
         if x["suggestions"] is not None and x["suggestions"].shape[0]>0:
             print("Suggestions =")
-            for m in x["suggestions"]:
-                printShortMatrix(m, head, tail, chead, ctail) # Revisar
+            print(x["suggestions"])
 
 
         print("\n\nGA-PARSIMONY results:")
@@ -1072,17 +1068,17 @@ class GAparsimony(object):
         # ======================
         fig, ax = plt.subplots() if not size_plot else plt.subplots(figsize=size_plot)
 
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_val.T.flatten())), color=(0.275191, 0.194905, 0.496005), width=0.4)
-        ax = sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
+        sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_val.T.flatten())), color=(0.275191, 0.194905, 0.496005), width=0.4)
+        sns.boxplot(x="x", y="y", data=pd.DataFrame(dict(x=np.repeat(range(min_iter, max_iter), self.elitism), y=mat_tst.T.flatten())), color=(0.626579, 0.854645, 0.223353), width=0.4)
 
         plt.suptitle(main_label, fontsize=16)
         plt.title(f"Results for the last best individual: Val={round(self.bestfitnessVal, 5)}, Test={round(self.bestfitnessTst, 5)}, Num.Features={int(mat_complex[0, -1])}")
 
         # Eje de la derecha
-        ax = sns.lineplot(x=x, y=mat_val[0], color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
+        sns.lineplot(x=x, y=mat_val[0], color=(0.153364, 0.497, 0.557724), style=True, dashes=[(10, 2)])
         ax.legend([],[], frameon=False)
 
-        ax = sns.lineplot(x=x, y=mat_tst[0], color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
+        sns.lineplot(x=x, y=mat_tst[0], color=(0.122312, 0.633153, 0.530398), style=True, dashes=[(2, 2, 10, 2)]) # 2pt line, 2pt break, 10pt line, 2pt break
         ax.legend([],[], frameon=False)
         
         
@@ -1090,10 +1086,10 @@ class GAparsimony(object):
         
         # Eje de la izquierda
         ax2 = plt.twinx()
-        ax2 = sns.lineplot(x=x, y=mat_complex[0], color=(0.212395, 0.359683, 0.55171))
+        sns.lineplot(x=x, y=mat_complex[0], color=(0.212395, 0.359683, 0.55171))
         
 
-        ax2 = plt.fill_between(x = x,
+        plt.fill_between(x = x,
                  y1 = np.min(mat_complex.T, axis=1),
                  y2 = np.max(mat_complex.T, axis=1),
                  alpha = 0.1,

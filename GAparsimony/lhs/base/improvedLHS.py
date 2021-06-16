@@ -14,11 +14,11 @@ def _improvedLHS( n,  k, dup=1, seed=None):
     result = np.empty((k, n))
     #  ********** matrix_unsafe<int> m_result = matrix_unsafe<int>(nparameters, nsamples, result);
     #  the length of the point1 columns and the list1 vector 
-    len = duplication * (nsamples - 1)
+    size = duplication * (nsamples - 1)
     
     #  create memory space for computations 
-    point1 = np.empty((nparameters, len))
-    list1 = np.empty(len)
+    point1 = np.empty((nparameters, size))
+    list1 = np.empty(size)
     vec = np.empty(nparameters)
     #  optimum spacing between points 
     opt = np.double(nsamples) / ( np.power(np.double(nsamples), (1.0 / np.double(nparameters))))

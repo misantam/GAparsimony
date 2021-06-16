@@ -65,8 +65,7 @@ def convertIntegerToNumericLhs(intMat):
 
 
 def sumInvDistance(a): 
-	# return np.cumsum(calculateDistance(a)[::-1]) # equivale a accumulate
-	return np.sum(calculateDistance(a)[::-1]) # equivale a accumulate
+	return np.sum(calculateDistance(a)[::-1]) # equals to accumulate
     
 
 def calculateDistanceSquared(a, b):

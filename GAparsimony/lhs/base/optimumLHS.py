@@ -17,7 +17,6 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
     extraColumns = 0
     optimalityChangeOld = 0.0
     outlhs = np.empty((nsamples, nparameters))
-    newHypercube = np.empty((nsamples, nparameters))
     optimalityRecord = np.empty(nOptimalityRecordLength).astype(np.double)
     interchangeRow1 = np.zeros(nOptimalityRecordLength)
     interchangeRow2 = np.zeros(nOptimalityRecordLength)
@@ -36,12 +35,12 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
     # find the initial optimality measure 
     gOptimalityOld = sumInvDistance(outlhs)
     test = 0
-    iter = 0
+    iterator = 0
     while test == 0:
     
-        if iter == nMaxSweeps:
+        if iterator == nMaxSweeps:
             break
-        iter += 1
+        iterator += 1
         # iterate over the columns 
         for j in range(nparameters):
         

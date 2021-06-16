@@ -13,12 +13,6 @@
 import os
 import sys, subprocess
 
-# try:
-#     import sphinx_rtd_theme
-# except:
-#     subprocess.check_call([sys.executable, "-m", "pip", "install", "sphinx-rtd-theme"])
-#     import sphinx_rtd_theme
-
 import sphinx_rtd_theme
 
 sys.path.insert(0, os.path.abspath('../'))
