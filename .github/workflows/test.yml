@@ -53,7 +53,7 @@ jobs:
     - name: webook readthedocs.io
       run: |
             curl -X POST -d "branches=main" -d "token=${{ secrets.READTHEDOC_TOKEN }}" ${{ secrets.READTHEDOC_URL }}
-  Create the tag and the release:
+  Create_the_tag_and_the_release:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/main' }}
     steps:
