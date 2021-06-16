@@ -4,8 +4,7 @@
 GA selection procedure is based on separate cost and complexity evaluations. Therefore, the best
 individuals are initially sorted by an error fitness function, and afterwards, models with similar
 costs are rearranged according to modelcomplexity measurement so as to foster models of lesser
-complexity. The algorithm can be run sequentially or in parallel using an explicit master-slave
-parallelisation.
+complexity. The algorithm can be run sequentially or in parallel.
 
 GAparsimonypackage is a new GA wrapper automatic method that efficiently generated predic-tion models 
 with reduced complexity and adequate generalization capacity.ga_parsimonyfunctionis primarily based on 
