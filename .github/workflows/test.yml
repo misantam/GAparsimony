@@ -36,17 +36,27 @@ jobs:
       with:
         # Disabling shallow clone is recommended for improving relevancy of reporting
         fetch-depth: 0
+#     - name: SonarQube Scan
+#       uses: sonarsource/sonarqube-scan-action@master
+#       with:
+#         args: >
+#           -Dsonar.projectKey=GAparsimony 
+#           -Dsonar.sources=.
+#           -Dsonar.login=${{ secrets.SONAR_LOGIN }}
+#           -Dsonar.password=${{ secrets.SONAR_PASSWORD }}
+#       env:
+#         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
     - name: SonarQube Scan
-      uses: sonarsource/sonarqube-scan-action@master
+      uses: SonarSource/sonarcloud-github-action@master
       with:
         args: >
           -Dsonar.projectKey=GAparsimony 
           -Dsonar.sources=.
-          -Dsonar.login=${{ secrets.SONAR_LOGIN }}
-          -Dsonar.password=${{ secrets.SONAR_PASSWORD }}
+          -Dsonar.organization=misantam
       env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   readthedocs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && github.ref == 'refs/heads/main' }}
