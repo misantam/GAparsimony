@@ -1,4 +1,4 @@
-__all__ = ["fitness", "ordenacion", "population", "parsimony_miscfun", "parsimony_monitor", "complexity"]
+__all__ = ["fitness", "order", "population", "parsimony_miscfun", "parsimony_monitor", "complexity"]
 
 from .fitness import getFitness
 from .population import Population

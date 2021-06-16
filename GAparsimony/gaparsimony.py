@@ -462,12 +462,12 @@ class GAparsimony(object):
 
             # Sort by the Fitness Value
             # ----------------------------
-            ord = order(self.fitnessval, kind='heapsort', decreasing = True, na_last = True)
-            self.population.population = self.population[ord, :]
-            self.fitnessval = self.fitnessval[ord]
-            self.fitnesstst = self.fitnesstst[ord]
-            self.complexity = self.complexity[ord]
-            _models = _models[ord]
+            sort = order(self.fitnessval, kind='heapsort', decreasing = True, na_last = True)
+            self.population.population = self.population[sort, :]
+            self.fitnessval = self.fitnessval[sort]
+            self.fitnesstst = self.fitnesstst[sort]
+            self.complexity = self.complexity[sort]
+            _models = _models[sort]
 
             PopSorted = self.population.population.copy()
             FitnessValSorted = self.fitnessval.copy()
@@ -631,13 +631,13 @@ class GAparsimony(object):
         cost1 = self.fitnessval.copy().astype(float)
         cost1[np.isnan(cost1)]= np.NINF
 
-        ord = order(cost1, decreasing = True)
-        cost1 = cost1[ord]
+        sort = order(cost1, decreasing = True)
+        cost1 = cost1[sort]
         complexity = self.complexity.copy()
         complexity[np.isnan(complexity)] = np.Inf
-        complexity = complexity[ord]
+        complexity = complexity[sort]
         # position = range(len(cost1))
-        position = ord
+        position = sort
   
         # start
         pos1 = 0
