@@ -275,7 +275,7 @@ GAparsimony_model.plot()
 ```
 
 
-![GA-PARSIMONY Evolution](https://github.com/misantam/GAparsimony/blob/develop/docs\img\classification_readme.png)
+![GA-PARSIMONY Evolution](https://github.com/misantam/GAparsimony/develop/docs/img/classification_readme.png)
 
 GA-PARSIMONY evolution
 
