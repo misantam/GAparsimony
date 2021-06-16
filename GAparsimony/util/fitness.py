@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, RepeatedK
 from sklearn.metrics import make_scorer
 import numpy as np
 
-def getFitness(model, metric, complexity, cv, regression=True, test_size=0.2, random_state=42, n_jobs=-1):
+def getFitness(model, metric, complexity, cv=None, regression=True, test_size=0.2, random_state=42, n_jobs=-1):
     r"""
     Generating function of a fitness function.
 
@@ -16,8 +16,8 @@ def getFitness(model, metric, complexity, cv, regression=True, test_size=0.2, ra
         A function that computes the metric.
     complexity : function
         A function that calculates the complexity of the model. You can use for some models those defined in `GAparsimony.util.complexity`
-    cv : object
-        An `sklearn.model_selection`, Splitter Classes. If `None`, `sklearn.model_selection.RepeatedKFold`.
+    cv : object, optional
+        An `sklearn.model_selection`, Splitter Classes. If `None`, `sklearn.model_selection.RepeatedKFold`. Default `None`
     regression : bool, optional
         If it is a regression model `True` else `False`.
     test_size : float, optional
