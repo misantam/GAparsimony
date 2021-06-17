@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+import pandas as pd
 
 def order(obj, kind='heapsort', decreasing = False, na_last = True):
     r"""Function to order vectors 
@@ -32,6 +33,6 @@ def order(obj, kind='heapsort', decreasing = False, na_last = True):
         if not na_last:
             return obj.argsort(kind=kind)[::-1]
         else:
-            na = np.count_nonzero(np.isnan(obj))
+            na = np.count_nonzero(pd.isnull(obj))
             aux = obj.argsort(kind=kind)[::-1]
             return np.concatenate([aux[na:], aux[:na]])

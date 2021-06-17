@@ -28,22 +28,7 @@ Install these packages:
 pip install GAparsimony
 ```
 
-References
-----------
-Martinez-De-Pison, F.J., Gonzalez-Sendino, R., Ferreiro, J., Fraile, E., Pernia-Espinoza, A. GAparsimony: An R package for searching parsimonious models by combining hyperparameter optimization and feature selection (2018) Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 10870 LNAI, pp. 62-73. [https://doi.org/10.1007/978-3-319-92639-1_6](https://doi.org/10.1007/978-3-319-92639-1_6)
 
-Martinez-de-Pison, F.J., Gonzalez-Sendino, R., Aldama, A., Ferreiro-Cabello, J., Fraile-Garcia, E.
-Hybrid methodology based on Bayesian optimization and GA-PARSIMONY to search for parsimony models by combining hyperparameter optimization and feature selection (2019) Neurocomputing, 354, pp. 20-26. [https://doi.org/10.1016/j.neucom.2018.05.136](https://doi.org/10.1016/j.neucom.2018.05.136)
-
-Urraca R., Sodupe-Ortega E., Antonanzas E., Antonanzas-Torres F., Martinez-de-Pison, F.J. (2017). Evaluation of a novel GA-based
-methodology for model structure selection: The GA-PARSIMONY. Neurocomputing, Online July 2017. [https://doi.org/10.1016/j.neucom.2016.08.154](https://doi.org/10.1016/j.neucom.2016.08.154)
-
-Sanz-Garcia, A., Fernandez-Ceniceros, J., Antonanzas-Torres, F., Pernia-Espinoza, A.V., Martinez-De-Pison, F.J. GA-PARSIMONY: A GA-SVR approach with feature selection and parameter optimization to obtain parsimonious solutions for predicting temperature settings in a continuous annealing furnace (2015) Applied Soft Computing Journal, 35, art. no. 3006, pp. 13-28. [https://doi.org/10.1016/j.asoc.2015.06.012](https://doi.org/10.1016/j.asoc.2015.06.012)
-
-Fernandez-Ceniceros, J., Sanz-Garcia, A., Antoñanzas-Torres, F., Martinez-de-Pison, F.J. A numerical-informational approach for characterising the ductile behaviour of the T-stub component. Part 2: Parsimonious soft-computing-based metamodel
-(2015) Engineering Structures, 82, pp. 249-260. [https://doi.org/10.1016/j.engstruct.2014.06.047](https://doi.org/10.1016/j.engstruct.2014.06.047)
-
-Antonanzas-Torres, F., Urraca, R., Antonanzas, J., Fernandez-Ceniceros, J., Martinez-De-Pison, F.J. Generation of daily global solar irradiation with support vector machines for regression (2015) Energy Conversion and Management, 96, pp. 277-286. [https://doi.org/10.1016/j.enconman.2015.02.086](https://doi.org/10.1016/j.enconman.2015.02.086)
 
 How to use this package
 -----------------------
@@ -53,21 +38,13 @@ How to use this package
 This example shows how to search, for the *Sonar* database, a parsimony
 SVM classificator with **GAparsimony** package.
 
-In the next step, a fitness function is use: *svm*.
+In the next step, a fitness function is created using getFitness. This function return a fitness function for the `SVC` model, the `cohen_kappa_score` metric and the predefined `svm` complexity function for SVC models. We set regression to `False` beacause is classification example.
 
 A SVM model is trained with these parameters and the selected input
-features. Finally, *fitness\_SVM()* returns a vector with three values:
+features. Finally, *fitness()* returns a vector with three values:
 the *kappa* statistic obtained with the mean of 10 runs of a 10-fold
 cross-validation process, the *kappa* measured with the test database to
-check the model generalization capability, and the model complexity.
-
-In this example, the model complexity combines the number of selected features
-multiplied by 1E6 plus the number of support vectors of each model. 
-Therefore, PMS considers the most parsimonious model with the
-lower number of features. Between two models with the same number of
-features, the lower number of support vectors will determine the most
-parsimonious model. However, other parsimonious metrics could be considered in future
-applications (AIC, BIC, GDF, ...)..
+check the model generalization capability, and the model complexity. And the trained model.
 
 The GA-PARSIMONY process begins defining the range of the SVM parameters
 and their names. Also, *rerank\_error* can be tuned with different
@@ -75,7 +52,7 @@ and their names. Also, *rerank\_error* can be tuned with different
 In this example, *rerank\_error* has been fixed to 0.001 but other
 values could improve the trade-off between model complexity and model
 accuracy. For example, with *rerank\_error=0.01*, we can be interested 
-in obtaining models with a smaller number of inputs with a *kappa* rounded
+in obtaining models with a smaller number of inputs with a *gamma* rounded
 to two decimals.
 
 ``` {.Python}
@@ -103,11 +80,10 @@ GAparsimony_model = GAparsimony(fitness=fitness,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
-                                  maxiter = 5, early_stop=10,
+                                  maxiter = 5, early_stop=3,
                                   feat_thres=0.90, # Perc selected features in first generation
                                   feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                   seed_ini = 1234)
-
 ```
 
 With small databases, it is highly recommended to execute
@@ -119,26 +95,17 @@ composed of 60 input features and 167 instances, and a test database with only 4
 Hence, a robust validation metric is necessary. Thus, a repeated cross-validation is performed.
 
 Starts the GA optimizaton process with 40 individuals per generation and
-a maximum number of 100 iterations with an early stopping when
-validation measure does not increase significantly in 10 generations.
+a maximum number of 5 iterations with an early stopping when
+validation measure does not increase significantly in 3 generations.
 Parallel is activated. In addition, history of each iteration is saved
 in order to use *plot* and *parsimony\_importance* methods.
 
 ``` {.python}
-
 GAparsimony_model.fit(df.iloc[:, :-1], df.iloc[:, -1])
-
 ```
-
-Summary() function shows the GA initial settings and two solutions: the solution with the best validation score in the whole GA optimization process, and finally, the best parsimonious individual at the last generation.
-
-``` {.python}
-
-GAparsimony_model.summary()
-
 ```
+#output
 
-``` 
 GA-PARSIMONY | iter = 0
   MeanVal = 0.5843052  |  ValBest = 0.6566379  |  TstBest = 0.5714286  |ComplexBest = 52000000083.0| Time(min) = 0.2102916  
 
@@ -153,7 +120,14 @@ GA-PARSIMONY | iter = 3
 
 GA-PARSIMONY | iter = 4
   MeanVal = 0.6375668  |  ValBest = 0.6987458  |  TstBest = 0.5714286  |ComplexBest = 41000000080.0| Time(min) = 0.1268976  
+```
 
+summary() shows the GA initial settings and two solutions: the solution with the best validation score in the whole GA optimization process, and finally, the best parsimonious individual at the last generation.
+
+``` {.python}
+GAparsimony_model.summary()
+```
+``` 
 +------------------------------------+
 |             GA-PARSIMONY           |
 +------------------------------------+
@@ -269,12 +243,8 @@ BEST SOLUTION =
 Plot GA evolution.
 
 ``` {.python}
-
 GAparsimony_model.plot()
-
 ```
-
-
 ![GA-PARSIMONY Evolution](./docs/img/classification_readme.png)
 
 GA-PARSIMONY evolution
@@ -286,5 +256,47 @@ Show percentage of appearance for each feature in elitists
 GAparsimony_model.importance()
 ```
 ```
-Corregir
++--------------------------------------------+
+|                  GA-PARSIMONY              |
++--------------------------------------------+
+
+Percentage of appearance of each feature in elitists:
+
+  col_1 col_15 col_2 col_51 col_57 col_58 col_29 col_59 col_30  col_31  \
+0   100    100   100    100    100    100    100    100    100  96.875
+
+    col_9  col_40  col_20  col_26  col_53 col_14 col_16 col_36  col_4 col_10  \
+0  96.875  96.875  96.875  96.875  96.875  93.75  93.75  93.75  93.75  93.75
+
+  col_45 col_50   col_7  col_32  col_34   col_8  col_17 col_22 col_41 col_56  \
+0  93.75  93.75  90.625  90.625  90.625  90.625  90.625   87.5   87.5   87.5
+
+   col_23  col_54  col_6  col_48  col_43  col_12  col_55 col_38 col_37 col_49  \
+0  84.375  84.375  81.25  78.125  78.125  78.125  78.125     75     75     75
+
+    col_0  col_11  col_28 col_35 col_25  col_24  col_33   col_5  col_27  \
+0  71.875  71.875  71.875  68.75  68.75  65.625  65.625  65.625  59.375
+
+   col_52   col_3  col_18  col_47  col_39 col_19 col_46 col_21  col_42 col_13  \
+0  59.375  53.125  40.625  40.625  34.375  31.25  31.25  31.25  28.125     25
+
+   col_44
+0  21.875
 ```
+
+References
+----------
+Martinez-De-Pison, F.J., Gonzalez-Sendino, R., Ferreiro, J., Fraile, E., Pernia-Espinoza, A. GAparsimony: An R package for searching parsimonious models by combining hyperparameter optimization and feature selection (2018) Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 10870 LNAI, pp. 62-73. [https://doi.org/10.1007/978-3-319-92639-1_6](https://doi.org/10.1007/978-3-319-92639-1_6)
+
+Martinez-de-Pison, F.J., Gonzalez-Sendino, R., Aldama, A., Ferreiro-Cabello, J., Fraile-Garcia, E.
+Hybrid methodology based on Bayesian optimization and GA-PARSIMONY to search for parsimony models by combining hyperparameter optimization and feature selection (2019) Neurocomputing, 354, pp. 20-26. [https://doi.org/10.1016/j.neucom.2018.05.136](https://doi.org/10.1016/j.neucom.2018.05.136)
+
+Urraca R., Sodupe-Ortega E., Antonanzas E., Antonanzas-Torres F., Martinez-de-Pison, F.J. (2017). Evaluation of a novel GA-based
+methodology for model structure selection: The GA-PARSIMONY. Neurocomputing, Online July 2017. [https://doi.org/10.1016/j.neucom.2016.08.154](https://doi.org/10.1016/j.neucom.2016.08.154)
+
+Sanz-Garcia, A., Fernandez-Ceniceros, J., Antonanzas-Torres, F., Pernia-Espinoza, A.V., Martinez-De-Pison, F.J. GA-PARSIMONY: A GA-SVR approach with feature selection and parameter optimization to obtain parsimonious solutions for predicting temperature settings in a continuous annealing furnace (2015) Applied Soft Computing Journal, 35, art. no. 3006, pp. 13-28. [https://doi.org/10.1016/j.asoc.2015.06.012](https://doi.org/10.1016/j.asoc.2015.06.012)
+
+Fernandez-Ceniceros, J., Sanz-Garcia, A., Antoñanzas-Torres, F., Martinez-de-Pison, F.J. A numerical-informational approach for characterising the ductile behaviour of the T-stub component. Part 2: Parsimonious soft-computing-based metamodel
+(2015) Engineering Structures, 82, pp. 249-260. [https://doi.org/10.1016/j.engstruct.2014.06.047](https://doi.org/10.1016/j.engstruct.2014.06.047)
+
+Antonanzas-Torres, F., Urraca, R., Antonanzas, J., Fernandez-Ceniceros, J., Martinez-De-Pison, F.J. Generation of daily global solar irradiation with support vector machines for regression (2015) Energy Conversion and Management, 96, pp. 277-286. [https://doi.org/10.1016/j.enconman.2015.02.086](https://doi.org/10.1016/j.enconman.2015.02.086)

@@ -1137,10 +1137,12 @@ class GAparsimony(object):
         nelitistm = self.elitism
         features_hist = None
         for iter in range(min_iter, max_iter+1):
-            features_hist = np.c_[features_hist, self.history[iter][0][:nelitistm, len(self.population.paramsnames):]] ## ANALIZAR CON CUIDADO
+            data = self.history[iter].iloc[:nelitistm, len(self.population.paramsnames):-3].values
+            features_hist = data if features_hist is None else np.r_[features_hist, data] ## ANALIZAR CON CUIDADO
 
         importance = np.mean(features_hist, axis=0)
-        imp_features = 100*importance[order(importance,decreasing = True)]
+        sort = order(importance,decreasing = True)
+        imp_features = pd.DataFrame(100*importance[order(importance,decreasing = True)][np.newaxis], columns=self.history[0].columns[len(self.population.paramsnames):-3][sort])
 
         # Para contolar si lo está asignando
         try:
