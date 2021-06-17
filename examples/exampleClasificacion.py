@@ -6,7 +6,7 @@ from sklearn.metrics import cohen_kappa_score
 from GAparsimony import GAparsimony, Population, getFitness
 from GAparsimony.util import svm
 
-df = pd.read_csv("C:/Users/Millan/Desktop/TFM/sonar_csv.csv")
+df = pd.read_csv("../data/sonar_csv.csv")
 
 rerank_error = 0.001
 params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT}, 
