@@ -346,7 +346,7 @@ GAparsimony_model = GAparsimony(fitness=fitness,
                                 seed_ini = 1234)
 ```
 ``` {.python}
-GAparsimony_model.fit(df.iloc[:, :-1], df.iloc[:, -1])
+GAparsimony_model.fit(X, y)
 ```
 ```
 #output
