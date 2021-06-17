@@ -284,6 +284,184 @@ Percentage of appearance of each feature in elitists:
 0  21.875
 ```
 
+### Example 2: Regression
+
+This example shows how to search, for the *Boston* database, a parsimonious
+ANN model for regression and with **GAparsimony** package.
+
+In the next step, a fitness function is created using getFitness. This function return a fitness function for the `Lasso` model, the `mean_squared_error`(RMSE) metric and the predefined `linearModels` complexity function for SVC models. We set regression to `True` beacause is classification example.
+
+A Lasso model is trained with these parameters and the selected input
+features. Finally, *fitness()* returns a vector with three negatives values:
+the *RMSE* statistic obtained with the mean of 10 runs of a 10-fold
+cross-validation process, the *RMSE* measured with the test database to
+check the model generalization capability, and the model complexity. And the trained model.
+
+The GA-PARSIMONY process begins defining the range of the SVM parameters
+and their names. Also, *rerank\_error* can be tuned with different
+*ga\_parsimony* runs to improve the **model generalization capability**.
+In this example, *rerank\_error* has been fixed to 0.01 but other
+values could improve the trade-off between model complexity and model
+accuracy.
+
+Therefore, PMS considers the most parsimonious model with the lower
+number of features. Between two models with the same number of features,
+the lower sum of the squared network weights will determine the most
+parsimonious model (smaller weights reduce the propagation of disturbances).
+
+
+``` {.python}
+from sklearn.model_selection import RepeatedKFold
+from sklearn.linear_model import Lasso
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_squared_error
+
+from sklearn.datasets import load_boston
+
+from GAparsimony import GAparsimony, Population, getFitness
+from GAparsimony.util import linearModels
+
+boston = load_boston()
+X, y = boston.data, boston.target 
+X = StandardScaler().fit_transform(X)
+
+# ga_parsimony can be executed with a different set of 'rerank_error' values
+rerank_error = 0.01
+
+params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
+            "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
+
+fitness = getFitness(Lasso, mean_squared_error, linearModels, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
+
+
+GAparsimony_model = GAparsimony(fitness=fitness,
+                                params = params, 
+                                features = boston.feature_names,
+                                keep_history = True,
+                                rerank_error = rerank_error,
+                                popSize = 40,
+                                maxiter = 5, early_stop=3,
+                                feat_thres=0.90, # Perc selected features in first generation
+                                feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                seed_ini = 1234)
+```
+``` {.python}
+GAparsimony_model.fit(df.iloc[:, :-1], df.iloc[:, -1])
+```
+```
+#output
+
+GA-PARSIMONY | iter = 0
+ MeanVal = -79.1813338 | ValBest = -30.3470614 | TstBest = -29.2466835 |ComplexBest = 13000000021.927263| Time(min) = 0.1210119  
+
+GA-PARSIMONY | iter = 1
+ MeanVal = -55.0713465 | ValBest = -30.2283235 | TstBest = -29.2267507 |ComplexBest = 12000000022.088743| Time(min) = 0.0713775  
+
+GA-PARSIMONY | iter = 2
+ MeanVal = -34.8473723 | ValBest = -30.2283235 | TstBest = -29.2267507 |ComplexBest = 12000000022.088743| Time(min) = 0.0631771  
+
+GA-PARSIMONY | iter = 3
+ MeanVal = -38.5251529 | ValBest = -30.0455259 | TstBest = -29.2712578 |ComplexBest = 10000000022.752678| Time(min) = 0.0586402  
+
+GA-PARSIMONY | iter = 4
+ MeanVal = -38.1097172 | ValBest = -29.8640867 | TstBest = -29.1833224 |ComplexBest = 8000000022.721948| Time(min) = 0.0682137 
+```
+
+summary() shows the GA initial settings and two solutions: the solution with the best validation score in the whole GA optimization process, and finally, the best parsimonious individual at the last generation.
+
+``` {.python}
+GAparsimony_model.summary()
+```
+``` 
++------------------------------------+
+|             GA-PARSIMONY           |
++------------------------------------+
+
+GA-PARSIMONY settings:
+ Number of Parameters      = 2
+ Number of Features        = 13
+ Population size           = 40
+ Maximum of generations    = 5
+ Number of early-stop gen. = 3
+ Elitism                   = 8
+ Crossover probability     = 0.8
+ Mutation probability      = 0.1
+ Max diff(error) to ReRank = 0.01
+ Perc. of 1s in first popu.= 0.9
+ Prob. to be 1 in mutation = 0.1
+
+ Search domain =
+           alpha     tol  CRIM   ZN  INDUS  CHAS  NOX   RM  AGE  DIS  RAD  \
+Min_param    1.0  0.0001   0.0  0.0    0.0   0.0  0.0  0.0  0.0  0.0  0.0
+Max_param   25.9  0.9999   1.0  1.0    1.0   1.0  1.0  1.0  1.0  1.0  1.0
+
+           TAX  PTRATIO    B  LSTAT
+Min_param  0.0      0.0  0.0    0.0
+Max_param  1.0      1.0  1.0    1.0
+
+
+GA-PARSIMONY results:
+ Iterations                = 5
+ Best validation score = -29.864086737831904
+
+
+Solution with the best validation score in the whole GA process =
+
+  fitnessVal fitnessTst complexity    alpha       tol CRIM ZN INDUS CHAS NOX  \
+0   -29.8641   -29.1833      8e+09  1.33745  0.340915    1  0     1    0   1
+
+  RM AGE DIS RAD TAX PTRATIO  B LSTAT
+0  1   0   1   0   0       1  1     1
+
+
+Results of the best individual at the last generation =
+
+ Best indiv's validat.cost = -29.864086737831904
+ Best indiv's testing cost = -29.183322365179112
+ Best indiv's complexity   = 8000000022.721948
+ Elapsed time in minutes   = 0.3824204007784525
+
+
+BEST SOLUTION =
+
+  fitnessVal fitnessTst complexity    alpha       tol CRIM ZN INDUS CHAS NOX  \
+0   -29.8641   -29.1833      8e+09  1.33745  0.340915    1  0     1    0   1
+
+  RM AGE DIS RAD TAX PTRATIO  B LSTAT
+0  1   0   1   0   0       1  1     1
+```
+
+Plot GA evolution.
+
+``` {.python}
+GAparsimony_model.plot()
+```
+![GA-PARSIMONY Evolution](./docs/img/regression_readme.png)
+
+GA-PARSIMONY evolution
+
+Show percentage of appearance for each feature in elitists
+
+``` {.python}
+# Percentage of appearance for each feature in elitists
+GAparsimony_model.importance()
+```
+```
++--------------------------------------------+
+|                  GA-PARSIMONY              |
++--------------------------------------------+
+
+Percentage of appearance of each feature in elitists:
+
+  PTRATIO LSTAT   RM    B     DIS    CRIM      ZN     NOX   INDUS    AGE  \
+0     100   100  100  100  96.875  84.375  84.375  84.375  84.375  81.25
+
+      TAX   CHAS RAD
+0  71.875  56.25  50
+```
+
+
+
 References
 ----------
 Martinez-De-Pison, F.J., Gonzalez-Sendino, R., Ferreiro, J., Fraile, E., Pernia-Espinoza, A. GAparsimony: An R package for searching parsimonious models by combining hyperparameter optimization and feature selection (2018) Lecture Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 10870 LNAI, pp. 62-73. [https://doi.org/10.1007/978-3-319-92639-1_6](https://doi.org/10.1007/978-3-319-92639-1_6)

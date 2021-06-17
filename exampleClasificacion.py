@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.model_selection import RepeatedKFold
 from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score
