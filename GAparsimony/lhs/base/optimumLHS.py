@@ -14,7 +14,6 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
     nparameters = k
     nMaxSweeps = maxSweeps
     eps_change = eps
-    extraColumns = 0
     optimalityChangeOld = 0.0
     outlhs = np.empty((nsamples, nparameters))
     optimalityRecord = np.empty(nOptimalityRecordLength).astype(np.double)
@@ -112,7 +111,6 @@ def _optimumLHS(n, k, optimalityRecordLength, maxSweeps=2, eps=0.1, seed=None):
                 raise Exception("Unexpected Result: Algorithm produced a less optimal design")
             if test == 1:
                 break
-            extraColumns += 1
     return outlhs
 
 

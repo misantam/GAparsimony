@@ -1103,11 +1103,6 @@ class GAparsimony(object):
                 return x 
         finally:
             del frame 
-    
-        head = kwargs["head"] if "head" in kwargs.keys() else 10
-        tail = kwargs["tail"] if "tail" in kwargs.keys() else 1
-        chead = kwargs["chead"] if "chead" in kwargs.keys() else 20
-        ctail = kwargs["ctail"] if "ctail" in kwargs.keys() else 1
 
 
         print("+------------------------------------+")
