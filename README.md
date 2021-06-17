@@ -478,3 +478,4 @@ Fernandez-Ceniceros, J., Sanz-Garcia, A., Antoñanzas-Torres, F., Martinez-de-Pi
 (2015) Engineering Structures, 82, pp. 249-260. [https://doi.org/10.1016/j.engstruct.2014.06.047](https://doi.org/10.1016/j.engstruct.2014.06.047)
 
 Antonanzas-Torres, F., Urraca, R., Antonanzas, J., Fernandez-Ceniceros, J., Martinez-De-Pison, F.J. Generation of daily global solar irradiation with support vector machines for regression (2015) Energy Conversion and Management, 96, pp. 277-286. [https://doi.org/10.1016/j.enconman.2015.02.086](https://doi.org/10.1016/j.enconman.2015.02.086)
+
