@@ -57,6 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'pull_request' && github.head_ref == 'develop' && github.base_ref == 'main' }}
     steps:
+    - uses: actions/checkout@v2
     - name: Set env
       run: echo "VERSION=$(head -n 1 ./GAparsimony/__init__.py | tr "=" "\n" |sed -n '2p')" >> $GITHUB_ENV
     - name: Create Release
