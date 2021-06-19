@@ -186,6 +186,7 @@ class GAparsimony(object):
             from sklearn.datasets import load_boston
 
             from GAparsimony import GAparsimony, Population, getFitness
+            from GAparsimony.util import linearModels
 
             boston = load_boston()
             X, y = boston.data, boston.target 
@@ -197,15 +198,7 @@ class GAparsimony(object):
             params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
                         "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
 
-            def complexity(model, features):
-                coef = 0
-                for c in model.coef_:
-                    coef += np.sum(np.power(c, 2))
-                return np.sum(features)*1E6 + coef
-
-            cv = RepeatedKFold(n_splits=10, n_repeats=5, random_state=123)
-
-            fitness = getFitness(Lasso, mean_squared_error, complexity, cv, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(Lasso, mean_squared_error, linearModels, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
 
 
             GAparsimony_model = GAparsimony(fitness=fitness,
@@ -217,13 +210,14 @@ class GAparsimony(object):
                                             maxiter = 5, early_stop=10,
                                             feat_thres=0.90, # Perc selected features in first generation
                                             feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                            seed_ini = 1234,
-                                            verbose=1)
+                                            seed_ini = 1234)
 
 
             GAparsimony_model.fit(X, y)
 
             GAparsimony_model.summary()
+
+            aux = GAparsimony_model.summary()
 
             GAparsimony_model.plot()
 
@@ -301,7 +295,7 @@ class GAparsimony(object):
             NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
             0   1  1   0   1   1   0       1  1     1
         
-        .. figure:: ../docs/img/regression.png
+        .. figure:: ./docs/img/regression.png
             :align: center
             :width: 600
             :alt: Regression plot
@@ -314,7 +308,6 @@ class GAparsimony(object):
         .. code-block:: python
 
             import pandas as pd
-            from sklearn.model_selection import RepeatedKFold
             from sklearn.svm import SVC
             from sklearn.metrics import cohen_kappa_score
 
@@ -477,7 +470,7 @@ class GAparsimony(object):
             col_55 col_56 col_57 col_58 col_59
             0      0      1      1      1      0
         
-        .. figure:: ../docs/img/classification.png
+        .. figure:: ./docs/img/classification.png
             :align: center
             :width: 600
             :alt: Classification plot
