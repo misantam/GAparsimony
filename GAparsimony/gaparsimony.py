@@ -301,7 +301,7 @@ class GAparsimony(object):
             NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
             0   1  1   0   1   1   0       1  1     1
         
-        .. figure:: ./docs/img/regression.png
+        .. figure:: ../docs/img/regression.png
             :align: center
             :width: 600
             :alt: Regression plot
@@ -477,7 +477,7 @@ class GAparsimony(object):
             col_55 col_56 col_57 col_58 col_59
             0      0      1      1      1      0
         
-        .. figure:: ./docs/img/classification.png
+        .. figure:: ../docs/img/classification.png
             :align: center
             :width: 600
             :alt: Classification plot
