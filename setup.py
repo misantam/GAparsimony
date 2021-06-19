@@ -61,11 +61,7 @@ setup(
     # This is a one-line description or tagline of what your project does. This
     # corresponds to the "Summary" metadata field:
     # https://packaging.python.org/specifications/core-metadata/#summary
-    description="""Combines feature selection, model tuning, and parsimonious model selection with GA optimization. 
-                GA selection procedure is based on separate cost and complexity evaluations. Therefore, the best 
-                individuals are initially sorted by an error fitness function, and afterwards, models with similar 
-                costs are rearranged according to modelcomplexity measurement so as to foster models of lesser complexity. 
-                The algorithm can be run sequentially or in parallel.""",  # Required
+    description="Combines feature selection, model tuning, and parsimonious model selection with GA optimization. GA selection procedure is based on separate cost and complexity evaluations. Therefore, the best individuals are initially sorted by an error fitness function, and afterwards, models with similar costs are rearranged according to modelcomplexity measurement so as to foster models of lesser complexity. The algorithm can be run sequentially or in parallel.",  # Required
 
     # This is an optional longer description of your project that represents
     # the body of text which users will see when they visit PyPI.
