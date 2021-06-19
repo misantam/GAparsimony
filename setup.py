@@ -112,7 +112,7 @@ setup(
         'Intended Audience :: Developers',       
 
         # Topics
-        'Topic :: Scientific/Engineering :: Model optimization',
+        'Topic :: Scientific/Engineering',
         'Topic :: Scientific/Engineering :: Artificial Intelligence',
 
 
