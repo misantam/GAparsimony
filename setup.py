@@ -14,11 +14,11 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 def parse_requirements(filename):
     """ load requirements from a pip requirements file """
-    lineiter = (line.strip() for line in open(filename))
+    lineiter = (line.strip() for line in open(filename, 'r'))
     return [line for line in lineiter if line and not line.startswith("#")]
 
 print(os.getcwd())
-install_reqs = parse_requirements("../requirements.txt")
+install_reqs = parse_requirements("requisitos.txt")
 
 def remove_requirements(requirements, remove_elem):
     new_requirements = []
