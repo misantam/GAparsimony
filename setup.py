@@ -2,6 +2,7 @@
 from setuptools import setup, find_packages
 # To use a consistent encoding
 from codecs import open
+import os
 
 # For installing PyTorch and Torchvision in Windows
 import sys
@@ -16,7 +17,8 @@ def parse_requirements(filename):
     lineiter = (line.strip() for line in open(filename))
     return [line for line in lineiter if line and not line.startswith("#")]
 
-install_reqs = parse_requirements("requirements.txt")
+print(os.getcwd())
+install_reqs = parse_requirements("./requirements.txt")
 
 def remove_requirements(requirements, remove_elem):
     new_requirements = []
