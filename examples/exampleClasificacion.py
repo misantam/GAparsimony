@@ -1,26 +1,29 @@
-import pandas as pd
 from sklearn.model_selection import RepeatedKFold
 from sklearn.svm import SVC
 from sklearn.metrics import cohen_kappa_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.datasets import load_wine
 
 from GAparsimony import GAparsimony, Population, getFitness
 from GAparsimony.util import svm
 
-df = pd.read_csv("../data/sonar_csv.csv")
+wine = load_wine()
+X, y = wine.data, wine.target 
+X = StandardScaler().fit_transform(X)
+
 
 rerank_error = 0.001
 params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT}, 
             "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
             "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
-cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=123)
 
-fitness = getFitness(SVC, cohen_kappa_score, svm, cv, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,
                                   params=params,
-                                  features=len(df.columns[:-1]),
+                                  features=wine.feature_names,
                                   keep_history = True,
                                   rerank_error = rerank_error,
                                   popSize = 40,
@@ -30,7 +33,7 @@ GAparsimony_model = GAparsimony(fitness=fitness,
                                   seed_ini = 1234)
 
 
-GAparsimony_model.fit(df.iloc[:, :-1], df.iloc[:, -1])
+GAparsimony_model.fit(X, y)
 
 GAparsimony_model.summary()
 

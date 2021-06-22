@@ -1,15 +1,6 @@
 GAparsimony package
 ===================
 
-Subpackages
------------
-
-.. toctree::
-   :maxdepth: 4
-
-   GAparsimony.lhs
-   GAparsimony.util
-
 Submodules
 ----------
 

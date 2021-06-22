@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.model_selection import RepeatedKFold
 from sklearn.linear_model import Lasso
 from sklearn.preprocessing import StandardScaler
