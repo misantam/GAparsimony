@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from GAparsimony.lhs.util import isValidLHS, isValidLHS_int
-from GAparsimony.lhs.base import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS
+from GAparsimony.lhs import geneticLHS, improvedLHS, maximinLHS, optimumLHS, randomLHS, randomLHS_int
 
 import pytest
 
@@ -11,7 +11,7 @@ import pytest
     (3, 8)
 ])
 def test_randomLHS_int(shape):
-    assert isValidLHS_int(randomLHS.randomLHS_int(*shape))
+    assert isValidLHS_int(randomLHS_int(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -19,7 +19,7 @@ def test_randomLHS_int(shape):
     (3, 8)
 ])
 def test_randomLHS(shape):
-    assert isValidLHS(randomLHS.randomLHS(*shape))
+    assert isValidLHS(randomLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -27,7 +27,7 @@ def test_randomLHS(shape):
     (3, 8)
 ])
 def test_geneticLHS(shape):
-    assert isValidLHS(geneticLHS.geneticLHS(*shape))
+    assert isValidLHS(geneticLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -35,7 +35,7 @@ def test_geneticLHS(shape):
     (3, 8)
 ])
 def test_improvedLHS(shape):
-    assert isValidLHS(improvedLHS.improvedLHS(*shape))
+    assert isValidLHS(improvedLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -43,7 +43,7 @@ def test_improvedLHS(shape):
     (3, 8)
 ])
 def test_maximinLHS(shape):
-    assert isValidLHS(maximinLHS.maximinLHS(*shape))
+    assert isValidLHS(maximinLHS(*shape))
 
 @pytest.mark.parametrize("shape", [
     (2, 2),
@@ -51,4 +51,4 @@ def test_maximinLHS(shape):
     (8, 8)
 ])
 def test_optimumLHS(shape):
-    assert isValidLHS(optimumLHS.optimumLHS(*shape))
+    assert isValidLHS(optimumLHS(*shape))

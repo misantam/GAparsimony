@@ -79,7 +79,6 @@ class Population:
                 raise Exception("Popularion is not a numpy matrix")
             self.population = population
 
-
     @property
     def population(self):
         return self._pop
@@ -100,7 +99,7 @@ class Population:
             elif param["type"] is Population.FLOAT:
                 return np.vectorize(lambda x: float(x), otypes=[float])(value)
             elif param["type"] is Population.STRING:
-                return np.vectorize(lambda x: param["range"][int(np.trunc(x))], otypes=[str])(value)
+                return np.vectorize(lambda x: x if type(x) is str else param["range"][int(np.trunc(x))], otypes=[str])(value)
 
         else:
             if param is None or param["type"] is Population.INTEGER:

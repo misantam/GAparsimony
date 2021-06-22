@@ -177,8 +177,6 @@ class GAparsimony(object):
         .. highlight:: python
         .. code-block:: python
 
-            import numpy as np
-            from sklearn.model_selection import RepeatedKFold
             from sklearn.linear_model import Lasso
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import mean_squared_error
@@ -307,26 +305,31 @@ class GAparsimony(object):
         .. highlight:: python
         .. code-block:: python
 
-            import pandas as pd
             from sklearn.svm import SVC
             from sklearn.metrics import cohen_kappa_score
+            from sklearn.preprocessing import StandardScaler
+            from sklearn.datasets import load_wine
 
             from GAparsimony import GAparsimony, Population, getFitness
             from GAparsimony.util import svm
 
-            df = pd.read_csv("../data/sonar_csv.csv")
+            wine = load_wine()
+            X, y = wine.data, wine.target 
+            X = StandardScaler().fit_transform(X)
+
 
             rerank_error = 0.001
             params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT}, 
                         "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
                         "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
+
             fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
 
 
             GAparsimony_model = GAparsimony(fitness=fitness,
                                             params=params,
-                                            features=len(df.columns[:-1]),
+                                            features=wine.feature_names,
                                             keep_history = True,
                                             rerank_error = rerank_error,
                                             popSize = 40,
@@ -336,7 +339,7 @@ class GAparsimony(object):
                                             seed_ini = 1234)
 
 
-            GAparsimony_model.fit(df.iloc[:, :-1], df.iloc[:, -1])
+            GAparsimony_model.fit(X, y)
 
             GAparsimony_model.summary()
 
@@ -345,19 +348,19 @@ class GAparsimony(object):
         .. code-block:: text
 
             GA-PARSIMONY | iter = 0
-            MeanVal = 0.5855564  |   ValBest = 0.662676  |  TstBest = 0.5714286  |ComplexBest = 52000000083.0| Time(min) = 0.2279623  
+            MeanVal = 0.879549  |  ValBest = 0.9314718  |  TstBest = 0.9574468  |ComplexBest = 10000000045.0| Time(min) = 0.1483674  
 
             GA-PARSIMONY | iter = 1
-            MeanVal = 0.6169929  |  ValBest = 0.6874457  |  TstBest = 0.6508314  |ComplexBest = 49000000070.0| Time(min) = 0.1505629  
+            MeanVal = 0.9075035  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0938667  
 
             GA-PARSIMONY | iter = 2
-            MeanVal = 0.612246  |  ValBest = 0.6916426  |  TstBest = 0.5714286  |ComplexBest = 49000000083.0| Time(min) = 0.1408363  
+            MeanVal = 0.9183232  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0805168  
 
             GA-PARSIMONY | iter = 3
-            MeanVal = 0.6431807  |  ValBest = 0.7077868  |  TstBest = 0.7563805  |ComplexBest = 43000000072.0| Time(min) = 0.1238661  
+            MeanVal = 0.9219764  |  ValBest = 0.9534295  |  TstBest = 0.9568345  |ComplexBest = 10000000043.0|  Time(min) = 0.07575   
 
             GA-PARSIMONY | iter = 4
-            MeanVal = 0.677596  |  ValBest = 0.7504447  |  TstBest = 0.5809313  |ComplexBest = 41000000077.0| Time(min) = 0.1183407  
+            MeanVal = 0.8932938  |  ValBest = 0.9534295  |  TstBest = 0.9568345  |ComplexBest = 10000000043.0|  Time(min) = 0.08885   
 
             +------------------------------------+
             |             GA-PARSIMONY           |
@@ -365,7 +368,7 @@ class GAparsimony(object):
 
             GA-PARSIMONY settings:
             Number of Parameters      = 2
-            Number of Features        = 60
+            Number of Features        = 13
             Population size           = 40
             Maximum of generations    = 5
             Number of early-stop gen. = 10
@@ -377,98 +380,58 @@ class GAparsimony(object):
             Prob. to be 1 in mutation = 0.1
 
             Search domain =
-                            C    gamma  col_0  col_1  col_2  col_3  col_4  col_5  col_6  \
-            Min_param   0.0001  0.00001    0.0    0.0    0.0    0.0    0.0    0.0    0.0
-            Max_param  99.9999  0.99999    1.0    1.0    1.0    1.0    1.0    1.0    1.0
+                            C    gamma  alcohol  malic_acid  ash  alcalinity_of_ash  \
+            Min_param   0.0001  0.00001      0.0         0.0  0.0                0.0
+            Max_param  99.9999  0.99999      1.0         1.0  1.0                1.0
 
-                    col_7  col_8  col_9  col_10  col_11  col_12  col_13  col_14  \
-            Min_param    0.0    0.0    0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param    1.0    1.0    1.0     1.0     1.0     1.0     1.0     1.0
+                    magnesium  total_phenols  flavanoids  nonflavanoid_phenols  \
+            Min_param        0.0            0.0         0.0                   0.0
+            Max_param        1.0            1.0         1.0                   1.0
 
-                    col_15  col_16  col_17  col_18  col_19  col_20  col_21  col_22  \
-            Min_param     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0     1.0     1.0     1.0
+                    proanthocyanins  color_intensity  hue  \
+            Min_param              0.0              0.0  0.0
+            Max_param              1.0              1.0  1.0
 
-                    col_23  col_24  col_25  col_26  col_27  col_28  col_29  col_30  \
-            Min_param     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0     1.0     1.0     1.0
-
-                    col_31  col_32  col_33  col_34  col_35  col_36  col_37  col_38  \
-            Min_param     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0     1.0     1.0     1.0
-
-                    col_39  col_40  col_41  col_42  col_43  col_44  col_45  col_46  \
-            Min_param     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0     1.0     1.0     1.0
-
-                    col_47  col_48  col_49  col_50  col_51  col_52  col_53  col_54  \
-            Min_param     0.0     0.0     0.0     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0     1.0     1.0     1.0
-
-                    col_55  col_56  col_57  col_58  col_59
-            Min_param     0.0     0.0     0.0     0.0     0.0
-            Max_param     1.0     1.0     1.0     1.0     1.0
+                    od280/od315_of_diluted_wines  proline
+            Min_param                           0.0      0.0
+            Max_param                           1.0      1.0
 
 
             GA-PARSIMONY results:
             Iterations                = 5
-            Best validation score = 0.7504447472030823
+            Best validation score = 0.9534294543460606
 
 
             Solution with the best validation score in the whole GA process =
 
-            fitnessVal fitnessTst complexity        C     gamma col_0 col_1 col_2 col_3  \
-            0   0.750445   0.580931    4.1e+10  78.2186  0.109246     1     1     1     1
+            fitnessVal fitnessTst complexity        C     gamma alcohol malic_acid ash  \
+            0   0.953429   0.956835      1e+10  18.4049  0.667214       1          1   1
 
-            col_4 col_5 col_6 col_7 col_8 col_9 col_10 col_11 col_12 col_13 col_14  \
-            0     0     1     0     1     1     1      1      0      0      0      1
+            alcalinity_of_ash magnesium total_phenols flavanoids nonflavanoid_phenols  \
+            0                 1         0             0          1                    1
 
-            col_15 col_16 col_17 col_18 col_19 col_20 col_21 col_22 col_23 col_24  \
-            0      1      1      1      1      1      1      1      0      1      1
-
-            col_25 col_26 col_27 col_28 col_29 col_30 col_31 col_32 col_33 col_34  \
-            0      1      1      0      0      1      1      1      1      0      1
-
-            col_35 col_36 col_37 col_38 col_39 col_40 col_41 col_42 col_43 col_44  \
-            0      0      1      1      0      1      1      1      1      1      0
-
-            col_45 col_46 col_47 col_48 col_49 col_50 col_51 col_52 col_53 col_54  \
-            0      1      0      0      1      1      1      0      0      1      0
-
-            col_55 col_56 col_57 col_58 col_59
-            0      0      1      1      1      0
+            proanthocyanins color_intensity hue od280/od315_of_diluted_wines proline
+            0               0               1   1                            1       1
 
 
             Results of the best individual at the last generation =
 
-            Best indiv's validat.cost = 0.7504447472030823
-            Best indiv's testing cost = 0.580931263858093
-            Best indiv's complexity   = 41000000077.0
-            Elapsed time in minutes   = 0.761568295955658
+            Best indiv's validat.cost = 0.9534294543460606
+            Best indiv's testing cost = 0.9568345323741008
+            Best indiv's complexity   = 10000000043.0
+            Elapsed time in minutes   = 0.4873508532842
 
 
             BEST SOLUTION =
 
-            fitnessVal fitnessTst complexity        C     gamma col_0 col_1 col_2 col_3  \
-            0   0.750445   0.580931    4.1e+10  78.2186  0.109246     1     1     1     1
+            fitnessVal fitnessTst complexity        C     gamma alcohol malic_acid ash  \
+            0   0.953429   0.956835      1e+10  18.4049  0.667214       1          1   1
 
-            col_4 col_5 col_6 col_7 col_8 col_9 col_10 col_11 col_12 col_13 col_14  \
-            0     0     1     0     1     1     1      1      0      0      0      1
+            alcalinity_of_ash magnesium total_phenols flavanoids nonflavanoid_phenols  \
+            0                 1         0             0          1                    1
 
-            col_15 col_16 col_17 col_18 col_19 col_20 col_21 col_22 col_23 col_24  \
-            0      1      1      1      1      1      1      1      0      1      1
-
-            col_25 col_26 col_27 col_28 col_29 col_30 col_31 col_32 col_33 col_34  \
-            0      1      1      0      0      1      1      1      1      0      1
-
-            col_35 col_36 col_37 col_38 col_39 col_40 col_41 col_42 col_43 col_44  \
-            0      0      1      1      0      1      1      1      1      1      0
-
-            col_45 col_46 col_47 col_48 col_49 col_50 col_51 col_52 col_53 col_54  \
-            0      1      0      0      1      1      1      0      0      1      0
-
-            col_55 col_56 col_57 col_58 col_59
-            0      0      1      1      1      0
+            proanthocyanins color_intensity hue od280/od315_of_diluted_wines proline
+            0               0               1   1                            1       1
         
         .. figure:: ./docs/img/classification.png
             :align: center
