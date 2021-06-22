@@ -8,6 +8,8 @@
 GAparsimony
 ===========
 
+[Documentation](https://gaparsimony.readthedocs.io/en/latest/index.html)
+
 GAparsimony for Python is a package for searching with genetic algorithms (GA) 
 accurate parsimonious models by combining feature selection (FS), model
 hyperparameter optimization (HO), and parsimonious model selection
@@ -19,7 +21,7 @@ afterwards, models with similar costs are rearranged according to model
 complexity measurement so as to foster models of lesser complexity. The
 algorithm can be run sequentially or in parallel.
 
-[Documentation](https://readthedocs.org/projects/gaparsimony/badge/?version=latest)
+
 
 Installation
 ------------

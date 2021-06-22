@@ -6,7 +6,7 @@ class Population:
 
     INTEGER = 0
     FLOAT = 1
-    STRING = 2
+    # STRING = 2
     CONSTANT = 3
 
     def __init__(self, params, columns, population = None):
@@ -98,16 +98,16 @@ class Population:
                 return np.vectorize(lambda x: int(x), otypes=[int])(value)
             elif param["type"] is Population.FLOAT:
                 return np.vectorize(lambda x: float(x), otypes=[float])(value)
-            elif param["type"] is Population.STRING:
-                return np.vectorize(lambda x: x if type(x) is str else param["range"][int(np.trunc(x))], otypes=[str])(value)
+            # elif param["type"] is Population.STRING:
+            #     return np.vectorize(lambda x: x if type(x) is str else param["range"][int(np.trunc(x))], otypes=[str])(value)
 
         else:
             if param is None or param["type"] is Population.INTEGER:
                 return int(value)
             elif param["type"] is Population.FLOAT:
                 return float(value)
-            elif param["type"] is Population.STRING:
-                return param["range"][int(np.trunc(value))]
+            # elif param["type"] is Population.STRING:
+            #     return param["range"][int(np.trunc(value))]
 
     def __getitem__(self, key):
         return self._pop[key]
