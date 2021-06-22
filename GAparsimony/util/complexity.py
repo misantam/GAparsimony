@@ -42,7 +42,7 @@ def generic(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -63,7 +63,7 @@ def linearModels(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -86,7 +86,7 @@ def svm(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -109,7 +109,7 @@ def knn(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -132,7 +132,7 @@ def mlp(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -159,7 +159,7 @@ def randomForest(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------
@@ -183,7 +183,7 @@ def xgboost(model, nFeatures, **kwargs):
     nFeatures : int
         The number of features the model has been trained on.
     **kwargs : 
-        Resultados de traducción a variable number of named arguments.
+        A variable number of named arguments.
 
     Returns
     -------

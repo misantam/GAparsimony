@@ -19,6 +19,8 @@ afterwards, models with similar costs are rearranged according to model
 complexity measurement so as to foster models of lesser complexity. The
 algorithm can be run sequentially or in parallel.
 
+[Documentation](https://readthedocs.org/projects/gaparsimony/badge/?version=latest)
+
 Installation
 ------------
 

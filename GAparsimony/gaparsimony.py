@@ -196,19 +196,20 @@ class GAparsimony(object):
             params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
                         "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
 
-            fitness = getFitness(Lasso, mean_squared_error, linearModels, regression=True, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(Lasso, mean_squared_error, linearModels, regression=True, 
+                                 test_size=0.2, random_state=42, n_jobs=-1)
 
 
             GAparsimony_model = GAparsimony(fitness=fitness,
-                                            params = params, 
-                                            features = boston.feature_names,
-                                            keep_history = True,
-                                            rerank_error = rerank_error,
-                                            popSize = 40,
-                                            maxiter = 5, early_stop=10,
-                                            feat_thres=0.90, # Perc selected features in first generation
-                                            feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                            seed_ini = 1234)
+                                        params = params, 
+                                        features = boston.feature_names,
+                                        keep_history = True,
+                                        rerank_error = rerank_error,
+                                        popSize = 40,
+                                        maxiter = 5, early_stop=10,
+                                        feat_thres=0.90, # Perc selected features in first generation
+                                        feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                        seed_ini = 1234)
 
 
             GAparsimony_model.fit(X, y)
@@ -300,7 +301,7 @@ class GAparsimony(object):
 
             Regression plot
         
-        Usage example for a classification model using the sonar dataset 
+        Usage example for a classification model using the wine dataset 
 
         .. highlight:: python
         .. code-block:: python
@@ -324,19 +325,20 @@ class GAparsimony(object):
                         "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
 
-            fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, 
+                                test_size=0.2, random_state=42, n_jobs=-1)
 
 
             GAparsimony_model = GAparsimony(fitness=fitness,
-                                            params=params,
-                                            features=wine.feature_names,
-                                            keep_history = True,
-                                            rerank_error = rerank_error,
-                                            popSize = 40,
-                                            maxiter = 5, early_stop=10,
-                                            feat_thres=0.90, # Perc selected features in first generation
-                                            feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                            seed_ini = 1234)
+                                params=params,
+                                features=wine.feature_names,
+                                keep_history = True,
+                                rerank_error = rerank_error,
+                                popSize = 40,
+                                maxiter = 5, early_stop=10,
+                                feat_thres=0.90, # Perc selected features in first generation
+                                feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                seed_ini = 1234)
 
 
             GAparsimony_model.fit(X, y)

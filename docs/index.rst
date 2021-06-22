@@ -12,10 +12,6 @@
 
 Welcome to GAparsimony's documentation!
 =======================================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contents:
    
 
 .. toctree::
@@ -24,7 +20,7 @@ Welcome to GAparsimony's documentation!
 
    GAparsimony
    GAparsimony.lhs
-   modules
+   
 
 
 
