@@ -61,8 +61,11 @@ class Population:
         if type(params) is not dict:
             raise Exception("params must be of type dict !!!")
 
-        self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
-        self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
+        # self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
+        # self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
+
+        self._min = np.array([params[x]["range"][0] for x in params if params[x]["type"] is not Population.CONSTANT])
+        self._max = np.array([params[x]["range"][1] for x in params if params[x]["type"] is not Population.CONSTANT])
 
         self.paramsnames = [x for x in params if params[x]["type"] is not Population.CONSTANT]
         self._params = dict((x, params[x]) for x in params if params[x]["type"] is not Population.CONSTANT)
