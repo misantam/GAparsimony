@@ -3,7 +3,7 @@
 """Complexity module.
 
 This module contains predefined complexity functions for some of the most popular algorithms in the scikit-learn library:
-* **Generic model**: Any algorithm. Returns: the number of input features (nFeatures).
+
 * **linearModels**: Any algorithm from `sklearn.linear_model'. Returns: 10^9·nFeatures + (sum of the squared coefs).
 * **svm**: Any algorithm from `sklearn.svm'. Returns: 10^9·nFeatures + (number of support vectors).
 * **knn**: Any algorithm from `sklearn.neighbors'. Returns: 10^9·nFeatures + 1/(number of neighbors)
@@ -11,7 +11,11 @@ This module contains predefined complexity functions for some of the most popula
 * **randomForest**: Any algorithm from `sklearn.ensemble.RandomForestRegressor' or 'sklearn.ensemble.RandomForestClassifier'. Returns: 10^9·nFeatures + (the average of tree leaves).
 * **xgboost**: XGboost sklearn model. Returns: 10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
 
-Complexity functions can be defined with the following interface.
+Otherwise:
+
+* **Generic model**: Any algorithm. Returns: the number of input features (nFeatures).
+
+Other complexity functions can be defined with the following interface.
 
 .. highlight:: python
 .. code-block:: python
