@@ -22,17 +22,16 @@ complexity measurement so as to foster models of lesser complexity. The
 algorithm can be run sequentially or in parallel.
 
 
-
 Installation
 ------------
-
 Install these packages:
-
 ``` {.bash}
 pip install GAparsimony
 ```
-
-
+To install the current development version, you need to clone the repository and run :
+``` {.bash}
+python -m pip install << path to cloned repository >>
+```
 
 How to use this package
 -----------------------
