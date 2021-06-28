@@ -214,7 +214,7 @@ Plot GA evolution.
 ``` {.python}
 GAparsimony_model.plot()
 ```
-![GA-PARSIMONY Evolution](./docs/img/classification.png)
+![GA-PARSIMONY Evolution](https://raw.githubusercontent.com/misantam/GAparsimony/main/docs/img/classification.png)
 
 GA-PARSIMONY evolution
 
@@ -393,7 +393,7 @@ Plot GA evolution.
 ``` {.python}
 GAparsimony_model.plot()
 ```
-![GA-PARSIMONY Evolution](./docs/img/regression_readme.png)
+![GA-PARSIMONY Evolution](https://raw.githubusercontent.com/misantam/GAparsimony/main/docs/img/regression_readme.png)
 
 GA-PARSIMONY evolution
 
