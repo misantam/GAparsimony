@@ -203,6 +203,7 @@ class GAparsimony(object):
         .. highlight:: python
         .. code-block:: python
 
+            from sklearn.model_selection import RepeatedKFold
             from sklearn.linear_model import Lasso
             from sklearn.preprocessing import StandardScaler
             from sklearn.metrics import mean_squared_error
@@ -222,7 +223,9 @@ class GAparsimony(object):
             params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
                         "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
 
-            fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, maximize=False, 
+            cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=42)
+
+            fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, cv, maximize=False, 
                                  test_size=0.2, random_state=42, n_jobs=-1)
 
 
@@ -346,6 +349,7 @@ class GAparsimony(object):
         .. highlight:: python
         .. code-block:: python
 
+            from sklearn.model_selection import RepeatedKFold
             from sklearn.svm import SVC
             from sklearn.metrics import cohen_kappa_score
             from sklearn.datasets import load_wine
@@ -362,7 +366,9 @@ class GAparsimony(object):
                     "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
                     "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
-            fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, maximize=True, test_size=0.2, random_state=42, n_jobs=-1)
+            cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=42)
+
+            fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, cv, maximize=True, test_size=0.2, random_state=42, n_jobs=-1)
 
             GAparsimony_model = GAparsimony(fitness=fitness,
                                             params=params,

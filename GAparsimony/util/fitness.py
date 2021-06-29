@@ -74,7 +74,7 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
             modelo = algorithm(**cromosoma.params).fit(data_train_model, y_train)
             fitness_test = metric(modelo.predict(data_test_model), y_test)
 
-            if maximize:
+            if not maximize:
                 fitness_val = -fitness_val
                 fitness_test = -fitness_test
 

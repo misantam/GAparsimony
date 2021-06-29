@@ -5,7 +5,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.datasets import load_wine
 
 from GAparsimony import GAparsimony, Population, getFitness
-from GAparsimony.util import svm
+from GAparsimony.util import svm_complexity
 
 wine = load_wine()
 X, y = wine.data, wine.target 
@@ -17,8 +17,9 @@ params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT},
             "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
             "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
+cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=42)
 
-fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, cv, maximize=True, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,
