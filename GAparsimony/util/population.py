@@ -11,21 +11,21 @@ class Population:
 
     def __init__(self, params, columns, population = None):
         r"""
-        This class is used to model the population of the chromosomes of the genetic algorithms. 
-        Allow chromosomes to have int, float, and string values. 
+        This class is used to create the GA populations. 
+        Allow chromosomes to have int, float, and constant values. 
 
 
         Parameters
         ----------
         params : dict
-            It is a dictionary with the model's hyperparameters to be adjusted and the range of values to search for.
+            It is a dictionary with the model's hyperparameters to be adjusted and the search space of them.
             
             .. code-block::
 
                 {
                     "<< hyperparameter name >>": {
                         "range": [<< minimum value >>, << maximum value >>],
-                        "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                        "type": GAparsimony.FLOAT/GAparsimony.INTEGER
                     },
                     "<< hyperparameter name >>": {
                         "value": << constant value >>,
@@ -47,11 +47,11 @@ class Population:
         _max : numpy.array
             A vector of length `params+columns` with the highest values that can take.
         paramsnames : list of str
-            List with parameter names.
+            List with the parameter names.
         _params : dict
-            Dict with the params values.
+            Dict with the parameter values.
         _constnames : list of str
-            List with constants names.
+            List with the constants names.
         _const : dict
             Dict with the constants values.
         colsnames : list of str
@@ -166,30 +166,30 @@ class Chromosome:
     # @autoassign
     def __init__(self, params, name_params, const, name_const, cols, name_cols):
         r"""
-        This class models a chromosome, allowing the hyperparameters and column selection to be obtained in a simple way.
+        This class defines a chromosome which includes the hyperparameters, the constant values, and the feature selection.
 
 
         Parameters
         ----------
         params : numpy.array
-            The hyperparameters of the chromosome.
+            The algorithm hyperparameter values.
         name_params : list of str
-            The names of the params.
+            The names of the hyperparameters.
         const : numpy.array
-            The constants of the chromosome.
+            The constants to include in the chomosome.
         name_const : list of str
             The names of the constants.
         cols : numpy.array
-            The columns of the chromosome.
+            The probabilities for selecting the input features (selected if prob>0.5).
         name_cols : list of str
-            The names of the columns.
+            The names of the input features.
 
         Attributes
         ----------
         params : dict
-            A dictionary whose keys are the name of the parameter and its value the value of the parameter.
+            A dictionary with the parameter values (hyperparameters and constants).
         columns : numpy.array of bool
-            A boolean vector with the selected columns.
+            A boolean vector with the selected features.
         """
         self._params = params.tolist()
         self.name_params = name_params
