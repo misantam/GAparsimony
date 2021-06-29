@@ -4,16 +4,16 @@
 
 This module contains predefined complexity functions for some of the most popular algorithms in the scikit-learn library:
 
-* **linearModels**: Any algorithm from `sklearn.linear_model'. Returns: 10^9·nFeatures + (sum of the squared coefs).
-* **svm**: Any algorithm from `sklearn.svm'. Returns: 10^9·nFeatures + (number of support vectors).
-* **knn**: Any algorithm from `sklearn.neighbors'. Returns: 10^9·nFeatures + 1/(number of neighbors)
-* **mlp**: Any algorithm from `sklearn.neural_network'. Returns: 10^9·nFeatures + (sum of the ANN squared weights).
-* **randomForest**: Any algorithm from `sklearn.ensemble.RandomForestRegressor' or 'sklearn.ensemble.RandomForestClassifier'. Returns: 10^9·nFeatures + (the average of tree leaves).
-* **xgboost**: XGboost sklearn model. Returns: 10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
+* **linearModels_complexity**: Any algorithm from `sklearn.linear_model'. Returns: 10^9·nFeatures + (sum of the squared coefs).
+* **svm_complexity**: Any algorithm from `sklearn.svm'. Returns: 10^9·nFeatures + (number of support vectors).
+* **knn_complexity**: Any algorithm from `sklearn.neighbors'. Returns: 10^9·nFeatures + 1/(number of neighbors)
+* **mlp_complexity**: Any algorithm from `sklearn.neural_network'. Returns: 10^9·nFeatures + (sum of the ANN squared weights).
+* **randomForest_complexity**: Any algorithm from `sklearn.ensemble.RandomForestRegressor' or 'sklearn.ensemble.RandomForestClassifier'. Returns: 10^9·nFeatures + (the average of tree leaves).
+* **xgboost_complexity**: XGboost sklearn model. Returns: 10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
 
 Otherwise:
 
-* **Generic model**: Any algorithm. Returns: the number of input features (nFeatures).
+* **generic_complexity**: Any algorithm. Returns: the number of input features (nFeatures).
 
 Other complexity functions can be defined with the following interface.
 
@@ -28,7 +28,7 @@ Other complexity functions can be defined with the following interface.
 
 import numpy as np
 
-def generic(model, nFeatures, **kwargs):
+def generic_complexity(model, nFeatures, **kwargs):
     r"""
     Generic complexity function.
 
@@ -49,7 +49,7 @@ def generic(model, nFeatures, **kwargs):
     """
     return nFeatures
 
-def linearModels(model, nFeatures, **kwargs):
+def linearModels_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for linear models.
 
@@ -72,7 +72,7 @@ def linearModels(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.sum(model.coef_**2))) # Internal Complexity Sum of squared weigths
     return nFeatures*1E09 + int_comp
 
-def svm(model, nFeatures, **kwargs):
+def svm_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for SVM models.
 
@@ -95,7 +95,7 @@ def svm(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.sum(model.n_support_))) # Internal Complexity
     return nFeatures*1E09 + int_comp
 
-def knn(model, nFeatures, **kwargs):
+def knn_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for KNN models.
 
@@ -118,7 +118,7 @@ def knn(model, nFeatures, **kwargs):
     int_comp = 1E06 * 1/model.n_neighbors   # More k less flexible
     return nFeatures*1E09 + int_comp
 
-def mlp(model, nFeatures, **kwargs):
+def mlp_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for MLP models.
 
@@ -145,7 +145,7 @@ def mlp(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.sum(weights**2)))
     return nFeatures*1E09 + int_comp
 
-def randomForest(model, nFeatures, **kwargs):
+def randomForest_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for Random Forest models.
 
@@ -169,7 +169,7 @@ def randomForest(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.mean(num_leaves))) # More leaves more complex  
     return nFeatures*1E09 + int_comp
 
-def xgboost(model, nFeatures, **kwargs):
+def xgboost_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for XGBoost model.
 
