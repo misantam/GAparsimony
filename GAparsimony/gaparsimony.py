@@ -1,33 +1,59 @@
 # -*- coding: utf-8 -*-
 
-"""Combines feature selection, model tuning, and parsimonious model selection with GA optimization.
-GA selection procedure is based on separate cost and complexity evaluations. Therefore, the best
-individuals are initially sorted by an error fitness function, and afterwards, models with similar
-costs are rearranged according to modelcomplexity measurement so as to foster models of lesser
-complexity. The algorithm can be run sequentially or in parallel.
+"""Combines feature selection(FS), hyperparameter tuning (HT), and parsimonious model selection (PMS) 
+with Genetic Algorithm (GA) optimization. GA selection procedure is based on separate cost and complexity 
+evaluations. Therefore, the best individuals are initially sorted by an error fitness function, and afterwards, 
+models with similar costs are rearranged according to the model complexity measurement so as to foster models 
+of lesser complexity. The algorithm can be run sequentially or in parallel.
 
-GAparsimonypackage is a new GA wrapper automatic method that efficiently generated predic-tion models 
-with reduced complexity and adequate generalization capacity.ga_parsimonyfunctionis primarily based on 
-combining feature selection and model parameter tuning with a second novelGA selection process (ReRank algorithm) 
-in order to achieve better overall parsimonious models.Unlike other GA methodologies that use a penalty parameter 
-for combining loss and complexitymeasures into a unique fitness function, the main contribution of this 
-package is thatga_parsimonyselects the best models by considering cost and complexity separately. For 
-this purpose, the ReRankalgorithm rearranges individuals by their complexity when there is not a significant 
-difference be-tween their costs. Thus, less complex models with similar accuracy are promoted. Furthermore,
-because the penalty parameter is unnecessary, there is no consequent uncertainty associated withassigning a 
-correct value beforehand. As a result, with GA-PARSIMONY, an automatic method forobtaining parsimonious models 
-is finally made possible.
+GAparsimonypackage is a new GA wrapper automatic method that efficiently generated machine learning  
+models with reduced complexity and adequate generalization capacity.ga_parsimonyfunction is primarily based on 
+combining FS and HT with a second novel GA selection process (named ReRank algorithm) 
+in order to achieve better overall parsimonious models. Unlike other GA methodologies that use a penalty parameter 
+for combining loss and complexity measures into a unique fitness function, the main contribution of this package 
+is that ga_parsimony selects the best models by considering cost and complexity separately. For this purpose, the 
+*ReRank* algorithm rearranges individuals by their complexity when there is not a significant difference between 
+their costs. Thus, less complex models with similar accuracy are promoted. Furthermore, because the penalty 
+parameter is unnecessary, there is no consequent uncertainty associated with assigning a correct value beforehand. 
+As a result, with GAPARSIMONY, an automatic method for obtaining parsimonious models is finally made possible.
 
 References
 ----------
-Sanz-Garcia A., Fernandez-Ceniceros J., Antonanzas-Torres F., Pernia-Espinoza A.V., Martinez-de-Pison F.J. (2015). 
-GA-PARSIMONY: A GA-SVR approach with feature selection and param-eter optimization to obtain parsimonious solutions 
-for predicting temperature settings in a contin-uous annealing furnace.  Applied Soft Computing 35, 23-38. 
-Fernandez-Ceniceros J., Sanz-GarciaA., Antonanzas-Torres F., Martinez-de-Pison F.J. (2015). A numerical-informational 
-approach forcharacterising the ductile behaviour of the T-stub component. Part 2: Parsimonious soft-computing-based metamodel. 
-Engineering Structures 82, 249-260. Antonanzas-Torres F., Urraca R., Antonan-zas J., Fernandez-Ceniceros J., 
-Martinez-de-Pison  F.J. (2015). Generation of daily global solarirradiation with support vector machines for regression.  
-Energy Conversion and Management 96,277-286.
+F.J. Martinez-de-Pison, J. Ferreiro, E. Fraile, A. Pernia-Espinoza, A comparative study of six model complexity 
+metrics to search for parsimonious models with GAparsimony R Package, Neurocomputing,
+Volume 452, 2021, Pages 317-332, ISSN 0925-2312, https://doi.org/10.1016/j.neucom.2020.02.135.
+
+Martinez-de-Pison, F.J., Gonzalez-Sendino, R., Aldama, A., Ferreiro-Cabello, J., Fraile-Garcia, E. Hybrid methodology 
+based on Bayesian optimization and GA-PARSIMONY to search for parsimony models by combining hyperparameter optimization 
+and feature selection (2019) Neurocomputing, 354, pp. 20-26. https://doi.org/10.1016/j.neucom.2018.05.136
+
+Urraca R., Sodupe-Ortega E., Antonanzas E., Antonanzas-Torres F., Martinez-de-Pison, F.J. (2017). Evaluation of a 
+novel GA-based methodology for model structure selection: The GA-PARSIMONY. Neurocomputing, Online July 2017. https://doi.org/10.1016/j.neucom.2016.08.154
+
+Martinez-De-Pison, F.J., Gonzalez-Sendino, R., Ferreiro, J., Fraile, E., Pernia-Espinoza, A. GAparsimony: An R 
+package for searching parsimonious models by combining hyperparameter optimization and feature selection (2018) Lecture 
+Notes in Computer Science (including subseries Lecture Notes in Artificial Intelligence and Lecture Notes in Bioinformatics), 
+10870 LNAI, pp. 62-73. https://doi.org/10.1007/978-3-319-92639-1_6
+
+Applications
+------------
+Eduardo Dulce-Chamorro, Francisco Javier Martinez-de-Pison, An advanced methodology to enhance energy efficiency in 
+a hospital cooling-water system, Journal of Building Engineering, Volume 43,
+2021, 102839, ISSN 2352-7102,https://doi.org/10.1016/j.jobe.2021.102839.
+
+Sanz-Garcia, A., Fernandez-Ceniceros, J., Antonanzas-Torres, F., Pernia-Espinoza, A.V., Martinez-De-Pison, 
+F.J. GA-PARSIMONY: A GA-SVR approach with feature selection and parameter optimization to obtain parsimonious solutions 
+for predicting temperature settings in a continuous annealing furnace (2015) Applied Soft Computing Journal, 35, art. 
+no. 3006, pp. 13-28. https://doi.org/10.1016/j.asoc.2015.06.012
+
+Fernandez-Ceniceros, J., Sanz-Garcia, A., Antoñanzas-Torres, F., Martinez-de-Pison, F.J. A numerical-informational 
+approach for characterising the ductile behaviour of the T-stub component. Part 2: Parsimonious soft-computing-based 
+metamodel (2015) Engineering Structures, 82, pp. 249-260. https://doi.org/10.1016/j.engstruct.2014.06.047
+
+Antonanzas-Torres, F., Urraca, R., Antonanzas, J., Fernandez-Ceniceros, J., Martinez-De-Pison, F.J. Generation of 
+daily global solar irradiation with support vector machines for regression (2015) Energy Conversion and Management, 
+96, pp. 277-286. https://doi.org/10.1016/j.enconman.2015.02.086
+
 
 """
 
@@ -81,7 +107,7 @@ class GAparsimony(object):
         Parameters
         ----------
         fitness : function
-            The fitness function, any function which takes as input an chromosome(`Chromosome`) which combines the model parameters 
+            The fitness function, any function which takes as input a chromosome which combines the model parameters 
             to tune and the features to be selected. Fitness function returns a numerical vector with three values:validation_cost, 
             testing_cost and model_complexity, and the trained model. 
         params : dict
@@ -106,7 +132,7 @@ class GAparsimony(object):
             The number of features/columns in the dataset or a list with their names.
         type_ini_pop : str, {'randomLHS', 'geneticLHS', 'improvedLHS', 'maximinLHS', 'optimumLHS', 'random'}, optional
             Method to create the first population with `GAparsimony._population` function. Possible values: `randomLHS`, `geneticLHS`, 
-            `improvedLHS`, `maximinLHS`, `optimumLHS`, `random`.First 5 methods correspond with several latine hypercube sampling. By default is set to `improvedLHS`.
+            `improvedLHS`, `maximinLHS`, `optimumLHS`, `random`.First 5 methods correspond with several latine hypercube for initial sampling. By default is set to `improvedLHS`.
         popSize : int, optional
             The population size.
         pcrossover : float, optional
@@ -114,13 +140,13 @@ class GAparsimony(object):
         maxiter : float, optional
             The maximum number of iterations to run before the GA process is halted.
         feat_thres : float, optional
-            Proportion of selected features in the initial population. It is recommended ahigh percentage of selected features for 
+            Proportion of selected features in the initial population. It is recommended a high percentage of the selected features for 
             the first generations. By default is set to `0.90`.
         rerank_error : float, optional
             When a value is provided, a second reranking process according to the model complexities is called by `parsimony_rerank` function. 
             Its primary objective isto select individuals with high validation cost while maintaining the robustnessof a parsimonious model. 
             This function switches the position of two models if the first one is more complex than the latter and no significant difference 
-            is found between their fitness values in terms of cost. Therefore, if the absolute difference between the validation costs are 
+            is found between their fitness values in terms of cost. Thus, if the absolute difference between the validation costs are 
             lower than `rerank_error` they areconsidered similar. Default value=`0.01`.
         iter_start_rerank : int, optional
             Iteration when ReRanking process is actived. Default=`0`. Sometimes is useful not to use ReRanking process in the first generations.
@@ -137,13 +163,13 @@ class GAparsimony(object):
         keep_history : bool, optional
             If it is `True` keeps in the list GAparsimony.history each generation as `pandas.DataFrame`. This parameter must set `True` in 
             order to use `GAparsimony.plot` method or `GAparsimony.importance` function.
-        early_stop : int, optional
-            The upper bound on the fitness function after that the GA search is interrupted. Default value is set to +Inf.
         maxFitness : int, optional
+            The upper bound on the fitness function after that the GA search is interrupted. Default value is set to +Inf.
+        early_stop : int, optional
             The number of consecutive generations without any improvement in the bestfitness value before the GA is stopped.
         suggestions : numpy.array, optional
             A matrix of solutions strings to be included in the initial population.
-        suggestions : int, optional
+        seed_ini : int, optional
             An integer value containing the random number generator state.
         verbose : int, optional
             The level of messages that we want it to show us. Possible values: 1=monitor level,  2=debug level, if 0 no messages. Default `1`.
@@ -206,7 +232,7 @@ class GAparsimony(object):
                                         keep_history = True,
                                         rerank_error = rerank_error,
                                         popSize = 40,
-                                        maxiter = 5, early_stop=10,
+                                        maxiter = 50, early_stop=10,
                                         feat_thres=0.90, # Perc selected features in first generation
                                         feat_mut_thres=0.10, # Prob of a feature to be one in mutation
                                         seed_ini = 1234)
@@ -223,19 +249,33 @@ class GAparsimony(object):
         .. code-block:: text
 
             GA-PARSIMONY | iter = 0
-            MeanVal = -79.3006166 | ValBest = -30.3831028 | TstBest = -29.2466835 |ComplexBest = 13000021.9272632| Time(min) = 0.1369608  
+            MeanVal = -79.1813338 | ValBest = -30.3470614 | TstBest = -29.2466835 |ComplexBest = 13000000021.927263|  Time(min) = 0.185549
 
             GA-PARSIMONY | iter = 1
-            MeanVal = -55.1542772 | ValBest = -30.3595118 | TstBest = -29.2267507 |ComplexBest = 12000022.0887434| Time(min) = 0.0749257  
+            MeanVal = -55.0713465 | ValBest = -30.2283235 | TstBest = -29.2267507 |ComplexBest = 12000000022.088743| Time(min) = 0.1238126  
 
             GA-PARSIMONY | iter = 2
-            MeanVal = -34.9137256 | ValBest = -30.3041538 | TstBest = -28.8701544 |ComplexBest = 10000021.7746837| Time(min) = 0.0472499  
+            MeanVal = -34.8473723 | ValBest = -30.2283235 | TstBest = -29.2267507 |ComplexBest = 12000000022.088743| Time(min) = 0.0907046  
 
             GA-PARSIMONY | iter = 3
-            MeanVal = -38.6039299 | ValBest = -30.0481843 | TstBest = -29.2006941 |ComplexBest = 9000022.5018183| Time(min) = 0.0479027  
+            MeanVal = -38.5251529 | ValBest = -30.0455259 | TstBest = -29.2712578 |ComplexBest = 10000000022.752678| Time(min) = 0.0755356  
 
-            GA-PARSIMONY | iter = 4
-            MeanVal = -38.1393988 | ValBest = -29.9147592 | TstBest = -28.8454181 |ComplexBest = 9000022.3326941| Time(min) = 0.0532206  
+            ...
+
+            GA-PARSIMONY | iter = 20
+            MeanVal = -34.2636095 | ValBest = -29.5036901 | TstBest = -29.3245069 |ComplexBest = 5000000023.115818| Time(min) = 0.0659549  
+
+            GA-PARSIMONY | iter = 21
+            MeanVal = -40.4629864 | ValBest = -29.5036901 | TstBest = -29.3245069 |ComplexBest = 5000000023.115818| Time(min) = 0.0725066  
+
+            GA-PARSIMONY | iter = 22
+            MeanVal = -35.9230384 | ValBest = -29.5036901 | TstBest = -29.3245069 |ComplexBest = 5000000023.115818| Time(min) = 0.0704362  
+
+            GA-PARSIMONY | iter = 23
+            MeanVal = -36.5946762 | ValBest = -29.5036901 | TstBest = -29.3245069 |ComplexBest = 5000000023.115818| Time(min) = 0.0723252  
+
+            GA-PARSIMONY | iter = 24
+            MeanVal = -37.3293511 | ValBest = -29.5036901 | TstBest = -29.3245069 |ComplexBest = 5000000023.115818| Time(min) = 0.0684883  
 
             +------------------------------------+
             |             GA-PARSIMONY           |
@@ -245,7 +285,7 @@ class GAparsimony(object):
             Number of Parameters      = 2
             Number of Features        = 13
             Population size           = 40
-            Maximum of generations    = 5
+            Maximum of generations    = 50
             Number of early-stop gen. = 10
             Elitism                   = 8
             Crossover probability     = 0.8
@@ -265,34 +305,34 @@ class GAparsimony(object):
 
 
             GA-PARSIMONY results:
-            Iterations                = 5
-            Best validation score = -29.91475923589228
+            Iterations                = 25
+            Best validation score = -29.502012171608403
 
 
             Solution with the best validation score in the whole GA process =
 
-            fitnessVal fitnessTst   complexity    alpha       tol CRIM ZN INDUS CHAS  \
-            0   -29.9148   -28.8454  9.00002e+06  1.29788  0.329711    0  1     0    1
+            fitnessVal fitnessTst complexity    alpha       tol CRIM ZN INDUS CHAS NOX  \
+            0    -29.502   -29.3244      5e+09  1.33694  0.541197    0  0     0    0   0
 
-            NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
-            0   1  1   0   1   1   0       1  1     1
+            RM AGE DIS RAD TAX PTRATIO  B LSTAT
+            0  1   1   0   0   0       1  1     1
 
 
             Results of the best individual at the last generation =
 
-            Best indiv's validat.cost = -29.91475923589228
-            Best indiv's testing cost = -28.84541811737489
-            Best indiv's complexity   = 9000022.332694123
-            Elapsed time in minutes   = 0.3602596958478292
+            Best indiv's validat.cost = -29.503690126221098
+            Best indiv's testing cost = -29.324506895493244
+            Best indiv's complexity   = 5000000023.115818
+            Elapsed time in minutes   = 2.031593410174052
 
 
             BEST SOLUTION =
 
-            fitnessVal fitnessTst   complexity    alpha       tol CRIM ZN INDUS CHAS  \
-            0   -29.9148   -28.8454  9.00002e+06  1.29788  0.329711    0  1     0    1
+            fitnessVal fitnessTst complexity   alpha       tol CRIM ZN INDUS CHAS NOX  \
+            0   -29.5037   -29.3245      5e+09  1.3374  0.547189    0  0     0    0   0
 
-            NOX RM AGE DIS RAD TAX PTRATIO  B LSTAT
-            0   1  1   0   1   1   0       1  1     1
+            RM AGE DIS RAD TAX PTRATIO  B LSTAT
+            0  1   1   0   0   0       1  1     1
         
         .. figure:: ../docs/img/regression.png
             :align: center
@@ -308,7 +348,6 @@ class GAparsimony(object):
 
             from sklearn.svm import SVC
             from sklearn.metrics import cohen_kappa_score
-            from sklearn.preprocessing import StandardScaler
             from sklearn.datasets import load_wine
 
             from GAparsimony import GAparsimony, Population, getFitness
@@ -318,27 +357,24 @@ class GAparsimony(object):
             X, y = wine.data, wine.target 
             X = StandardScaler().fit_transform(X)
 
-
             rerank_error = 0.001
             params = {"C":{"range": (00.0001, 99.9999), "type": Population.FLOAT}, 
-                        "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
-                        "kernel": {"value": "poly", "type": Population.CONSTANT}}
+                    "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
+                    "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
-
-            fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, 
-                                test_size=0.2, random_state=42, n_jobs=-1)
-
+            fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
 
             GAparsimony_model = GAparsimony(fitness=fitness,
-                                params=params,
-                                features=wine.feature_names,
-                                keep_history = True,
-                                rerank_error = rerank_error,
-                                popSize = 40,
-                                maxiter = 5, early_stop=10,
-                                feat_thres=0.90, # Perc selected features in first generation
-                                feat_mut_thres=0.10, # Prob of a feature to be one in mutation
-                                seed_ini = 1234)
+                                            params=params,
+                                            features=wine.feature_names,
+                                            keep_history = True,
+                                            rerank_error = rerank_error,
+                                            popSize = 40,
+                                            maxiter = 50, early_stop=10,
+                                            feat_thres=0.90, # Perc selected features in first generation
+                                            feat_mut_thres=0.10, # Prob of a feature to be one in mutation
+                                            seed_ini = 1234)
+
 
 
             GAparsimony_model.fit(X, y)
@@ -350,19 +386,31 @@ class GAparsimony(object):
         .. code-block:: text
 
             GA-PARSIMONY | iter = 0
-            MeanVal = 0.879549  |  ValBest = 0.9314718  |  TstBest = 0.9574468  |ComplexBest = 10000000045.0| Time(min) = 0.1483674  
+            MeanVal = 0.879549  |  ValBest = 0.9314718  |  TstBest = 0.9574468  |ComplexBest = 10000000045.0| Time(min) = 0.1438692  
 
             GA-PARSIMONY | iter = 1
-            MeanVal = 0.9075035  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0938667  
+            MeanVal = 0.9075035  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0893566  
 
             GA-PARSIMONY | iter = 2
-            MeanVal = 0.9183232  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0805168  
+            MeanVal = 0.9183232  |  ValBest = 0.9496819  |  TstBest = 0.9142857  |ComplexBest = 11000000060.0| Time(min) = 0.0818844  
 
             GA-PARSIMONY | iter = 3
-            MeanVal = 0.9219764  |  ValBest = 0.9534295  |  TstBest = 0.9568345  |ComplexBest = 10000000043.0|  Time(min) = 0.07575   
+            MeanVal = 0.9219764  |  ValBest = 0.9534295  |  TstBest = 0.9568345  |ComplexBest = 10000000043.0| Time(min) = 0.0739248 
 
-            GA-PARSIMONY | iter = 4
-            MeanVal = 0.8932938  |  ValBest = 0.9534295  |  TstBest = 0.9568345  |ComplexBest = 10000000043.0|  Time(min) = 0.08885   
+            ...
+
+            GA-PARSIMONY | iter = 19
+            MeanVal = 0.9182586  |   ValBest = 0.972731  |     TstBest = 1.0     |ComplexBest = 7000000048.0| Time(min) = 0.0867344  
+
+            GA-PARSIMONY | iter = 20
+            MeanVal = 0.9224294  |   ValBest = 0.972731  |     TstBest = 1.0     |ComplexBest = 7000000048.0| Time(min) = 0.0771279  
+
+            GA-PARSIMONY | iter = 21
+            MeanVal = 0.9150223  |   ValBest = 0.972731  |     TstBest = 1.0     |ComplexBest = 7000000048.0| Time(min) = 0.0847196  
+
+            GA-PARSIMONY | iter = 22
+            MeanVal = 0.9335024  |   ValBest = 0.972731  |     TstBest = 1.0     |ComplexBest = 7000000048.0| Time(min) = 0.0814945 
+
 
             +------------------------------------+
             |             GA-PARSIMONY           |
@@ -372,7 +420,7 @@ class GAparsimony(object):
             Number of Parameters      = 2
             Number of Features        = 13
             Population size           = 40
-            Maximum of generations    = 5
+            Maximum of generations    = 50
             Number of early-stop gen. = 10
             Elitism                   = 8
             Crossover probability     = 0.8
@@ -400,40 +448,40 @@ class GAparsimony(object):
 
 
             GA-PARSIMONY results:
-            Iterations                = 5
-            Best validation score = 0.9534294543460606
+            Iterations                = 23
+            Best validation score = 0.9727309855126027
 
 
             Solution with the best validation score in the whole GA process =
 
-            fitnessVal fitnessTst complexity        C     gamma alcohol malic_acid ash  \
-            0   0.953429   0.956835      1e+10  18.4049  0.667214       1          1   1
+            fitnessVal fitnessTst complexity        C      gamma alcohol malic_acid ash  \
+            0   0.972731          1      7e+09  51.1573  0.0581044       1          0   1
 
             alcalinity_of_ash magnesium total_phenols flavanoids nonflavanoid_phenols  \
-            0                 1         0             0          1                    1
+            0                 1         0             0          1                    0
 
             proanthocyanins color_intensity hue od280/od315_of_diluted_wines proline
-            0               0               1   1                            1       1
+            0               0               0   1                            1       1
 
 
             Results of the best individual at the last generation =
 
-            Best indiv's validat.cost = 0.9534294543460606
-            Best indiv's testing cost = 0.9568345323741008
-            Best indiv's complexity   = 10000000043.0
-            Elapsed time in minutes   = 0.4873508532842
+            Best indiv's validat.cost = 0.9727309855126027
+            Best indiv's testing cost = 1.0
+            Best indiv's complexity   = 7000000048.0
+            Elapsed time in minutes   = 1.9634766817092892
 
 
             BEST SOLUTION =
 
-            fitnessVal fitnessTst complexity        C     gamma alcohol malic_acid ash  \
-            0   0.953429   0.956835      1e+10  18.4049  0.667214       1          1   1
+            fitnessVal fitnessTst complexity        C      gamma alcohol malic_acid ash  \
+            0   0.972731          1      7e+09  51.1573  0.0581044       1          0   1
 
             alcalinity_of_ash magnesium total_phenols flavanoids nonflavanoid_phenols  \
-            0                 1         0             0          1                    1
+            0                 1         0             0          1                    0
 
             proanthocyanins color_intensity hue od280/od315_of_diluted_wines proline
-            0               0               1   1                            1       1
+            0               0               0   1                            1       1
         
         .. figure:: ../docs/img/classification.png
             :align: center
@@ -515,7 +563,7 @@ class GAparsimony(object):
         r"""
         A GA-based optimization method for searching accurate parsimonious models by combining feature selection, model tuning, 
         and parsimonious model selection (PMS). PMS procedure is basedon separate cost and complexity evaluations. The best individuals 
-        are initially sorted by an errorfitness function, and afterwards, models with similar costs are rearranged according to their 
+        are initially sorted by an *errorfitness* function, and afterwards, models with similar costs are rearranged according to their 
         modelcomplexity so as to foster models of lesser complexity.
 
         Parameters
@@ -1148,11 +1196,11 @@ class GAparsimony(object):
         Plot of GA evolution of elitists.
 
         Plot method shows the evolution of validation and testing errors, and the number 
-        of model featuresselected of elitists.  White and grey box-plots represent validation 
+        of model features selected of elitists. White and grey box-plots represent validation 
         and testing errors of elitists evo-lution, respectively. Continuous and dashed-dotted 
         lines show the validation and testing error ofthe best individual for each generation, 
         respectively. Finally, the shaded area delimits the maximumand minimum number of 
-        features, and the dashed line, the number fo features of the best individual.
+        features, and the dashed line, the number of features of the best individual.
 
         Parameters
         ----------
