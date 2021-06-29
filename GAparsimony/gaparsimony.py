@@ -119,7 +119,7 @@ class GAparsimony(object):
                     "<< hyperparameter name >>": 
                     {
                         "range": [<< minimum value >>, << maximum value >>],
-                        "type": GAparsimony.FLOAT/GAparsimony.INTEGER/GAparsimony.STRING
+                        "type": GAparsimony.FLOAT/GAparsimony.INTEGER
                     },
                     "<< hyperparameter name >>": 
                     {
@@ -210,7 +210,7 @@ class GAparsimony(object):
             from sklearn.datasets import load_boston
 
             from GAparsimony import GAparsimony, Population, getFitness
-            from GAparsimony.util import linearModels
+            from GAparsimony.util import linearModels_complexity
 
             boston = load_boston()
             X, y = boston.data, boston.target 
@@ -222,7 +222,7 @@ class GAparsimony(object):
             params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT}, 
                         "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
 
-            fitness = getFitness(Lasso, mean_squared_error, linearModels, regression=True, 
+            fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, maximize=False, 
                                  test_size=0.2, random_state=42, n_jobs=-1)
 
 
@@ -351,7 +351,7 @@ class GAparsimony(object):
             from sklearn.datasets import load_wine
 
             from GAparsimony import GAparsimony, Population, getFitness
-            from GAparsimony.util import svm
+            from GAparsimony.util import svm_complexity
 
             wine = load_wine()
             X, y = wine.data, wine.target 
@@ -362,7 +362,7 @@ class GAparsimony(object):
                     "gamma":{"range": (0.00001,0.99999), "type": Population.FLOAT}, 
                     "kernel": {"value": "poly", "type": Population.CONSTANT}}
 
-            fitness = getFitness(SVC, cohen_kappa_score, svm, regression=False, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, maximize=True, test_size=0.2, random_state=42, n_jobs=-1)
 
             GAparsimony_model = GAparsimony(fitness=fitness,
                                             params=params,
