@@ -70,7 +70,7 @@ jobs:
         tag_name: ${{ env.VERSION }}
         release_name: Release ${{ env.VERSION }}
         body: |
-          Changes in this Release ${{ env.VERSION// }}
+          Changes in this Release ${{ env.VERSION }}
         draft: false
         prerelease: false
   PYPI_upload:
