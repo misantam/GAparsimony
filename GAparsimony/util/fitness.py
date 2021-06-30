@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split, cross_val_score, RepeatedK
 from sklearn.metrics import make_scorer
 import numpy as np
 
-def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_repeats=5, random_state=42), maximize=True, test_size=0.2, random_state=42, n_jobs=-1):
+def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_repeats=5, random_state=42), minimize=False, test_size=0.2, random_state=42, n_jobs=-1):
     r"""
      Fitness function for GAparsimony.
 
@@ -18,8 +18,8 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
         A function that calculates the complexity of the model. There are some functions available in `GAparsimony.util.complexity`.
     cv : object, optional
         An `sklearn.model_selection` function. By default, is defined `RepeatedKFold(n_splits=10, n_repeats=5, random_state=42)`.
-    maximize : bool, optional
-        `True`, if the objective is to maximize the metric, to minimize it, set to `False`.
+    minimize : bool, optional
+        `False`, if the objective is to minimize the metric, to maximize it, set to `True`.
     test_size : float, int, None
         If float, should be between 0.0 and 1.0 and represent the proportion
         of the dataset to include in the test split. If int, represents the
@@ -74,7 +74,7 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
             modelo = algorithm(**cromosoma.params).fit(data_train_model, y_train)
             fitness_test = metric(modelo.predict(data_test_model), y_test)
 
-            if not maximize:
+            if minimize:
                 fitness_val = -fitness_val
                 fitness_test = -fitness_test
 

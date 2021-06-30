@@ -225,7 +225,7 @@ class GAparsimony(object):
 
             cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=42)
 
-            fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, cv, maximize=False, 
+            fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, cv, minimize=True, 
                                  test_size=0.2, random_state=42, n_jobs=-1)
 
 
@@ -368,7 +368,7 @@ class GAparsimony(object):
 
             cv = RepeatedKFold(n_splits=10, n_repeats=10, random_state=42)
 
-            fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, cv, maximize=True, test_size=0.2, random_state=42, n_jobs=-1)
+            fitness = getFitness(SVC, cohen_kappa_score, svm_complexity, cv, minimize=False, test_size=0.2, random_state=42, n_jobs=-1)
 
             GAparsimony_model = GAparsimony(fitness=fitness,
                                             params=params,

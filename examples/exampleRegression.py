@@ -18,7 +18,7 @@ params = {"alpha":{"range": (1., 25.9), "type": Population.FLOAT},
             "tol":{"range": (0.0001,0.9999), "type": Population.FLOAT}}
 
 
-fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, maximize=False, test_size=0.2, random_state=42, n_jobs=-1)
+fitness = getFitness(Lasso, mean_squared_error, linearModels_complexity, minimize=True, test_size=0.2, random_state=42, n_jobs=-1)
 
 
 GAparsimony_model = GAparsimony(fitness=fitness,
