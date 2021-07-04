@@ -19,6 +19,7 @@ Welcome to GAparsimony's documentation!
    :caption: Modules:
 
    GAparsimony
+   GAparsimony.util
    GAparsimony.lhs
    
 

@@ -1,10 +1,7 @@
 GAparsimony package
 ===================
 
-Submodules
-----------
-
-GAparsimony.gaparsimony module
+GAparsimony module
 ------------------------------
 
 .. automodule:: GAparsimony.gaparsimony
@@ -12,10 +9,10 @@ GAparsimony.gaparsimony module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
+Submodules
+----------
 
-.. automodule:: GAparsimony
-   :members:
-   :undoc-members:
-   :show-inheritance:
+.. toctree::
+   :maxdepth: 4
+
+   GAparsimony.util

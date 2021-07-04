@@ -1,8 +1,6 @@
 GAparsimony.lhs.util package
 ============================
 
-Submodules
-----------
 
 GAparsimony.lhs.util.bclib module
 ---------------------------------
@@ -20,10 +18,3 @@ GAparsimony.lhs.util.utilityLHS module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: GAparsimony.lhs.util
-   :members:
-   :undoc-members:
-   :show-inheritance:

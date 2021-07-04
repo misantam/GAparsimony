@@ -1,8 +1,6 @@
 GAparsimony.lhs.base package
 ============================
 
-Submodules
-----------
 
 GAparsimony.lhs.base.geneticLHS module
 --------------------------------------
@@ -44,10 +42,3 @@ GAparsimony.lhs.base.randomLHS module
    :undoc-members:
    :show-inheritance:
 
-Module contents
----------------
-
-.. automodule:: GAparsimony.lhs.base
-   :members:
-   :undoc-members:
-   :show-inheritance:

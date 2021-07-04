@@ -1,8 +1,6 @@
 GAparsimony.util package
 ========================
 
-Submodules
-----------
 
 GAparsimony.util.complexity module
 ----------------------------------
@@ -24,14 +22,6 @@ GAparsimony.util.order module
 -----------------------------
 
 .. automodule:: GAparsimony.util.order
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-GAparsimony.util.parsimony\_miscfun module
-------------------------------------------
-
-.. automodule:: GAparsimony.util.parsimony_miscfun
    :members:
    :undoc-members:
    :show-inheritance:

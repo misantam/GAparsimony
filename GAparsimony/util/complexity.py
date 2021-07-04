@@ -2,23 +2,20 @@
 
 """Complexity module.
 
-This module contains predefined complexity functions for some of the most popular models in the scikit-learn library. The models are:
+This module contains predefined complexity functions for some of the most popular algorithms in the scikit-learn library:
 
-* **Generic model**: Any model from any library. This complexity function will not give us the best results since it is not specific to the model.
+* **linearModels_complexity**: Any algorithm from `sklearn.linear_model'. Returns: 10^9·nFeatures + (sum of the squared coefs).
+* **svm_complexity**: Any algorithm from `sklearn.svm'. Returns: 10^9·nFeatures + (number of support vectors).
+* **knn_complexity**: Any algorithm from `sklearn.neighbors'. Returns: 10^9·nFeatures + 1/(number of neighbors)
+* **mlp_complexity**: Any algorithm from `sklearn.neural_network'. Returns: 10^9·nFeatures + (sum of the ANN squared weights).
+* **randomForest_complexity**: Any algorithm from `sklearn.ensemble.RandomForestRegressor' or 'sklearn.ensemble.RandomForestClassifier'. Returns: 10^9·nFeatures + (the average of tree leaves).
+* **xgboost_complexity**: XGboost sklearn model. Returns: 10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
 
-* **linearModels**: Any of the sklearn module models `sklearn.linear_model <https://scikit-learn.org/stable/modules/classes.html?highlight=linear#module-sklearn.linear_model>`_.
+Otherwise:
 
-* **svm**: Any of the sklearn module models `sklearn.svm <https://scikit-learn.org/stable/modules/classes.html?highlight=linear#module-sklearn.svm>`_.
+* **generic_complexity**: Any algorithm. Returns: the number of input features (nFeatures).
 
-* **knn**: Any of the models: `sklearn.neighbors.KNeighborsClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html#sklearn.neighbors.KNeighborsClassifier>`_ or `sklearn.neighbors.KNeighborsRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html#sklearn.neighbors.KNeighborsRegressor>`_.
-
-* **mlp**: Any of the models: `sklearn.neural_network.MLPClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html#sklearn.neural_network.MLPClassifier>`_ or `sklearn.neural_network.MLPRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html#sklearn.neural_network.MLPRegressor>`_.
-
-* **randomForest**: Any of the models: `sklearn.ensemble.RandomForestRegressor <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html#sklearn.ensemble.RandomForestRegressor>`_ or `sklearn.ensemble.RandomForestClassifier <https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier>`_.
-
-* **xgboost**: The XGboost sklearn model implementation `xgboost <https://xgboost.readthedocs.io/en/latest/python/python_api.html>`_.
-
-Complexity functions can be defined that meet the following interface.
+Other complexity functions can be defined with the following interface.
 
 .. highlight:: python
 .. code-block:: python
@@ -26,12 +23,12 @@ Complexity functions can be defined that meet the following interface.
     def complexity(model, nFeatures, **kwargs):
         pass
             
-
+    return complexity
 """
 
 import numpy as np
 
-def generic(model, nFeatures, **kwargs):
+def generic_complexity(model, nFeatures, **kwargs):
     r"""
     Generic complexity function.
 
@@ -40,19 +37,19 @@ def generic(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+        The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        nFeatures.
 
     """
-    return nFeatures*1E09
+    return nFeatures
 
-def linearModels(model, nFeatures, **kwargs):
+def linearModels_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for linear models.
 
@@ -61,21 +58,21 @@ def linearModels(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+         The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + (sum of the model squared coefs).
 
     """
 
     int_comp = np.min((1E09-1,np.sum(model.coef_**2))) # Internal Complexity Sum of squared weigths
     return nFeatures*1E09 + int_comp
 
-def svm(model, nFeatures, **kwargs):
+def svm_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for SVM models.
 
@@ -84,21 +81,21 @@ def svm(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+         The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + (number of support vectors)
 
     """
 
     int_comp = np.min((1E09-1,np.sum(model.n_support_))) # Internal Complexity
     return nFeatures*1E09 + int_comp
 
-def knn(model, nFeatures, **kwargs):
+def knn_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for KNN models.
 
@@ -107,21 +104,21 @@ def knn(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+         The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + 1/(number of neighbors)
 
     """
 
     int_comp = 1E06 * 1/model.n_neighbors   # More k less flexible
     return nFeatures*1E09 + int_comp
 
-def mlp(model, nFeatures, **kwargs):
+def mlp_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for MLP models.
 
@@ -130,14 +127,14 @@ def mlp(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+         The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + (sum of the ANN squared weights)
 
     """
 
@@ -148,7 +145,7 @@ def mlp(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.sum(weights**2)))
     return nFeatures*1E09 + int_comp
 
-def randomForest(model, nFeatures, **kwargs):
+def randomForest_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for Random Forest models.
 
@@ -157,14 +154,14 @@ def randomForest(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+        The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + (the average of tree leaves)
 
     """
 
@@ -172,7 +169,7 @@ def randomForest(model, nFeatures, **kwargs):
     int_comp = np.min((1E09-1,np.mean(num_leaves))) # More leaves more complex  
     return nFeatures*1E09 + int_comp
 
-def xgboost(model, nFeatures, **kwargs):
+def xgboost_complexity(model, nFeatures, **kwargs):
     r"""
     Complexity function for XGBoost model.
 
@@ -181,14 +178,14 @@ def xgboost(model, nFeatures, **kwargs):
     model : model
         The model for calculating complexity.
     nFeatures : int
-        The number of features the model has been trained on.
+         The number of input features the model has been trained with.
     **kwargs : 
         A variable number of named arguments.
 
     Returns
     -------
     int
-        The complexity of the model.
+        10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
 
     """
     df_model = model.get_booster().trees_to_dataframe()

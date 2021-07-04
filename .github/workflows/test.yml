@@ -60,7 +60,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set env
-      run: echo "VERSION=$(head -n 1 ./GAparsimony/__init__.py | tr "=" "\n" |sed -n '2p')" >> $GITHUB_ENV
+      run: echo "VERSION=$(head -n 1 ./GAparsimony/__init__.py | tr "=" "\n" |sed -n '2p'| tr -d \")" >> $GITHUB_ENV
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
