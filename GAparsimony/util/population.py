@@ -6,7 +6,7 @@ class Population:
 
     INTEGER = 0
     FLOAT = 1
-    # STRING = 2
+    STRING = 2
     CONSTANT = 3
 
     def __init__(self, params, columns, population = None):
@@ -61,11 +61,8 @@ class Population:
         if type(params) is not dict:
             raise Exception("params must be of type dict !!!")
 
-        # self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
-        # self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
-
-        self._min = np.array([params[x]["range"][0] for x in params if params[x]["type"] is not Population.CONSTANT])
-        self._max = np.array([params[x]["range"][1] for x in params if params[x]["type"] is not Population.CONSTANT])
+        self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
+        self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
 
         self.paramsnames = [x for x in params if params[x]["type"] is not Population.CONSTANT]
         self._params = dict((x, params[x]) for x in params if params[x]["type"] is not Population.CONSTANT)
@@ -77,6 +74,29 @@ class Population:
         self._max = np.concatenate((self._max, np.ones(len(columns))), axis=0)
         self.colsnames = columns
 
+        def _trans():
+            t = list()
+            for x in self.paramsnames:
+                if params[x]["type"] == Population.INTEGER:
+                    t.append(np.vectorize(lambda x: int(x), otypes=[int]))
+                elif params[x]["type"] == Population.FLOAT:
+                    t.append(np.vectorize(lambda x: float(x), otypes=[float]))
+                elif params[x]["type"] == Population.STRING:
+                    t.append(np.vectorize(lambda y, x=x: y if type(y) is str else params[x]["range"][int(np.trunc(y))], otypes=[str]))
+            t.extend([lambda x: x>0.5]*len(self.colsnames))
+
+            def aux(x):
+                if len(x.shape)>1:
+                    return np.array(list(map(lambda f, c: f(x[:, c]), t, range(0, x.shape[1]))), dtype=object).T
+                else:
+                    return list(map(lambda f, c: f(c), t, x))
+
+            return aux
+
+
+        self._transformers = _trans()
+        
+
         if population is not None:
             if type(population) is not np.ndarray or len(population.shape) < 2:
                 raise Exception("Popularion is not a numpy matrix")
@@ -84,65 +104,17 @@ class Population:
 
     @property
     def population(self):
-        return self._pop
+        return self._transformers(self._pop)
 
     @population.setter
     def population(self, population):
-
         self._pop = np.apply_along_axis(lambda x: x.astype(object), 1, population.astype(object))
-        
-        for i in range(self._pop.shape[1]):
-            param = self._params[self.paramsnames[i]] if i < len(self.paramsnames) else None
-            self._pop[:, i] = self._converValue(self._pop[:, i], param)
-
-    def _converValue(self, value, param, axis=0):
-        if "array" in type(value).__name__:
-            if param is None or param["type"] is Population.INTEGER:
-                return np.vectorize(lambda x: int(x), otypes=[int])(value)
-            elif param["type"] is Population.FLOAT:
-                return np.vectorize(lambda x: float(x), otypes=[float])(value)
-            # elif param["type"] is Population.STRING:
-            #     return np.vectorize(lambda x: x if type(x) is str else param["range"][int(np.trunc(x))], otypes=[str])(value)
-
-        else:
-            if param is None or param["type"] is Population.INTEGER:
-                return int(value)
-            elif param["type"] is Population.FLOAT:
-                return float(value)
-            # elif param["type"] is Population.STRING:
-            #     return param["range"][int(np.trunc(value))]
 
     def __getitem__(self, key):
         return self._pop[key]
 
     def __setitem__(self, key, newvalue):
-        if type(key) is tuple:
-            if type(key[1]) is slice:
-                start = 0 if key[1].start is None else key[1].start
-                stop = len(self.paramsnames) if key[1].stop is None else key[1].stop
-            else:
-                start, stop = key[1], key[1]+1
-        else:
-            start, stop = 0, len(self.paramsnames)
-
-        if "array" in type(newvalue).__name__:
-            if len(newvalue.shape) > 1:
-                newvalue = np.apply_along_axis(lambda x: x.astype(object), 1, newvalue.astype(object))
-                for i in range(start, stop):
-                    param = self._params[self.paramsnames[i]] if i < len(self.paramsnames) else None
-                    newvalue[:, i] = self._converValue(newvalue[:, i], param)
-                self._pop[key] = newvalue
-            else:
-                newvalue = newvalue.astype(object)
-                for i in range(start, stop):
-                    param = self._params[self.paramsnames[i]] if i < len(self.paramsnames) else None
-                    newvalue[i] = self._converValue(newvalue[i], param)
-                self._pop[key] = newvalue
-        else:
-            key = key[0] if type(key) is tuple else key
-            for i in range(start, stop):
-                param = self._params[self.paramsnames[i]] if i < len(self.paramsnames) else None
-                self._pop[key, i] = self._converValue(newvalue, param)
+        self._pop[key] = newvalue
 
     def getChromosome(self, key):
         r"""
@@ -158,7 +130,8 @@ class Population:
         Chromosome
             A `Chromosome` object.
         """
-        return Chromosome(self._pop[key, :len(self.paramsnames)], self.paramsnames, self._const, self._constnames, self._pop[key, len(self.paramsnames):], self.colsnames)
+        data = self._transformers(self._pop[key, :])
+        return Chromosome(data[:len(self.paramsnames)], self.paramsnames, self._const, self._constnames, data[len(self.paramsnames):], self.colsnames)
 
     
 class Chromosome:
@@ -191,7 +164,7 @@ class Chromosome:
         columns : numpy.array of bool
             A boolean vector with the selected features.
         """
-        self._params = params.tolist()
+        self._params = params
         self.name_params = name_params
         self.const = const
         self.name_const = name_const
@@ -204,4 +177,4 @@ class Chromosome:
 
     @property
     def columns(self):
-        return self._cols>0.5
+        return self._cols

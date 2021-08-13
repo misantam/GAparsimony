@@ -656,7 +656,7 @@ class GAparsimony(object):
             self.complexity = self.complexity[sort]
             _models = _models[sort]
 
-            PopSorted = self.population.population.copy()
+            PopSorted = self.population._pop.copy()
             FitnessValSorted = self.fitnessval.copy()
             FitnessTstSorted = self.fitnesstst.copy()
             ComplexitySorted = self.complexity.copy()
@@ -666,7 +666,7 @@ class GAparsimony(object):
                 self.solution_best_score = np.r_[self.best_score, 
                                                 self.fitnesstst[np.argmax(self.fitnessval)], 
                                                 self.complexity[np.argmax(self.fitnessval)], 
-                                                self.population[np.argmax(self.fitnessval)]]
+                                                self.population.population[np.argmax(self.fitnessval)]]
 
 
             if self.verbose == 2:
@@ -685,14 +685,14 @@ class GAparsimony(object):
                 self.complexity = self.complexity[ord_rerank]
                 _models = _models[ord_rerank]
 
-                PopSorted = self.population.population.copy()
+                PopSorted = self.population._pop.copy()
                 FitnessValSorted = self.fitnessval.copy()
                 FitnessTstSorted = self.fitnesstst.copy()
                 ComplexitySorted = self.complexity.copy()
                 
                 if self.verbose == 2:
                     print("\nStep 2. Fitness reranked")
-                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population.population][:10, :])
+                    print(np.c_[self.fitnessval, self.fitnesstst, self.complexity, self.population.population][:10, :])
                     # input("Press [enter] to continue")
 
 
@@ -706,7 +706,7 @@ class GAparsimony(object):
             self.bestfitnessVal = self.fitnessval[0]
             self.bestfitnessTst = self.fitnesstst[0]
             self.bestcomplexity = self.complexity[0]
-            self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population[0]])
+            self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population.population[0]])
             self.bestSolList.append(self.bestsolution)
 
             # Keep Best Model
@@ -948,7 +948,7 @@ class GAparsimony(object):
 
         p=parents.copy()
 
-        parents = self.population[parents]
+        parents = self.population._pop[parents]
         children = parents # Vector
         pos_param = list(range(len(self.population.paramsnames)))
         pos_features = np.array(list(range(len(self.population.paramsnames), len(self.population.paramsnames) + len(self.population.colsnames))))
