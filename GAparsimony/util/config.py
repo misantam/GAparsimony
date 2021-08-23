@@ -65,3 +65,17 @@ CLASSIF_RANDOMFORESTCLASSIFIER = {"n_estimators":{"range": (100,250), "type": 0}
 REG_RANDOMFORESTREGRESSOR = {"n_estimators":{"range": (100,250), "type": 0},
                         "max_depth":{"range": (4, 20), "type": 0},
                         "min_samples_split":{"range": (2,25), "type": 0}}
+
+
+##################################################
+#*************Decision trees MODELS**************#
+##################################################                            
+
+CLASSIF_DECISIONTREECLASSIFIER = {"min_weight_fraction_leaf":{"range": (0,20), "type": 0},
+                        "max_depth":{"range": (4, 20), "type": 0},
+                        "min_samples_split":{"range": (2,25), "type": 0}}
+
+
+REG_DECISIONTREEREGRESSOR = {"min_weight_fraction_leaf":{"range": (0,20), "type": 0},
+                        "max_depth":{"range": (4, 20), "type": 0},
+                        "min_samples_split":{"range": (2,25), "type": 0}}
