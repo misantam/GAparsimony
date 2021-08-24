@@ -10,6 +10,7 @@ This module contains predefined complexity functions for some of the most popula
 * **mlp_complexity**: Any algorithm from `sklearn.neural_network'. Returns: 10^9·nFeatures + (sum of the ANN squared weights).
 * **randomForest_complexity**: Any algorithm from `sklearn.ensemble.RandomForestRegressor' or 'sklearn.ensemble.RandomForestClassifier'. Returns: 10^9·nFeatures + (the average of tree leaves).
 * **xgboost_complexity**: XGboost sklearn model. Returns: 10^9·nFeatures + (the average of tree leaves * number of trees) (Experimental)
+* **decision_tree_complexity**: Any algorithm from 'sklearn.tree'. Return: 10^9·nFeatures + (number of leaves) (Experimental)
 
 Otherwise:
 
@@ -212,7 +213,7 @@ def decision_tree_complexity(model, nFeatures, **kwargs):
     Returns
     -------
     int
-        10^9·nFeatures + (the min of number of leaves)
+        10^9·nFeatures + (number of leaves)
 
     """
     num_leaves = model.get_n_leaves()
