@@ -6,7 +6,7 @@ class Population:
 
     INTEGER = 0
     FLOAT = 1
-    STRING = 2
+    CATEGORICAL = 2
     CONSTANT = 3
 
     def __init__(self, params, columns, population = None):
@@ -46,13 +46,9 @@ class Population:
             A vector of length `params+columns` with the smallest values that can take.
         _max : numpy.array
             A vector of length `params+columns` with the highest values that can take.
-        paramsnames : list of str
-            List with the parameter names.
         _params : dict
             Dict with the parameter values.
-        _constnames : list of str
-            List with the constants names.
-        _const : dict
+        const : dict
             Dict with the constants values.
         colsnames : list of str
             List with the columns names.
@@ -61,29 +57,38 @@ class Population:
         if type(params) is not dict:
             raise Exception("params must be of type dict !!!")
 
-        self._min = np.array([(0 if params[x]["type"] is Population.STRING else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
-        self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.STRING else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
+        self._min = np.array([(0 if params[x]["type"] is Population.CATEGORICAL else params[x]["range"][0]) for x in params if params[x]["type"] is not Population.CONSTANT])
+        self._max = np.array([(len(params[x]["range"]) if params[x]["type"] is Population.CATEGORICAL else params[x]["range"][1]) for x in params if params[x]["type"] is not Population.CONSTANT])
 
-        self.paramsnames = [x for x in params if params[x]["type"] is not Population.CONSTANT]
         self._params = dict((x, params[x]) for x in params if params[x]["type"] is not Population.CONSTANT)
-        self._constnames = [x for x in params if params[x]["type"] is Population.CONSTANT]
-        self._const = [params[x]["value"] for x in params if params[x]["type"] is Population.CONSTANT]
+        self.const = dict((x, params[x]["value"]) for x in params if params[x]["type"] is Population.CONSTANT)
 
-        columns = (columns if type(columns) is list else columns.tolist()) if hasattr(columns, '__iter__') else [f"col_{i}" for i in range(columns)]
-        self._min = np.concatenate((self._min, np.zeros(len(columns))), axis=0)
-        self._max = np.concatenate((self._max, np.ones(len(columns))), axis=0)
-        self.colsnames = columns
+        self.colsnames = (columns if type(columns) is list else columns.tolist()) if hasattr(columns, '__iter__') else [f"col_{i}" for i in range(columns)]
+        self._min = np.concatenate((self._min, np.zeros(len(self.colsnames))), axis=0)
+        self._max = np.concatenate((self._max, np.ones(len(self.colsnames))), axis=0)
 
-        def _trans():
+        self._pos_n, self._pos_c = list(), list()
+        for i, x in enumerate(self._params):
+            if self._params[x]["type"] is Population.CATEGORICAL:
+                self._pos_c.append(i)
+            else:
+                self._pos_n.append(i)
+
+        def _trans_mut():
             t = list()
+            gen = list()
             for x in self.paramsnames:
                 if params[x]["type"] == Population.INTEGER:
                     t.append(np.vectorize(lambda x: int(x), otypes=[int]))
+                    gen.append(lambda y, x=x, **kwargs: np.random.randint(low=self._min[y], high=self._max[y]))
                 elif params[x]["type"] == Population.FLOAT:
                     t.append(np.vectorize(lambda x: float(x), otypes=[float]))
-                elif params[x]["type"] == Population.STRING:
+                    gen.append(lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]))
+                elif params[x]["type"] == Population.CATEGORICAL:
                     t.append(np.vectorize(lambda y, x=x: y if type(y) is str else params[x]["range"][int(np.trunc(y))], otypes=[str]))
+                    gen.append(lambda y, x=x, **kwargs: np.random.randint(low=self._min[y], high=self._max[y]))
             t.extend([lambda x: x>0.5]*len(self.colsnames))
+            gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
 
             def aux(x):
                 if len(x.shape)>1:
@@ -91,10 +96,10 @@ class Population:
                 else:
                     return list(map(lambda f, c: f(c), t, x))
 
-            return aux
+            return aux, gen
 
 
-        self._transformers = _trans()
+        self._transformers, self.random_gen = _trans_mut()
         
 
         if population is not None:
@@ -109,6 +114,10 @@ class Population:
     @population.setter
     def population(self, population):
         self._pop = np.apply_along_axis(lambda x: x.astype(object), 1, population.astype(object))
+
+    @property
+    def paramsnames(self):
+        return list(self._params.keys())
 
     def __getitem__(self, key):
         return self._pop[key]
@@ -131,13 +140,14 @@ class Population:
             A `Chromosome` object.
         """
         data = self._transformers(self._pop[key, :])
-        return Chromosome(data[:len(self.paramsnames)], self.paramsnames, self._const, self._constnames, data[len(self.paramsnames):], self.colsnames)
+        return Chromosome(data[:len(self.paramsnames)], self.paramsnames, self.const, data[len(self.paramsnames):], self.colsnames)
+
 
     
 class Chromosome:
 
     # @autoassign
-    def __init__(self, params, name_params, const, name_const, cols, name_cols):
+    def __init__(self, params, name_params, const, cols, name_cols):
         r"""
         This class defines a chromosome which includes the hyperparameters, the constant values, and the feature selection.
 
@@ -149,9 +159,7 @@ class Chromosome:
         name_params : list of str
             The names of the hyperparameters.
         const : numpy.array
-            The constants to include in the chomosome.
-        name_const : list of str
-            The names of the constants.
+            A dictionary with the constants to include in the chomosome.
         cols : numpy.array
             The probabilities for selecting the input features (selected if prob>0.5).
         name_cols : list of str
@@ -167,13 +175,12 @@ class Chromosome:
         self._params = params
         self.name_params = name_params
         self.const = const
-        self.name_const = name_const
         self._cols = cols
         self.name_cols = name_cols
 
     @property
     def params(self):
-        return dict((x, y) for x, y in zip(self.name_params+self.name_const, self._params + self.const))
+        return {**dict(zip(self.name_params, self._params)), **self.const}
 
     @property
     def columns(self):
