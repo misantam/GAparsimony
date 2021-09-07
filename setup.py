@@ -51,6 +51,7 @@ setup(
     # specification here:
     # https://packaging.python.org/specifications/core-metadata/#name
     name='GAparsimony',  # Required
+    python_requires='>=3.7',
 
     # Versions should comply with PEP 440:
     # https://www.python.org/dev/peps/pep-0440/
