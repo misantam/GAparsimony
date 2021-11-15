@@ -826,8 +826,8 @@ class GAparsimony(object):
         position = sort
   
         # start
-        pos1 = 0
-        pos2 = 1
+        pos1 = 1
+        pos2 = 2
         cambio = False
         error_posic = self.best_score
   
