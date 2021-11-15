@@ -90,11 +90,23 @@ class Population:
             t.extend([lambda x: x>0.5]*len(self.colsnames))
             gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
 
+            # We add this function to avoid 0-dimensional numpy arrays. Otherwise, some algorithms that perform type
+            # checks will fail since, for instance, they receive an integer as a 0-dimensional array, but expect an
+            # integer.
+            def check_0dimensional(x):
+                if isinstance(x, np.ndarray) and x.ndim == 0:
+                    if x.dtype == np.floating:
+                        return float(x)
+                    elif x.dtype == np.integer:
+                        return int(x)
+                else:
+                    return x
+
             def aux(x):
-                if len(x.shape)>1:
+                if len(x.shape) > 1:
                     return np.array(list(map(lambda f, c: f(x[:, c]), t, range(0, x.shape[1]))), dtype=object).T
                 else:
-                    return list(map(lambda f, c: f(c), t, x))
+                    return list(map(lambda f, c: check_0dimensional(f(c)), t, x))
 
             return aux, gen
 
