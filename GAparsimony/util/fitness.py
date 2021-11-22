@@ -23,8 +23,7 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
     test_size : float, int, None
         If float, should be between 0.0 and 1.0 and represent the proportion
         of the dataset to include in the test split. If int, represents the
-        absolute number of test samples. If None, the value is set to the
-        complement of the train size. Default 0.2.
+        absolute number of test samples. If None, model is not tested with testing split returning fitness_test=np.inf. Default 0.2.
     random_state : int, optional
         Controls the shuffling applied to the data before applying the split.
         Pass an int for reproducible output across multiple function calls.
@@ -61,22 +60,32 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
             kwargs["X"] = kwargs["X"].values
         if "pandas" in str(type(kwargs["y"])):
             kwargs["y"] = kwargs["y"].values
-        X_train, X_test, y_train, y_test = train_test_split(kwargs["X"], kwargs["y"], test_size=test_size, random_state=random_state)
+        if test_size != None:
+            X_train, X_test, y_train, y_test = train_test_split(kwargs["X"], kwargs["y"], test_size=test_size, random_state=random_state)
+        else:
+            X_train = kwargs["X"]
+            y_train = kwargs["y"]
+            
         try:
             # Extract features from the original DB plus response (last column)
-            data_train_model = X_train[: , cromosoma.columns] 
-            data_test_model = X_test[: , cromosoma.columns] 
+            data_train_model = X_train[: , cromosoma.columns]
+            if test_size != None:
+                data_test_model = X_test[: , cromosoma.columns]
 
             # train the model
 
             aux = algorithm(**cromosoma.params)
             fitness_val = cross_val_score(aux, data_train_model, y_train, scoring=make_scorer(metric), cv=cv, n_jobs=n_jobs).mean()
             modelo = algorithm(**cromosoma.params).fit(data_train_model, y_train)
-            fitness_test = metric(modelo.predict(data_test_model), y_test)
+            if test_size != None:
+                fitness_test = metric(modelo.predict(data_test_model), y_test)
+            else:
+                fitness_test = np.inf
 
             if minimize:
                 fitness_val = -fitness_val
-                fitness_test = -fitness_test
+                if test_size != None:
+                    fitness_test = -fitness_test
 
             return np.array([fitness_val, fitness_test, complexity(modelo, np.sum(cromosoma.columns))]), modelo
         except Exception as e:    
