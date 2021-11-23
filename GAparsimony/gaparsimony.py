@@ -829,7 +829,7 @@ class GAparsimony(object):
         pos1 = 1
         pos2 = 2
         cambio = False
-        error_posic = self.best_score
+        error_posic = cost1[pos1]
   
         while not pos1 == self.popSize:
             # Obtaining errors
