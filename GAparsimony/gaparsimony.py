@@ -843,10 +843,12 @@ class GAparsimony(object):
     
             # Compare error of first individual with error_posic. Is greater than threshold go to next point
             #      if ((Error.Indiv1-error_posic) > model@rerank_error) error_posic=Error.Indiv1
-        
-            error_dif = abs(error_indiv2-error_posic)
-            if not np.isfinite(error_dif):
+
+            if np.isfinite(error_indiv2) and np.isfinite(error_posic):
+                error_dif = abs(error_indiv2 - error_posic)
+            else:
                 error_dif = np.Inf
+
             if error_dif < self.rerank_error:
         
                 # If there is not difference between errors swap if Size2nd < SizeFirst
