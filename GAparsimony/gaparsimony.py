@@ -92,6 +92,7 @@ class GAparsimony(object):
                 pmutation = 0.10, 
                 feat_mut_thres=0.10, 
                 not_muted=3,
+                tol = 1e-4,
                 elitism = None,
                 selection = "nlinear", 
                 keep_history = False,
@@ -541,6 +542,7 @@ class GAparsimony(object):
         self.pmutation = pmutation
         self.feat_mut_thres=feat_mut_thres
         self.not_muted=not_muted
+        self.tol = tol
         
         self.selection = selection
         self.keep_history = keep_history
@@ -746,7 +748,8 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (len(best_val_cost)-(np.argmax(best_val_cost)+1)) >= self.early_stop:
+            if (len(best_val_cost) - (np.min(np.arange(len(best_val_cost))[best_val_cost >= (
+                    np.max(best_val_cost) - self.tol)]))) >= self.early_stop:
                 break
             
             
