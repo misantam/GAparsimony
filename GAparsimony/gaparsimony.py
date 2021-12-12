@@ -756,7 +756,6 @@ class GAparsimony(object):
                                                            bestParsimonyComplexity]
                 self.best_parsimony_model = _models[1]
                 self.best_parsimony_model_conf = PopSorted[1]
-            
 
             # Keep elapsed time in minutes
             # ----------------------------
@@ -1045,6 +1044,7 @@ class GAparsimony(object):
         self.fitnesstst[p] = aux.copy()
         self.complexity[p] = aux.copy()
 
+    #TODO: Update the description (no binary features anymore)
     def _mutation(self):
         r"""
         Function for mutation in GAparsimony.
@@ -1065,9 +1065,7 @@ class GAparsimony(object):
   
             i = np.random.randint((self.not_muted), self.popSize)
             j = np.random.randint(0, self.population.population.shape[1])
-
-            self.population[i,j] = self.population.random_gen[j](j, feat_mut_thres=self.feat_mut_thres)
-            
+            self.population[i,j] = self.population.random_gen[j](j, feat_mut_thres=self.feat_mut_thres)  #TODO: Update. feat_mut_thres is not used here anymore.
             self.fitnessval[i] = np.nan
             self.fitnesstst[i] = np.nan
             self.complexity[i] = np.nan
@@ -1114,7 +1112,7 @@ class GAparsimony(object):
         population = population*(self.population._max-self.population._min)
         population = population+self.population._min
         # Convert features to binary 
-        population[:, len(self.population._params):nvars] = population[:, len(self.population._params):nvars]<=self.feat_thres
+        #population[:, len(self.population._params):nvars] = population[:, len(self.population._params):nvars]<=self.feat_thres
 
         return population
 

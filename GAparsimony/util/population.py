@@ -88,7 +88,8 @@ class Population:
                     t.append(np.vectorize(lambda y, x=x: y if type(y) is str else params[x]["range"][int(np.trunc(y))], otypes=[str]))
                     gen.append(lambda y, x=x, **kwargs: np.random.randint(low=self._min[y], high=self._max[y]))
             t.extend([lambda x: x>0.5]*len(self.colsnames))
-            gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
+            #gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
+            gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y])] * len(self.colsnames))
 
             # We have to avoid 0-dimensional numpy arrays. Otherwise, some algorithms that perform type
             # checks will fail since, for instance, they receive an integer as a 0-dimensional array, but expect an
