@@ -74,7 +74,19 @@ class Population:
             else:
                 self._pos_n.append(i)
 
+
+
+
         def _trans_mut():
+
+            def compute_feature_probability(threshold):
+                p1 = np.random.uniform(low=0, high=1)  # Nueva probabilidad generada para las features (número entre 0 y 1)
+                p2 = np.random.uniform(low=0, high=1)  # Número aleatorio que decidirá si tenemos que ponerlo a True o no.
+                if p2 <= threshold and p1 < 0.5: # Si teníamos un false y tiene que ser un true
+                    return p1 + 0.5  # Le sumamos 0.5 para ponerle a True.
+                else:
+                    return p1 #Le damos el valor de p1 (que será menor a 0.5 y distinto al valor que había)
+
             t = list()
             gen = list()
             for x in self.paramsnames:
@@ -89,7 +101,7 @@ class Population:
                     gen.append(lambda y, x=x, **kwargs: np.random.randint(low=self._min[y], high=self._max[y]))
             t.extend([lambda x: x>0.5]*len(self.colsnames))
             #gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
-            gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y])] * len(self.colsnames))
+            gen.extend([lambda y, x=x, **kwargs: compute_feature_probability(kwargs["feat_mut_thres"])]*len(self.colsnames))
 
             # We have to avoid 0-dimensional numpy arrays. Otherwise, some algorithms that perform type
             # checks will fail since, for instance, they receive an integer as a 0-dimensional array, but expect an

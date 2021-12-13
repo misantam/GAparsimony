@@ -565,6 +565,14 @@ class GAparsimony(object):
 
         self.population.population = self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
 
+        #TODO: Nueva parte. Si hay feat_threshold de inicio, tengo que cumplirlo aquí.
+        for i in range(self.popSize): #Para cada cromosoma
+            for j in range(len(self.population._params),len(self.population.colsnames) + len(self.population._params)): # Para cada feature
+                p = np.random.uniform(low=0, high=1) #Número en el intervalo [0,1]
+                if p < self.feat_thres and self.population._pop[i,j] < 0.5: # si p < self.feat_thres, tiene que ser true
+                    self.population._pop[i, j] += 0.5
+
+
         if self.suggestions:
             ng = min(self.suggestions.shape[0], popSize)
             if ng > 0:
@@ -646,7 +654,7 @@ class GAparsimony(object):
                     self.fitnesstst[t] = fit[0][1]
                     self.complexity[t] = fit[0][2]
                     _models[t] = fit[1]
-                
+
 
             if self.seed_ini:
                 np.random.seed(self.seed_ini*iter) 
@@ -791,7 +799,11 @@ class GAparsimony(object):
             if (len(best_val_cost) - (np.min(np.arange(len(best_val_cost))[best_val_cost >= (
                     np.max(best_val_cost) - self.tol)]))) >= self.early_stop:
                 break
-            
+
+
+            # # TODO: LO NUEVO. VUELVO A PONER A 0.5 COMO THRESHOLD PARA LAS FEATURES
+            # for i in range(len(self.population._params), len(self.population.colsnames)):  # Para quedarme con las features
+            #     self.population.t[i] = (lambda x: x > 0.5)
             
             # Selection Function
             # ------------------
@@ -1062,10 +1074,9 @@ class GAparsimony(object):
             nparam_to_mute = 1
   
         for _ in range(nparam_to_mute):
-  
             i = np.random.randint((self.not_muted), self.popSize)
             j = np.random.randint(0, self.population.population.shape[1])
-            self.population[i,j] = self.population.random_gen[j](j, feat_mut_thres=self.feat_mut_thres)  #TODO: Update. feat_mut_thres is not used here anymore.
+            self.population[i,j] = self.population.random_gen[j](j, feat_mut_thres=self.feat_mut_thres)
             self.fitnessval[i] = np.nan
             self.fitnesstst[i] = np.nan
             self.complexity[i] = np.nan
@@ -1111,7 +1122,7 @@ class GAparsimony(object):
         # Scale matrix with the parameters range
         population = population*(self.population._max-self.population._min)
         population = population+self.population._min
-        # Convert features to binary 
+        # Convert features to binary
         #population[:, len(self.population._params):nvars] = population[:, len(self.population._params):nvars]<=self.feat_thres
 
         return population
