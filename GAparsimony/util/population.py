@@ -80,12 +80,11 @@ class Population:
         def _trans_mut():
 
             def compute_feature_probability(threshold):
-                p1 = np.random.uniform(low=0, high=1)  # Nueva probabilidad generada para las features (número entre 0 y 1)
-                p2 = np.random.uniform(low=0, high=1)  # Número aleatorio que decidirá si tenemos que ponerlo a True o no.
-                if p2 <= threshold and p1 < 0.5: # Si teníamos un false y tiene que ser un true
-                    return p1 + 0.5  # Le sumamos 0.5 para ponerle a True.
-                else:
-                    return p1 #Le damos el valor de p1 (que será menor a 0.5 y distinto al valor que había)
+                p = np.random.uniform(low=0, high=1)  # Número aleatorio que decidirá si tenemos que ponerlo a True o no.
+                if p <= threshold: #Si tenemos que tener un True
+                    return np.random.uniform(low=0.5, high=1)
+                else: #Tenemos que tener un false
+                    return np.random.uniform(low=0, high=0.5)
 
             t = list()
             gen = list()

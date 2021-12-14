@@ -569,8 +569,10 @@ class GAparsimony(object):
         for i in range(self.popSize): #Para cada cromosoma
             for j in range(len(self.population._params),len(self.population.colsnames) + len(self.population._params)): # Para cada feature
                 p = np.random.uniform(low=0, high=1) #Número en el intervalo [0,1]
-                if p < self.feat_thres and self.population._pop[i,j] < 0.5: # si p < self.feat_thres, tiene que ser true
+                if p <= self.feat_thres and self.population._pop[i,j] < 0.5: # si p <= self.feat_thres, tiene que ser true
                     self.population._pop[i, j] += 0.5
+                elif p > self.feat_thres and self.population._pop[i,j] >= 0.5: # si p > self.feat_thres, tiene que ser false
+                    self.population._pop[i, j] = self.population._pop[i, j] - 0.5
 
 
         if self.suggestions:
