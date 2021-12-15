@@ -563,15 +563,15 @@ class GAparsimony(object):
         if self.seed_ini:
             np.random.seed(self.seed_ini)
 
-        self.population.population = self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
+        self.population.population = self._population(type_ini_pop=type_ini_pop) # Initial population
 
-        #TODO: Nueva parte. Si hay feat_threshold de inicio, tengo que cumplirlo aquí.
-        for i in range(self.popSize): #Para cada cromosoma
-            for j in range(len(self.population._params),len(self.population.colsnames) + len(self.population._params)): # Para cada feature
-                p = np.random.uniform(low=0, high=1) #Número en el intervalo [0,1]
-                if p <= self.feat_thres and self.population._pop[i,j] < 0.5: # si p <= self.feat_thres, tiene que ser true
+        # Update initial population to satisfy the initial feat_thres
+        for i in range(self.popSize): #For each chromosome
+            for j in range(len(self.population._params),len(self.population.colsnames) + len(self.population._params)): # Each feature
+                p = np.random.uniform(low=0, high=1) #Random number in interval [0,1]
+                if p <= self.feat_thres and self.population._pop[i,j] < 0.5: # if p <= self.feat_thres, the feature must be true
                     self.population._pop[i, j] += 0.5
-                elif p > self.feat_thres and self.population._pop[i,j] >= 0.5: # si p > self.feat_thres, tiene que ser false
+                elif p > self.feat_thres and self.population._pop[i,j] >= 0.5: # if p > self.feat_thres, the feature must be false
                     self.population._pop[i, j] = self.population._pop[i, j] - 0.5
 
 
@@ -802,10 +802,6 @@ class GAparsimony(object):
                     np.max(best_val_cost) - self.tol)]))) >= self.early_stop:
                 break
 
-
-            # # TODO: LO NUEVO. VUELVO A PONER A 0.5 COMO THRESHOLD PARA LAS FEATURES
-            # for i in range(len(self.population._params), len(self.population.colsnames)):  # Para quedarme con las features
-            #     self.population.t[i] = (lambda x: x > 0.5)
             
             # Selection Function
             # ------------------

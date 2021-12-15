@@ -73,15 +73,16 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
             if ignore_warnings:
                 warnings.simplefilter("ignore")
                 os.environ["PYTHONWARNINGS"] = "ignore"
-            else:
-                warnings.simplefilter("default")
-                os.environ["PYTHONWARNINGS"] = "default"
 
             # train the model
             aux = algorithm(**cromosoma.params)
             fitness_val = cross_val_score(aux, data_train_model, y_train, scoring=make_scorer(metric), cv=cv, n_jobs=n_jobs).mean()
             modelo = algorithm(**cromosoma.params).fit(data_train_model, y_train)
             fitness_test = metric(modelo.predict(data_test_model), y_test)
+
+            # Reset warnings to default values
+            warnings.simplefilter("default")
+            os.environ["PYTHONWARNINGS"] = "default"
 
 
             if minimize:
