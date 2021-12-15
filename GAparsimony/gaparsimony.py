@@ -566,13 +566,7 @@ class GAparsimony(object):
         self.population.population = self._population(type_ini_pop=type_ini_pop) # Initial population
 
         # Update initial population to satisfy the initial feat_thres
-        for i in range(self.popSize): #For each chromosome
-            for j in range(len(self.population._params),len(self.population.colsnames) + len(self.population._params)): # Each feature
-                p = np.random.uniform(low=0, high=1) #Random number in interval [0,1]
-                if p <= self.feat_thres and self.population._pop[i,j] < 0.5: # if p <= self.feat_thres, the feature must be true
-                    self.population._pop[i, j] += 0.5
-                elif p > self.feat_thres and self.population._pop[i,j] >= 0.5: # if p > self.feat_thres, the feature must be false
-                    self.population._pop[i, j] = self.population._pop[i, j] - 0.5
+        self.population.update_to_feat_thres(self.popSize, self.feat_thres)
 
 
         if self.suggestions:

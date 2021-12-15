@@ -159,7 +159,15 @@ class Population:
         data = self._transformers(self._pop[key, :])
         return Chromosome(data[:len(self.paramsnames)], self.paramsnames, self.const, data[len(self.paramsnames):], self.colsnames)
 
-
+    # Method that updates the population to satisfy the feat_thres
+    def update_to_feat_thres(self, popSize, feat_thres):
+        for i in range(popSize): #For each chromosome
+            for j in range(len(self._params),len(self.colsnames) + len(self._params)): # Each feature
+                p = np.random.uniform(low=0, high=1) #Random number in interval [0,1]
+                if p <= feat_thres and self._pop[i,j] < 0.5: # if p <= self.feat_thres, the feature must be true
+                    self._pop[i, j] += 0.5
+                elif p > feat_thres and self._pop[i,j] >= 0.5: # if p > self.feat_thres, the feature must be false
+                    self._pop[i, j] = self._pop[i, j] - 0.5
     
 class Chromosome:
 
