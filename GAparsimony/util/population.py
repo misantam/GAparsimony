@@ -74,7 +74,18 @@ class Population:
             else:
                 self._pos_n.append(i)
 
+
+
+
         def _trans_mut():
+
+            def compute_feature_probability(threshold):
+                p = np.random.uniform(low=0, high=1)  # Número aleatorio que decidirá si tenemos que ponerlo a True o no.
+                if p <= threshold: #Si tenemos que tener un True
+                    return np.random.uniform(low=0.5, high=1)
+                else: #Tenemos que tener un false
+                    return np.random.uniform(low=0, high=0.5)
+
             t = list()
             gen = list()
             for x in self.paramsnames:
@@ -88,26 +99,20 @@ class Population:
                     t.append(np.vectorize(lambda y, x=x: y if type(y) is str else params[x]["range"][int(np.trunc(y))], otypes=[str]))
                     gen.append(lambda y, x=x, **kwargs: np.random.randint(low=self._min[y], high=self._max[y]))
             t.extend([lambda x: x>0.5]*len(self.colsnames))
-            gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
+            #gen.extend([lambda y, x=x, **kwargs: np.random.uniform(low=self._min[y], high=self._max[y]) <= kwargs["feat_mut_thres"]]*len(self.colsnames))
+            gen.extend([lambda y, x=x, **kwargs: compute_feature_probability(kwargs["feat_mut_thres"])]*len(self.colsnames))
 
-            # We add this function to avoid 0-dimensional numpy arrays. Otherwise, some algorithms that perform type
+            # We have to avoid 0-dimensional numpy arrays. Otherwise, some algorithms that perform type
             # checks will fail since, for instance, they receive an integer as a 0-dimensional array, but expect an
             # integer.
-            def check_0dimensional(x):
-                if isinstance(x, np.ndarray) and x.ndim == 0:
-                    if x.dtype == np.floating:
-                        return float(x)
-                    elif x.dtype == np.integer:
-                        return int(x)
-                else:
-                    return x
 
             def aux(x):
                 if len(x.shape) > 1:
                     return np.array(list(map(lambda f, c: f(x[:, c]), t, range(0, x.shape[1]))), dtype=object).T
                 else:
-                    return list(map(lambda f, c: check_0dimensional(f(c)), t, x))
-
+                    return list(
+                        map(lambda i: i[1][0](i[1][1]).item() if i[0] < len(self.paramsnames) else i[1][0](i[1][1]),
+                            enumerate(zip(t, x))))
             return aux, gen
 
 
@@ -154,7 +159,15 @@ class Population:
         data = self._transformers(self._pop[key, :])
         return Chromosome(data[:len(self.paramsnames)], self.paramsnames, self.const, data[len(self.paramsnames):], self.colsnames)
 
-
+    # Method that updates the population to satisfy the feat_thres
+    def update_to_feat_thres(self, popSize, feat_thres):
+        for i in range(popSize): #For each chromosome
+            for j in range(len(self._params),len(self.colsnames) + len(self._params)): # Each feature
+                p = np.random.uniform(low=0, high=1) #Random number in interval [0,1]
+                if p <= feat_thres and self._pop[i,j] < 0.5: # if p <= self.feat_thres, the feature must be true
+                    self._pop[i, j] += 0.5
+                elif p > feat_thres and self._pop[i,j] >= 0.5: # if p > self.feat_thres, the feature must be false
+                    self._pop[i, j] = self._pop[i, j] - 0.5
     
 class Chromosome:
 

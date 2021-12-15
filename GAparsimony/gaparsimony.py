@@ -92,6 +92,7 @@ class GAparsimony(object):
                 pmutation = 0.10, 
                 feat_mut_thres=0.10, 
                 not_muted=3,
+                tol = 1e-4,
                 elitism = None,
                 selection = "nlinear", 
                 keep_history = False,
@@ -541,6 +542,7 @@ class GAparsimony(object):
         self.pmutation = pmutation
         self.feat_mut_thres=feat_mut_thres
         self.not_muted=not_muted
+        self.tol = tol
         
         self.selection = selection
         self.keep_history = keep_history
@@ -553,12 +555,19 @@ class GAparsimony(object):
         self.iter = 0
         self.minutes_total=0
         self.best_score = np.NINF
+        self.best_complexity = np.Inf
+        self.best_parsimony_score = np.NINF
+        self.best_parsimony_complexity = np.Inf
         self.history = list()
 
         if self.seed_ini:
             np.random.seed(self.seed_ini)
 
-        self.population.population = self._population(type_ini_pop=type_ini_pop) # Creo la poblacion de la primera generacion
+        self.population.population = self._population(type_ini_pop=type_ini_pop) # Initial population
+
+        # Update initial population to satisfy the initial feat_thres
+        self.population.update_to_feat_thres(self.popSize, self.feat_thres)
+
 
         if self.suggestions:
             ng = min(self.suggestions.shape[0], popSize)
@@ -641,7 +650,7 @@ class GAparsimony(object):
                     self.fitnesstst[t] = fit[0][1]
                     self.complexity[t] = fit[0][2]
                     _models[t] = fit[1]
-                
+
 
             if self.seed_ini:
                 np.random.seed(self.seed_ini*iter) 
@@ -709,11 +718,48 @@ class GAparsimony(object):
             self.bestsolution = np.concatenate([[self.bestfitnessVal, self.bestfitnessTst, self.bestcomplexity],self.population.population[0]])
             self.bestSolList.append(self.bestsolution)
 
+            # Keep Best Parsimony Solution
+            bestParsimonyFitnessVal = FitnessValSorted[1]
+            bestParsimonyFitnessTst = FitnessTstSorted[1]
+            bestParsimonyComplexity = ComplexitySorted[1]
+            bestIterParsimonySolution = np.concatenate(
+                [[bestParsimonyFitnessVal, bestParsimonyFitnessTst, bestParsimonyComplexity], PopSorted[1]])
+
             # Keep Best Model
             # ------------------
             self.best_model = _models[0]
             self.best_model_conf = self.population.getChromosome(0)
-            
+
+            # Keep Global best parsimony model
+
+            # Si el mejor de la iteración mejora el parsimonioso global y es más simple, actualizo.
+            # Si el mejor de la iteración mejora el parsimonioso global y es más complejo, NO actualizo (ya estará guardado en self.best_score)
+            # Si el mejor parsimonios de la iteración mejora el parsimonioso global y es más simple, actualizo
+            # Si el mejor parsimonioso de la iteración mejora el parsimonioso global y es más complejo,
+            # entonces aplico algo parecido al rerank (lo actualizo si mejora mucho, aunque sea más complejo)
+
+            if self.bestfitnessVal >= self.best_parsimony_score and self.bestcomplexity < self.best_parsimony_complexity:
+                self.best_parsimony_score = self.bestfitnessVal
+                self.best_parsimony_solution = self.bestsolution
+                self.best_parsimony_complexity = self.bestcomplexity
+                self.solution_best_parsimony_score = np.r_[self.best_score,
+                                                           self.bestfitnessVal,
+                                                           self.bestfitnessTst,
+                                                           self.bestcomplexity]
+                self.best_parsimony_model = _models[0]
+                self.best_parsimony_model_conf = PopSorted[0]
+
+            if (bestParsimonyFitnessVal >= self.best_parsimony_score and bestParsimonyComplexity < self.best_parsimony_complexity) \
+                    or (bestParsimonyFitnessVal > self.best_parsimony_score + self.rerank_error):
+                self.best_parsimony_score = bestParsimonyFitnessVal
+                self.best_parsimony_solution = bestIterParsimonySolution
+                self.best_parsimony_complexity = bestParsimonyComplexity
+                self.solution_best_parsimony_score = np.r_[self.best_parsimony_score,
+                                                           bestParsimonyFitnessVal,
+                                                           bestParsimonyFitnessTst,
+                                                           bestParsimonyComplexity]
+                self.best_parsimony_model = _models[1]
+                self.best_parsimony_model_conf = PopSorted[1]
 
             # Keep elapsed time in minutes
             # ----------------------------
@@ -746,9 +792,10 @@ class GAparsimony(object):
                 break
             if self.iter == self.maxiter:
                 break
-            if (len(best_val_cost)-(np.argmax(best_val_cost)+1)) >= self.early_stop:
+            if (len(best_val_cost) - (np.min(np.arange(len(best_val_cost))[best_val_cost >= (
+                    np.max(best_val_cost) - self.tol)]))) >= self.early_stop:
                 break
-            
+
             
             # Selection Function
             # ------------------
@@ -843,10 +890,12 @@ class GAparsimony(object):
     
             # Compare error of first individual with error_posic. Is greater than threshold go to next point
             #      if ((Error.Indiv1-error_posic) > model@rerank_error) error_posic=Error.Indiv1
-        
-            error_dif = abs(error_indiv2-error_posic)
-            if not np.isfinite(error_dif):
+
+            if np.isfinite(error_indiv2) and np.isfinite(error_posic):
+                error_dif = abs(error_indiv2 - error_posic)
+            else:
                 error_dif = np.Inf
+
             if error_dif < self.rerank_error:
         
                 # If there is not difference between errors swap if Size2nd < SizeFirst
@@ -999,6 +1048,7 @@ class GAparsimony(object):
         self.fitnesstst[p] = aux.copy()
         self.complexity[p] = aux.copy()
 
+    #TODO: Update the description (no binary features anymore)
     def _mutation(self):
         r"""
         Function for mutation in GAparsimony.
@@ -1016,12 +1066,9 @@ class GAparsimony(object):
             nparam_to_mute = 1
   
         for _ in range(nparam_to_mute):
-  
             i = np.random.randint((self.not_muted), self.popSize)
             j = np.random.randint(0, self.population.population.shape[1])
-
             self.population[i,j] = self.population.random_gen[j](j, feat_mut_thres=self.feat_mut_thres)
-            
             self.fitnessval[i] = np.nan
             self.fitnesstst[i] = np.nan
             self.complexity[i] = np.nan
@@ -1067,8 +1114,8 @@ class GAparsimony(object):
         # Scale matrix with the parameters range
         population = population*(self.population._max-self.population._min)
         population = population+self.population._min
-        # Convert features to binary 
-        population[:, len(self.population._params):nvars] = population[:, len(self.population._params):nvars]<=self.feat_thres
+        # Convert features to binary
+        #population[:, len(self.population._params):nvars] = population[:, len(self.population._params):nvars]<=self.feat_thres
 
         return population
 

@@ -3,8 +3,10 @@
 from sklearn.model_selection import train_test_split, cross_val_score, RepeatedKFold
 from sklearn.metrics import make_scorer
 import numpy as np
+import warnings
+import os
 
-def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_repeats=5, random_state=42), minimize=False, test_size=0.2, random_state=42, n_jobs=-1):
+def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_repeats=5, random_state=42), minimize=False, test_size=0.2, random_state=42, n_jobs=-1, ignore_warnings = True):
     r"""
      Fitness function for GAparsimony.
 
@@ -54,7 +56,8 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
         raise Exception("A metric function must be provided!!!")
     if complexity is None or not callable(complexity):
         raise Exception("A complexity function must be provided!!!")
-    
+
+
     def fitness(cromosoma, **kwargs):
         if "pandas" in str(type(kwargs["X"])):
             kwargs["X"] = kwargs["X"].values
@@ -72,8 +75,11 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
             if test_size != None:
                 data_test_model = X_test[: , cromosoma.columns]
 
-            # train the model
+            if ignore_warnings:
+                warnings.simplefilter("ignore")
+                os.environ["PYTHONWARNINGS"] = "ignore"
 
+            # train the model
             aux = algorithm(**cromosoma.params)
             fitness_val = cross_val_score(aux, data_train_model, y_train, scoring=make_scorer(metric), cv=cv, n_jobs=n_jobs).mean()
             modelo = algorithm(**cromosoma.params).fit(data_train_model, y_train)
@@ -81,6 +87,11 @@ def getFitness(algorithm, metric, complexity, cv=RepeatedKFold(n_splits=10, n_re
                 fitness_test = metric(modelo.predict(data_test_model), y_test)
             else:
                 fitness_test = np.inf
+
+            # Reset warnings to default values
+            warnings.simplefilter("default")
+            os.environ["PYTHONWARNINGS"] = "default"
+
 
             if minimize:
                 fitness_val = -fitness_val
